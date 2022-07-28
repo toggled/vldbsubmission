@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
                     local_core(h.dataset, h.e_id_to_edge, h.inc_dict, h.init_nodes, a, log);
                     a.output["num_threads"] = std::to_string(num_threads);
                     a.write_results();
-                    if(i==iterations){
+                    if(i==iterations && log){
                         std::cout<<"Execution time "<< a.exec_time<<"\n";
                         a.writecore();
                         a.writelog();
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
                     local_core_OPTI(h.dataset, h.e_id_to_edge, h.inc_dict, h.init_nodes, a, log);
                     a.output["num_threads"] = std::to_string(num_threads);
                     a.write_results();
-                   if(i==iterations){
+                   if(i==iterations && log){
                         std::cout<<"Execution time "<< a.exec_time<<"\n";
                         a.writecore();
                         a.writelog();
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
                     local_core_OPTII(h.dataset, h.e_id_to_edge, h.inc_dict, h.init_nodes, a, log);
                     a.output["num_threads"] = std::to_string(num_threads);
                     a.write_results();
-                    if(i==iterations){
+                    if(i==iterations && log){
                         std::cout<<"Execution time "<< a.exec_time<<"\n";
                         a.writecore();
                         a.writelog();
@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
                     local_core_OPTIII(h.dataset, h.e_id_to_edge, h.inc_dict, h.init_nodes, a, log);
                     a.output["num_threads"] = std::to_string(num_threads);
                     a.write_results();
-                    if(i==iterations){
+                    if(i==iterations && log){
                         std::cout<<"Execution time "<< a.exec_time<<"\n";
                         a.writecore();
                         a.writelog();
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
                     local_core_OPTIV(h.dataset, h.e_id_to_edge, h.inc_dict, h.init_nodes, a, log);
                     a.output["num_threads"] = std::to_string(num_threads);
                     a.write_results();
-                    if(i==iterations){
+                    if(i==iterations && log){
                         std::cout<<"Execution time "<< a.exec_time<<"\n";
                         std::cout<<"Sum(Nu - cu) "<<a.nu_cu<<"\n";
                         a.writecore();
@@ -111,11 +111,11 @@ int main(int argc, char *argv[])
                 if (alg == "Peel"){    
                     std::cout <<"Peel\n";
                     Algorithm a(h);
-                    Peel(h.dataset, h.e_id_to_edge, h.inc_dict, h.init_nodes, a);
+                    Peel(h.dataset, h.e_id_to_edge, h.inc_dict, h.init_nodes, a,log);
                     a.output["num_threads"] = std::to_string(num_threads);
                     a.output["total iteration"] = std::to_string(0);
                     a.write_results();
-                    if(i==iterations){
+                    if(i==iterations && log){
                         std::cout<<"Execution time "<< a.exec_time<<"\n";
                         a.writecore();
                         a.writelog();
@@ -125,11 +125,11 @@ int main(int argc, char *argv[])
                 if (alg == "E-Peel"){    
                     std::cout <<"E-Peel\n";
                     Algorithm a(h);
-                    EPeel(h.dataset, h.e_id_to_edge, h.inc_dict, h.init_nodes, a);
+                    EPeel(h.dataset, h.e_id_to_edge, h.inc_dict, h.init_nodes, a,log);
                     a.output["num_threads"] = std::to_string(num_threads);
                     a.output["total iteration"] = std::to_string(0);
                     a.write_results();
-                    if(i==iterations){
+                    if(i==iterations && log){
                         std::cout<<"Execution time "<< a.exec_time<<"\n";
                         a.writecore();
                         a.writelog();

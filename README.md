@@ -8,6 +8,7 @@ Our datasets can be downloaded from https://drive.google.com/file/d/1--B6vLUL1DF
 - data/dataset/kenneth_lay: Ego hypergraph of Kenneth lay (enron)
 
 ## Notebooks
+- plots.ipynb: Notebook for plots in the paper
 - casestudyI.ipynb: Notebook for case study I (CORUM Protein complex)
 - casestudyII.ipynb: Notebook for case study II (Kenneth lay ego hypergraph)
 
@@ -21,4 +22,13 @@ Our datasets can be downloaded from https://drive.google.com/file/d/1--B6vLUL1DF
 output/ : Output folder that contains algorithm outputs.
 
 ## How to run:
-- Peel, E-Peel, Local-core and Local-core(opt): `cd cpp_src` `bash cpp_src/run.sh`
+- Peel, E-Peel, Local-core, Local-core+OptI, Local-core+OptI+II,Local-core+OptI+II+III and Local-core(opt): 
+    - `cd cpp_src` 
+    - `bash cpp_src/run.sh` // Deactivate(Activate) logging by setting log=0(log=1) in run.sh
+- Parallel implementation of Local-core:
+  - `cd par_src`
+  - `bash hgrun.sh`
+- Application I (Diffusion):
+  - TODO
+- Application II (Densest subhypergraph extraction)
+  - TODO

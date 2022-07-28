@@ -192,7 +192,7 @@ size_t get_number_of_nbrs(std::string v, std::map<std::string, std::set<size_t> 
     return nbrs.size();
 }
 
-void Peel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map<std::string, std::set<size_t> > inc_dict, strvec init_nodes, Algorithm& a){
+void Peel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map<std::string, std::set<size_t> > inc_dict, strvec init_nodes, Algorithm& a, bool log){
     a.output["algo"] = "Peel";
     clock_t start, end;
     strIntMap nbrquery_stat;
@@ -300,20 +300,21 @@ void Peel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map<
     end = clock();
     a.exec_time = double(end - start) / double(CLOCKS_PER_SEC);
     a.output["execution time"]= std::to_string(a.exec_time);
-
-    std::string file = "../output/"+dataset+"_peelnodeQ.csv";
-    std::stringstream ss2;
-    std::ofstream out2(file.c_str());
-    if(out2.fail())
-    {
+    if (log){
+        std::string file = "../output/"+dataset+"_peelnodeQ.csv";
+        std::stringstream ss2;
+        std::ofstream out2(file.c_str());
+        if(out2.fail())
+        {
+            out2.close();
+        }
+        for(std::string v: init_nodes)
+        {
+            ss2<<v<<","<<nbrquery_stat[v]<<"\n";
+        }
+        out2 << ss2.str();
         out2.close();
     }
-    for(std::string v: init_nodes)
-    {
-        ss2<<v<<","<<nbrquery_stat[v]<<"\n";
-    }
-    out2 << ss2.str();
-    out2.close();
 }
 
 
@@ -322,7 +323,7 @@ void Peel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map<
 
 // ----------------------------------------------------------------------- E-Peel ------------------------------------------------------------------------------------
 
-void EPeel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map<std::string, std::set<size_t> > inc_dict, strvec init_nodes, Algorithm& a){
+void EPeel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map<std::string, std::set<size_t> > inc_dict, strvec init_nodes, Algorithm& a, bool log){
     a.output["algo"] = "E-Peel";
     clock_t start, end;
     strIntMap nbrquery_stat;
@@ -484,67 +485,69 @@ void EPeel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map
     a.exec_time = double(end - start) / double(CLOCKS_PER_SEC);
     a.output["execution time"]= std::to_string(a.exec_time);
     
-    std::string file = "../output/"+dataset+"_epeellb.csv";
-    std::stringstream ss;
-    std::ofstream out(file.c_str());
-    if(out.fail())
-    {
-        std::cout<<"writing failed!\n";
-        out.close();
-    }
-    else{
+    if (log){
+        std::string file = "../output/"+dataset+"_epeellb.csv";
+        std::stringstream ss;
+        std::ofstream out(file.c_str());
+        if(out.fail())
+        {
+            std::cout<<"writing failed!\n";
+            out.close();
+        }
+        else{
+            for(std::string v: init_nodes)
+            {
+                size_t max_nbr_Nu = 0;
+                size_t max_nbr_cu = 0;
+
+                size_t num_nbrNu_greater_Nv = 0;
+                size_t num_nbrNu_greater_cv = 0;
+                size_t num_nbrNu_greater_lbv = 0;
+
+                size_t num_nbrlbu_greater_lbv = 0;
+
+                size_t num_nbrcu_greater_cv = 0;
+                size_t num_nbrcu_noteq_Nv = 0;
+                size_t num_nbrcu_greater_lbv = 0;
+                
+                for (std::string nbr_v: init_nbr[v]){
+                        max_nbr_Nu = std::max(init_nbrsize[nbr_v],max_nbr_Nu);
+                        max_nbr_cu = std::max(a.core[nbr_v],max_nbr_cu);
+                        if (init_nbrsize[nbr_v] > init_nbrsize[v])  num_nbrNu_greater_Nv += 1;
+                        if (init_nbrsize[nbr_v] > a.core[v])  num_nbrNu_greater_cv += 1;
+                        if (init_nbrsize[nbr_v] > llb[v])  num_nbrNu_greater_lbv += 1;
+
+                        if (llb[nbr_v] > llb[v])  num_nbrlbu_greater_lbv += 1;
+
+                        if (a.core[nbr_v] > a.core[v])  num_nbrcu_greater_cv += 1;
+                        if (a.core[nbr_v] > llb[v])  num_nbrcu_greater_lbv += 1;
+                        if (a.core[nbr_v] != init_nbrsize[v])   num_nbrcu_noteq_Nv += 1;
+                        
+                }
+                // v, lb[v],c[v],|N(v)|, max_{u \in N(v)} |N(u)|, max_{u \in N(v)} c[u]
+                ss << v << "," << llb[v]<<","<<a.core[v]<<","<<init_nbrsize[v]<<","<<max_nbr_Nu<<","<<max_nbr_cu 
+                <<","<< num_nbrNu_greater_Nv<<","<< num_nbrNu_greater_cv<<","<< num_nbrNu_greater_lbv
+                <<","<< num_nbrlbu_greater_lbv<<","<< num_nbrcu_greater_cv <<","<<num_nbrcu_greater_lbv<<","<<num_nbrcu_noteq_Nv<<"\n"; 
+                // std::cout <<it->first << "," << it->second<<"\n";
+            }
+            out << ss.str();
+            out.close();
+        }
+
+        file = "../output/"+dataset+"_epeelnodeQ.csv";
+        std::stringstream ss2;
+        std::ofstream out2(file.c_str());
+        if(out2.fail())
+        {
+            out2.close();
+        }
         for(std::string v: init_nodes)
         {
-            size_t max_nbr_Nu = 0;
-            size_t max_nbr_cu = 0;
-
-            size_t num_nbrNu_greater_Nv = 0;
-            size_t num_nbrNu_greater_cv = 0;
-            size_t num_nbrNu_greater_lbv = 0;
-
-            size_t num_nbrlbu_greater_lbv = 0;
-
-            size_t num_nbrcu_greater_cv = 0;
-            size_t num_nbrcu_noteq_Nv = 0;
-            size_t num_nbrcu_greater_lbv = 0;
-            
-            for (std::string nbr_v: init_nbr[v]){
-                    max_nbr_Nu = std::max(init_nbrsize[nbr_v],max_nbr_Nu);
-                    max_nbr_cu = std::max(a.core[nbr_v],max_nbr_cu);
-                    if (init_nbrsize[nbr_v] > init_nbrsize[v])  num_nbrNu_greater_Nv += 1;
-                    if (init_nbrsize[nbr_v] > a.core[v])  num_nbrNu_greater_cv += 1;
-                    if (init_nbrsize[nbr_v] > llb[v])  num_nbrNu_greater_lbv += 1;
-
-                    if (llb[nbr_v] > llb[v])  num_nbrlbu_greater_lbv += 1;
-
-                    if (a.core[nbr_v] > a.core[v])  num_nbrcu_greater_cv += 1;
-                    if (a.core[nbr_v] > llb[v])  num_nbrcu_greater_lbv += 1;
-                    if (a.core[nbr_v] != init_nbrsize[v])   num_nbrcu_noteq_Nv += 1;
-                    
-            }
-            // v, lb[v],c[v],|N(v)|, max_{u \in N(v)} |N(u)|, max_{u \in N(v)} c[u]
-            ss << v << "," << llb[v]<<","<<a.core[v]<<","<<init_nbrsize[v]<<","<<max_nbr_Nu<<","<<max_nbr_cu 
-            <<","<< num_nbrNu_greater_Nv<<","<< num_nbrNu_greater_cv<<","<< num_nbrNu_greater_lbv
-            <<","<< num_nbrlbu_greater_lbv<<","<< num_nbrcu_greater_cv <<","<<num_nbrcu_greater_lbv<<","<<num_nbrcu_noteq_Nv<<"\n"; 
-            // std::cout <<it->first << "," << it->second<<"\n";
+            ss2<<v<<","<<nbrquery_stat[v]<<"\n";
         }
-        out << ss.str();
-        out.close();
-    }
-
-    file = "../output/"+dataset+"_epeelnodeQ.csv";
-    std::stringstream ss2;
-    std::ofstream out2(file.c_str());
-    if(out2.fail())
-    {
+        out2 << ss2.str();
         out2.close();
     }
-    for(std::string v: init_nodes)
-    {
-        ss2<<v<<","<<nbrquery_stat[v]<<"\n";
-    }
-    out2 << ss2.str();
-    out2.close();
 }
 
 // --------------------------------------------------------------------- E-Peel ends ---------------------------------------------------------------------------------
