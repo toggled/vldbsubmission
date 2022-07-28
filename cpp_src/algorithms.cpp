@@ -489,45 +489,48 @@ void EPeel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map
     std::ofstream out(file.c_str());
     if(out.fail())
     {
+        std::cout<<"writing failed!\n";
         out.close();
     }
-    for(std::string v: init_nodes)
-    {
-        size_t max_nbr_Nu = 0;
-        size_t max_nbr_cu = 0;
+    else{
+        for(std::string v: init_nodes)
+        {
+            size_t max_nbr_Nu = 0;
+            size_t max_nbr_cu = 0;
 
-        size_t num_nbrNu_greater_Nv = 0;
-        size_t num_nbrNu_greater_cv = 0;
-        size_t num_nbrNu_greater_lbv = 0;
+            size_t num_nbrNu_greater_Nv = 0;
+            size_t num_nbrNu_greater_cv = 0;
+            size_t num_nbrNu_greater_lbv = 0;
 
-        size_t num_nbrlbu_greater_lbv = 0;
+            size_t num_nbrlbu_greater_lbv = 0;
 
-        size_t num_nbrcu_greater_cv = 0;
-		size_t num_nbrcu_noteq_Nv = 0;
-        size_t num_nbrcu_greater_lbv = 0;
-        
-        for (std::string nbr_v: init_nbr[v]){
-                max_nbr_Nu = std::max(init_nbrsize[nbr_v],max_nbr_Nu);
-                max_nbr_cu = std::max(a.core[nbr_v],max_nbr_cu);
-                if (init_nbrsize[nbr_v] > init_nbrsize[v])  num_nbrNu_greater_Nv += 1;
-                if (init_nbrsize[nbr_v] > a.core[v])  num_nbrNu_greater_cv += 1;
-                if (init_nbrsize[nbr_v] > llb[v])  num_nbrNu_greater_lbv += 1;
+            size_t num_nbrcu_greater_cv = 0;
+            size_t num_nbrcu_noteq_Nv = 0;
+            size_t num_nbrcu_greater_lbv = 0;
+            
+            for (std::string nbr_v: init_nbr[v]){
+                    max_nbr_Nu = std::max(init_nbrsize[nbr_v],max_nbr_Nu);
+                    max_nbr_cu = std::max(a.core[nbr_v],max_nbr_cu);
+                    if (init_nbrsize[nbr_v] > init_nbrsize[v])  num_nbrNu_greater_Nv += 1;
+                    if (init_nbrsize[nbr_v] > a.core[v])  num_nbrNu_greater_cv += 1;
+                    if (init_nbrsize[nbr_v] > llb[v])  num_nbrNu_greater_lbv += 1;
 
-                if (llb[nbr_v] > llb[v])  num_nbrlbu_greater_lbv += 1;
+                    if (llb[nbr_v] > llb[v])  num_nbrlbu_greater_lbv += 1;
 
-                if (a.core[nbr_v] > a.core[v])  num_nbrcu_greater_cv += 1;
-                if (a.core[nbr_v] > llb[v])  num_nbrcu_greater_lbv += 1;
-				if (a.core[nbr_v] != init_nbrsize[v])   num_nbrcu_noteq_Nv += 1;
-                
+                    if (a.core[nbr_v] > a.core[v])  num_nbrcu_greater_cv += 1;
+                    if (a.core[nbr_v] > llb[v])  num_nbrcu_greater_lbv += 1;
+                    if (a.core[nbr_v] != init_nbrsize[v])   num_nbrcu_noteq_Nv += 1;
+                    
+            }
+            // v, lb[v],c[v],|N(v)|, max_{u \in N(v)} |N(u)|, max_{u \in N(v)} c[u]
+            ss << v << "," << llb[v]<<","<<a.core[v]<<","<<init_nbrsize[v]<<","<<max_nbr_Nu<<","<<max_nbr_cu 
+            <<","<< num_nbrNu_greater_Nv<<","<< num_nbrNu_greater_cv<<","<< num_nbrNu_greater_lbv
+            <<","<< num_nbrlbu_greater_lbv<<","<< num_nbrcu_greater_cv <<","<<num_nbrcu_greater_lbv<<","<<num_nbrcu_noteq_Nv<<"\n"; 
+            // std::cout <<it->first << "," << it->second<<"\n";
         }
-        // v, lb[v],c[v],|N(v)|, max_{u \in N(v)} |N(u)|, max_{u \in N(v)} c[u]
-        ss << v << "," << llb[v]<<","<<a.core[v]<<","<<init_nbrsize[v]<<","<<max_nbr_Nu<<","<<max_nbr_cu 
-        <<","<< num_nbrNu_greater_Nv<<","<< num_nbrNu_greater_cv<<","<< num_nbrNu_greater_lbv
-        <<","<< num_nbrlbu_greater_lbv<<","<< num_nbrcu_greater_cv <<","<<num_nbrcu_greater_lbv<<","<<num_nbrcu_noteq_Nv<<"\n"; 
-        // std::cout <<it->first << "," << it->second<<"\n";
+        out << ss.str();
+        out.close();
     }
-    out << ss.str();
-    out.close();
 
     file = "../output/"+dataset+"_epeelnodeQ.csv";
     std::stringstream ss2;
