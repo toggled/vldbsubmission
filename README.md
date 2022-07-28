@@ -1,8 +1,11 @@
 # This repository contains the code and data used in the experiments of our paper titled:
 "Neighborhood-based Hypergraph core decomposition"
 ## Data
+Our datasets can be downloaded from https://drive.google.com/file/d/1--B6vLUL1DF4BI6UH3d0UyXyZQJOu6Nb/view?usp=sharing 
 - data/dataset/real : real-world datasets
 - data/dataset/synthetic : synthetically generated datasets
+- data/dataset/protein: CORUM Protein complex dataset
+- data/dataset/kenneth_lay: Ego hypergraph of Kenneth lay (enron)
 
 ## Notebooks
 - casestudyI.ipynb: Notebook for case study I (CORUM Protein complex)
