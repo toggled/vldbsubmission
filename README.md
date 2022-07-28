@@ -21,4 +21,4 @@ Our datasets can be downloaded from https://drive.google.com/file/d/1--B6vLUL1DF
 output/ : Output folder that contains algorithm outputs.
 
 ## How to run:
-TODO
+- Peel, E-Peel, Local-core and Local-core(opt): `cd cpp_src` `bash cpp_src/run.sh`
