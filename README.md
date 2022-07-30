@@ -9,6 +9,7 @@ Our datasets can be downloaded from https://drive.google.com/file/d/1--B6vLUL1DF
 
 ## Notebooks
 - plots.ipynb: Notebook for plots in the paper
+- densest_subhypergraph.ipynb: Effectiveness analysis & plots for volume densests and degree densest subhypergraphs.
 - casestudyI.ipynb: Notebook for case study I (CORUM Protein complex)
 - casestudyII.ipynb: Notebook for case study II (Kenneth lay ego hypergraph)
 
