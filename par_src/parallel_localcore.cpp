@@ -1,6 +1,4 @@
 #define _GNU_SOURCE
-// #define OUTPUT
-// #define DEBUG
 #include <omp.h>
 #include <stdio.h>
 #include <stdint.h>

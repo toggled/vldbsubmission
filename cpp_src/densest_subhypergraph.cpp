@@ -5,7 +5,6 @@
 #include <iostream>
 #include <set>
 #include "hypergraph.h"
-#include "utils.h"
 #include "readhg.h"
 
 void write_subhg(std::string dataset, std::string alg, std::map<size_t, strvec > e_id_to_edge, std::set<size_t> subhg){
@@ -15,7 +14,7 @@ void write_subhg(std::string dataset, std::string alg, std::map<size_t, strvec >
     std::stringstream ss;
     for(auto e_id: subhg)
     {
-        int sz = 0;
+        size_t sz = 0;
         for(auto u:e_id_to_edge[e_id]){
             if(sz!=e_id_to_edge[e_id].size()-1)
             ss << u <<",";
@@ -360,8 +359,8 @@ int main(int argc, char *argv[])
         h.dataset = argv[1];
     }
     else{
-        getHg("default",h);
-        h.dataset = "default";
+        std::cout<<"No dataset provided. Exiting.";
+        return 1;
     }
     if(argc>=3){
         alg = argv[2];
@@ -378,6 +377,6 @@ int main(int argc, char *argv[])
         deg_densest_hg(h.dataset,h.e_id_to_edge,h.inc_dict,h.init_nodes,subhg);
         write_subhg(h.dataset,alg,h.e_id_to_edge,subhg);
     }
-    
+    return 0;   
 }
 
