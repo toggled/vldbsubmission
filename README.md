@@ -16,10 +16,12 @@ Each line is a hyperedge consisting of comma separated node ids.
 - casestudyII.ipynb: Notebook for case study II (Kenneth lay ego hypergraph)
 
 ## source codes
-- cpp_src/: C++ implementation of the E-Peel, Peel, Local-core, Local-core with the optimizations.
-- par_src/: Openmp implementation of Parallel local-core.
+- cpp_src/: 
+  - C++ implementation of the E-Peel, Peel, Local-core, Local-core with the optimizations (`algorithms.cpp`)
+  - C++ implementation of Densest subhypergraph extraction (`densest_subhypergraph.cpp`)
+- par_src/: 
+  - OpenMP implementation of Parallel local-core (`parallel_localcore.cpp`)
 - python_src/: Python code to run Application I (Diffusion).
-- densest_src/: C++ implementation of densest subhypergraph extraction.
 
 ## Output
 output/ : Output folder that contains algorithm outputs.
@@ -28,7 +30,7 @@ output/ : Output folder that contains algorithm outputs.
 - Sequential Algorithms: Peel, E-Peel, Local-core, Local-core+OptI, Local-core+OptI+II,Local-core+OptI+II+III and Local-core(opt): 
   - `cd cpp_src` 
   - `bash run.sh` // Deactivate(Activate) logging with `log=0`(`log=1`), set #runs of an alg. with var `it`
-- Parallel algorithm: Parallel implementation of Local-core:
+- Parallel Local-core algorithm:
   - `cd par_src`
   - `bash hgrun.sh` // Deactivate(Activate) load-balancing by setting lb=0(lb=1) 
 - Application I (Diffusion):
@@ -36,3 +38,10 @@ output/ : Output folder that contains algorithm outputs.
 - Application II (Densest subhypergraph extraction)
   - `cd cpp_src`
   - `bash denseSrun.sh`
+
+## C++ compiler requirements:
+- C++11
+- OpenMP 3.5 
+
+## Python requirements:
+- python_src/requirements.txt
