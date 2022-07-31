@@ -68,8 +68,7 @@ bool Algorithm::write_results(){
 }
 
 void Algorithm::writeNbrQ(){
-    std::string file = "output/nbrq_results.csv";
-    // std::cout<<file<<"\n";
+    std::string file = "../output/nbrq_results.csv";
     std::stringstream ss;
     ss<<output["algo"]<<" "<<hg.dataset<<" "<<output["execution time"]<<" "<<num_nbr_queries<<"\n";
     std::ofstream out(file.c_str(),std::ios::app);
@@ -83,7 +82,6 @@ void Algorithm::writeNbrQ(){
 
 void  Algorithm::writelog(){
     std::string file = "../output/log_"+output["algo"]+"_"+hg.dataset+".csv";
-    // std::cout<<file<<"\n";
     std::stringstream ss;
     
     size_t i = 0;
@@ -195,16 +193,15 @@ size_t get_number_of_nbrs(std::string v, std::map<std::string, std::set<size_t> 
 void Peel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map<std::string, std::set<size_t> > inc_dict, strvec init_nodes, Algorithm& a, bool log){
     a.output["algo"] = "Peel";
     clock_t start, end;
-    strIntMap nbrquery_stat;
-    /* Recording the start*/
+    // strIntMap nbrquery_stat;
     start = clock();
     intsStrMap bucket;
     strIntMap inverse_bucket;
 
     clock_t s_tm; 
     s_tm = clock();
-    // initialise neighbours
 
+    // initialise neighbours
     size_t num_nodes = init_nodes.size(); // initialise number of nodes
     strIntMap init_nbrsize; //
     std::unordered_map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
@@ -236,22 +233,6 @@ void Peel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map<
         }
     }
 
-    // std::map<std::string, std::set<size_t> > inc_dict;  //# key => node, value = List of incident hyperedge ids.
-    // for (auto elem: e_id_to_edge){
-    //     // construct edge
-    //     auto e_id = elem.first;
-    //     auto _tmp = intvec();
-
-    //     for(auto u: elem.second)  {
-    //         if(inc_dict.find(u)==inc_dict.end()){
-
-    //             inc_dict[u] = std::set<size_t>{e_id};
-
-    //         }else
-    //         inc_dict[u].insert(e_id);
-    //     }
-    // }
-
     // # Initialise buckets
     for (auto node : init_nodes){
         auto len_neighbors = init_nbrsize[node];
@@ -265,27 +246,23 @@ void Peel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map<
     a.timelogs["init_time"] = double(e_tm - s_tm) / double(CLOCKS_PER_SEC);
     for (size_t k=1; k<= num_nodes; k++){
         while (true){
-            // std::cout<<k<<" : "<<bucket[k].size()<<"\n";
             if (bucket[k].size()==0)    break;
             auto set_it = bucket[k].begin();  //# get first element in the bucket
             auto v = *set_it;
             bucket[k].erase(set_it);
 
             a.core[v] = k;
-            // start_neighborhood_call = time()
             strvec nbr_v;
             iterate_nbrs(v, nbr_v, inc_dict, e_id_to_edge);
-            // a.num_nbr_queries += 1;
-            // start_subgraph_time = time()
             removeV_transform(v,inc_dict, e_id_to_edge);
 
             // # enumerating over all neighbors of v
             for (auto u : nbr_v){
 
                 auto len_neighbors_u = get_number_of_nbrs(u, inc_dict, e_id_to_edge);
-                a.num_nbr_queries += 1;
-                if (nbrquery_stat.find(u) == nbrquery_stat.end()) nbrquery_stat[u] = 0;
-                else    nbrquery_stat[u]+=1;
+                if (log)    a.num_nbr_queries += 1;
+                // if (nbrquery_stat.find(u) == nbrquery_stat.end()) nbrquery_stat[u] = 0;
+                // else    nbrquery_stat[u]+=1;
                 auto max_value = std::max(len_neighbors_u, k);
 
                 // # Move u to new location in bucket
@@ -300,21 +277,22 @@ void Peel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map<
     end = clock();
     a.exec_time = double(end - start) / double(CLOCKS_PER_SEC);
     a.output["execution time"]= std::to_string(a.exec_time);
-    if (log){
-        std::string file = "../output/"+dataset+"_peelnodeQ.csv";
-        std::stringstream ss2;
-        std::ofstream out2(file.c_str());
-        if(out2.fail())
-        {
-            out2.close();
-        }
-        for(std::string v: init_nodes)
-        {
-            ss2<<v<<","<<nbrquery_stat[v]<<"\n";
-        }
-        out2 << ss2.str();
-        out2.close();
-    }
+
+    // if (log){
+    //     std::string file = "../output/"+dataset+"_peelnodeQ.csv";
+    //     std::stringstream ss2;
+    //     std::ofstream out2(file.c_str());
+    //     if(out2.fail())
+    //     {
+    //         out2.close();
+    //     }
+    //     for(std::string v: init_nodes)
+    //     {
+    //         ss2<<v<<","<<nbrquery_stat[v]<<"\n";
+    //     }
+    //     out2 << ss2.str();
+    //     out2.close();
+    // }
 }
 
 
@@ -326,8 +304,7 @@ void Peel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map<
 void EPeel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map<std::string, std::set<size_t> > inc_dict, strvec init_nodes, Algorithm& a, bool log){
     a.output["algo"] = "E-Peel";
     clock_t start, end;
-    strIntMap nbrquery_stat;
-    /* Recording the starting clock tick.*/
+    // strIntMap nbrquery_stat;
     start = clock();        
     intsStrMap bucket;
     strIntMap inverse_bucket;
@@ -376,7 +353,7 @@ void EPeel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map
         glb = std::min(glb,len_neighbors_v);
         gub = std::max(gub, len_neighbors_v);
     }
-    // # Computing Local lower bound 
+    // Computing Local lower bound 
     for (auto v :init_nodes){
         auto _maxv = std::numeric_limits<size_t>::min();
         for (auto e_id : inc_dict[v]){
@@ -389,7 +366,6 @@ void EPeel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map
     auto ub1 = gub;
 
     // # Initial bucket fill-up
-    // start_init_time = time()
     for (auto node : init_nodes){
         auto lb = llb[node];
         inverse_bucket[node] = lb;
@@ -398,156 +374,124 @@ void EPeel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map
         }
         bucket[lb].insert(node);
         setlb[node] = true;
-
-        // self.init_time = time() - start_init_time
-
-        // if (verbose):
-        //     print("\n---------- Initial neighbors -------")
-        //     # for node in H.nodes():
-        //     #     print(node, H.neighbors(node))
-        //     # print()
     }
     clock_t e_tm = clock();
     a.timelogs["init_time"] = double(e_tm - s_tm) / double(CLOCKS_PER_SEC);
 
     
-        // start_loop_time = time()
-
-        for (size_t k = lb1; k <= ub1; k++){
-            while (true){
-                if (bucket[k].size()==0)    break;
-                auto set_it = bucket[k].begin();  //# get first element in the bucket
-                auto v = *set_it;
-                bucket[k].erase(set_it);
+    for (size_t k = lb1; k <= ub1; k++){
+        while (true){
+            if (bucket[k].size()==0)    break;
+            auto set_it = bucket[k].begin();  //# get first element in the bucket
+            auto v = *set_it;
+            bucket[k].erase(set_it);
+            if (setlb[v]){
+                size_t len_nbr_v = get_number_of_nbrs(v,inc_dict, e_id_to_edge);
+                if (log)    a.num_nbr_queries += 1;
+                // if (nbrquery_stat.find(v) == nbrquery_stat.end()) nbrquery_stat[v] = 0;
+                // else    nbrquery_stat[v]+=1;
+                len_nbr_v = std::max(len_nbr_v,k);
+                if (bucket.find(len_nbr_v) == bucket.end())
+                    bucket[len_nbr_v] = strset();
+                bucket[len_nbr_v].insert(v);
+                
+                // # update new location of u
+                inverse_bucket[v] = len_nbr_v;
+                setlb[v] = false;
+            }
+            else{
+                a.core[v] = k;
+                strvec nbr_v;
+                iterate_nbrs(v, nbr_v, inc_dict, e_id_to_edge);
+                removeV_transform(v, inc_dict, e_id_to_edge);  //# Store.... + executation time..
+    
+                for (auto u : nbr_v)
+                    if (!setlb[u]){
+                        auto len_neighbors_u = get_number_of_nbrs(u, inc_dict, e_id_to_edge);
+                        if (log)    a.num_nbr_queries += 1;
+                        // if (nbrquery_stat.find(u) == nbrquery_stat.end()) nbrquery_stat[u] = 0;
+                        // else    nbrquery_stat[u]+=1;
+                        auto  max_value = std::max(len_neighbors_u, k);
+                        bucket[inverse_bucket[u]].erase(u);
+                        if (bucket.find(max_value) == bucket.end())
+                            bucket[max_value] = strset();
+                        bucket[max_value].insert(u);
             
-                    if (setlb[v]){
-                        size_t len_nbr_v = get_number_of_nbrs(v,inc_dict, e_id_to_edge);
-                        a.num_nbr_queries += 1;
-                        if (nbrquery_stat.find(v) == nbrquery_stat.end()) nbrquery_stat[v] = 0;
-                        else    nbrquery_stat[v]+=1;
-                        len_nbr_v = std::max(len_nbr_v,k);
-                        if (bucket.find(len_nbr_v) == bucket.end())
-                            bucket[len_nbr_v] = strset();
-                        bucket[len_nbr_v].insert(v);
-                        
-                        // # update new location of u
-                        inverse_bucket[v] = len_nbr_v;
-                        setlb[v] = false;
-                    }
-                    else{
-                        a.core[v] = k;
-                        strvec nbr_v;
-                        iterate_nbrs(v, nbr_v, inc_dict, e_id_to_edge);
-                        // a.num_nbr_queries += 1;
-            //             start_subgraph_time = time()
-                        removeV_transform(v, inc_dict, e_id_to_edge);  //# Store.... + executation time..
-            //             self.subgraph_time += time() - start_subgraph_time
-            //             self.num_subgraph_call += 1
-            //             if (verbose):
-            //                 print('nbrs: ', nbr_v)
-                        for (auto u : nbr_v)
-            //                 self.total_iteration += 1
-                            if (!setlb[u]){
-            //                     # print('updating neighbor(v)', u)
-            //                     self.inner_iteration += 1
-            //                     start_neighborhood_call = time()
-                                auto len_neighbors_u = get_number_of_nbrs(u, inc_dict, e_id_to_edge);
-                                a.num_nbr_queries += 1;
-                                if (nbrquery_stat.find(u) == nbrquery_stat.end()) nbrquery_stat[u] = 0;
-                                else    nbrquery_stat[u]+=1;
-            //                     self.neighborhood_call_time += time() - start_neighborhood_call
-            //                     self.num_neighborhood_computation += 1
+    //                     # update new location of u
+                        inverse_bucket[u] = max_value;
 
-                               auto  max_value = std::max(len_neighbors_u, k);
-            //                     if (verbose):
-            //                         print("max core between", k, 'and', len_neighbors_u, "is ", max_value)
-            //                         print("The location of", u, "is updated from", inverse_bucket[u], "to",
-            //                               max_value)
-
-            //                     start_bucket_update = time()
-                                bucket[inverse_bucket[u]].erase(u);
-                                if (bucket.find(max_value) == bucket.end())
-                                    bucket[max_value] = strset();
-                                bucket[max_value].insert(u);
-            //                     self.num_bucket_update += 1
-            //                     self.bucket_update_time += time() - start_bucket_update
-
-            //                     # update new location of u
-                                inverse_bucket[u] = max_value;
-
-                            }
                     }
             }
-        // self.loop_time = time() - start_loop_time
         }
+    }
 
     end = clock();
     a.exec_time = double(end - start) / double(CLOCKS_PER_SEC);
     a.output["execution time"]= std::to_string(a.exec_time);
     
-    if (log){
-        std::string file = "../output/"+dataset+"_epeellb.csv";
-        std::stringstream ss;
-        std::ofstream out(file.c_str());
-        if(out.fail())
-        {
-            std::cout<<"writing failed!\n";
-            out.close();
-        }
-        else{
-            for(std::string v: init_nodes)
-            {
-                size_t max_nbr_Nu = 0;
-                size_t max_nbr_cu = 0;
+    // if (log){
+    //     std::string file = "../output/"+dataset+"_epeellb.csv";
+    //     std::stringstream ss;
+    //     std::ofstream out(file.c_str());
+    //     if(out.fail())
+    //     {
+    //         std::cout<<"writing failed!\n";
+    //         out.close();
+    //     }
+    //     else{
+    //         for(std::string v: init_nodes)
+    //         {
+    //             size_t max_nbr_Nu = 0;
+    //             size_t max_nbr_cu = 0;
 
-                size_t num_nbrNu_greater_Nv = 0;
-                size_t num_nbrNu_greater_cv = 0;
-                size_t num_nbrNu_greater_lbv = 0;
+    //             size_t num_nbrNu_greater_Nv = 0;
+    //             size_t num_nbrNu_greater_cv = 0;
+    //             size_t num_nbrNu_greater_lbv = 0;
 
-                size_t num_nbrlbu_greater_lbv = 0;
+    //             size_t num_nbrlbu_greater_lbv = 0;
 
-                size_t num_nbrcu_greater_cv = 0;
-                size_t num_nbrcu_noteq_Nv = 0;
-                size_t num_nbrcu_greater_lbv = 0;
+    //             size_t num_nbrcu_greater_cv = 0;
+    //             size_t num_nbrcu_noteq_Nv = 0;
+    //             size_t num_nbrcu_greater_lbv = 0;
                 
-                for (std::string nbr_v: init_nbr[v]){
-                        max_nbr_Nu = std::max(init_nbrsize[nbr_v],max_nbr_Nu);
-                        max_nbr_cu = std::max(a.core[nbr_v],max_nbr_cu);
-                        if (init_nbrsize[nbr_v] > init_nbrsize[v])  num_nbrNu_greater_Nv += 1;
-                        if (init_nbrsize[nbr_v] > a.core[v])  num_nbrNu_greater_cv += 1;
-                        if (init_nbrsize[nbr_v] > llb[v])  num_nbrNu_greater_lbv += 1;
+    //             for (std::string nbr_v: init_nbr[v]){
+    //                     max_nbr_Nu = std::max(init_nbrsize[nbr_v],max_nbr_Nu);
+    //                     max_nbr_cu = std::max(a.core[nbr_v],max_nbr_cu);
+    //                     if (init_nbrsize[nbr_v] > init_nbrsize[v])  num_nbrNu_greater_Nv += 1;
+    //                     if (init_nbrsize[nbr_v] > a.core[v])  num_nbrNu_greater_cv += 1;
+    //                     if (init_nbrsize[nbr_v] > llb[v])  num_nbrNu_greater_lbv += 1;
 
-                        if (llb[nbr_v] > llb[v])  num_nbrlbu_greater_lbv += 1;
+    //                     if (llb[nbr_v] > llb[v])  num_nbrlbu_greater_lbv += 1;
 
-                        if (a.core[nbr_v] > a.core[v])  num_nbrcu_greater_cv += 1;
-                        if (a.core[nbr_v] > llb[v])  num_nbrcu_greater_lbv += 1;
-                        if (a.core[nbr_v] != init_nbrsize[v])   num_nbrcu_noteq_Nv += 1;
+    //                     if (a.core[nbr_v] > a.core[v])  num_nbrcu_greater_cv += 1;
+    //                     if (a.core[nbr_v] > llb[v])  num_nbrcu_greater_lbv += 1;
+    //                     if (a.core[nbr_v] != init_nbrsize[v])   num_nbrcu_noteq_Nv += 1;
                         
-                }
-                // v, lb[v],c[v],|N(v)|, max_{u \in N(v)} |N(u)|, max_{u \in N(v)} c[u]
-                ss << v << "," << llb[v]<<","<<a.core[v]<<","<<init_nbrsize[v]<<","<<max_nbr_Nu<<","<<max_nbr_cu 
-                <<","<< num_nbrNu_greater_Nv<<","<< num_nbrNu_greater_cv<<","<< num_nbrNu_greater_lbv
-                <<","<< num_nbrlbu_greater_lbv<<","<< num_nbrcu_greater_cv <<","<<num_nbrcu_greater_lbv<<","<<num_nbrcu_noteq_Nv<<"\n"; 
-                // std::cout <<it->first << "," << it->second<<"\n";
-            }
-            out << ss.str();
-            out.close();
-        }
+    //             }
+    //             // v, lb[v],c[v],|N(v)|, max_{u \in N(v)} |N(u)|, max_{u \in N(v)} c[u]
+    //             ss << v << "," << llb[v]<<","<<a.core[v]<<","<<init_nbrsize[v]<<","<<max_nbr_Nu<<","<<max_nbr_cu 
+    //             <<","<< num_nbrNu_greater_Nv<<","<< num_nbrNu_greater_cv<<","<< num_nbrNu_greater_lbv
+    //             <<","<< num_nbrlbu_greater_lbv<<","<< num_nbrcu_greater_cv <<","<<num_nbrcu_greater_lbv<<","<<num_nbrcu_noteq_Nv<<"\n"; 
+    //             // std::cout <<it->first << "," << it->second<<"\n";
+    //         }
+    //         out << ss.str();
+    //         out.close();
+    //     }
 
-        file = "../output/"+dataset+"_epeelnodeQ.csv";
-        std::stringstream ss2;
-        std::ofstream out2(file.c_str());
-        if(out2.fail())
-        {
-            out2.close();
-        }
-        for(std::string v: init_nodes)
-        {
-            ss2<<v<<","<<nbrquery_stat[v]<<"\n";
-        }
-        out2 << ss2.str();
-        out2.close();
-    }
+    //     file = "../output/"+dataset+"_epeelnodeQ.csv";
+    //     std::stringstream ss2;
+    //     std::ofstream out2(file.c_str());
+    //     if(out2.fail())
+    //     {
+    //         out2.close();
+    //     }
+    //     for(std::string v: init_nodes)
+    //     {
+    //         ss2<<v<<","<<nbrquery_stat[v]<<"\n";
+    //     }
+    //     out2 << ss2.str();
+    //     out2.close();
+    // }
 }
 
 // --------------------------------------------------------------------- E-Peel ends ---------------------------------------------------------------------------------

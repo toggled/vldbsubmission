@@ -118,7 +118,6 @@ int main(int argc, char *argv[])
                     if(i==iterations && log){
                         std::cout<<"Execution time "<< a.exec_time<<"\n";
                         a.writecore();
-                        a.writelog();
                         a.writeNbrQ();
                     }
                 }
@@ -132,7 +131,6 @@ int main(int argc, char *argv[])
                     if(i==iterations && log){
                         std::cout<<"Execution time "<< a.exec_time<<"\n";
                         a.writecore();
-                        a.writelog();
                         a.writeNbrQ();
                     }
                 }
