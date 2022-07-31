@@ -41,3 +41,4 @@ server_output/
 fig/
 main
 hgmain
+notebooks/.ipynb_checkpoints/
