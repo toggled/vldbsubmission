@@ -45,6 +45,7 @@ if(args.sir or args.sir_exp2 or args.sir_exp3 or args.sir_exp3_explanation or ar
 
     # Loading/saving to file
     os.system("mkdir -p tests/tmp")
+    os.system("mkdir -p ../output/")
     fname = "tests/tmp/" + args.dataset + "_" + args.algo + ".pkl"
     if(not os.path.isfile(fname)):
         hgDecompose = HGDecompose()
