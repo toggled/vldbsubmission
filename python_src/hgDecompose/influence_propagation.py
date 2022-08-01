@@ -133,7 +133,7 @@ def run_intervention_exp2_explain(name, verbose = False):
                 #     result[core_number].append(propagate(H, starting_vertex=v, p = p, num_iterations = 100, original_n = original_n, verbose = verbose)[0])
                 tmp[v] = component_sz(v,H)
             result[k][core_number] = np.mean(list(tmp.values()))
-    save_dict(result,'data/output/'+name+'_comp3.pkl')
+    save_dict(result,'../output/'+name+'_comp3.pkl')
         
 def run_intervention_exp2_explain_splen(name, verbose = False):
     """ SHortest path length """
@@ -196,51 +196,7 @@ def run_intervention_exp2_explain_splen(name, verbose = False):
             # print(tmp)
             result[k][core_number] = np.mean(list(tmp.values()))
     
-    save_dict(result,'data/output/'+name+'_sp4.pkl')
-
-# def run_intervention_exp2_explain_splen_prev(name, verbose = False):
-#     path = pkl_path+name+'.pkl'
-#     with open(os.path.join(path), 'rb') as handle:
-#         data = pickle.load(handle)
-#         print("loaded ",path)
-#     result = {}
-#     for k in data:
-#         # if (k!=2):
-#         #     continue  
-#         print('Core deletion#: ', k)
-#         result[k] = {}
-#         temp_core = data[k]['core']
-#         H = data[k]['H']
-#         print('N: ',len(H.inc_dict))
-#         # check_connectivity(H)
-#         # continue 
-#         core_to_vertex_map = {}
-#         distinct_core_numbers = []
-#         for v in temp_core:
-#             if(temp_core[v] not in core_to_vertex_map):
-#                 core_to_vertex_map[temp_core[v]] = [v]
-#                 distinct_core_numbers.append(temp_core[v])
-#             else:
-#                 core_to_vertex_map[temp_core[v]].append(v)
-
-#         distinct_core_numbers.sort(reverse=True)
-
-#         for core_number in distinct_core_numbers[:100]:
-#             print('core: ',core_number)
-#             # result[k][core_number] = {}
-#             tmp = {}
-#             for v in random.choices(core_to_vertex_map[core_number], k=100):
-#                 # if(core_number not in result):
-#                 #     result[core_number] = [propagate(H, starting_vertex=v, p = p, num_iterations = 100, original_n = original_n, verbose = verbose)[0]]
-#                 # else:
-#                 #     result[core_number].append(propagate(H, starting_vertex=v, p = p, num_iterations = 100, original_n = original_n, verbose = verbose)[0])
-#                 # result[k][core_number][v] = avg_shortest_pathlen(v,H,100)
-#                 tmp[v] = avg_shortest_pathlen(v,H,100)
-#                 if (verbose):
-#                     print('v ',v,' avg SP length: ',result[k][core_number][v])
-#             result[k][core_number] = np.mean(list(tmp.values()))
-#     # save_dict(result,'data/output/'+name+'_sp.pkl')
-#     save_dict(result,'../output/'+name+'_sp3.pkl')
+    save_dict(result,'../output/'+name+'_sp4.pkl')
 
 
 def run_intervention_exp(H, core, p = 0.5, verbose = False):
@@ -265,21 +221,7 @@ def run_intervention_exp(H, core, p = 0.5, verbose = False):
     strongly_induced_eids = H.get_stronglyinduced_edgeIds(nodes_with_max_core)
     if verbose:
         print('# potential edges to delete: ',len(strongly_induced_eids))
-    # # for eid in ['nill'] +  strongly_induced_eids:
-    # for eid in ['nill'] + random.choices(strongly_induced_eids, k = 10):
-    #     print(eid)
-    # # for eid in [3,4]:
-    #     temp_H = deepcopy(H)
-    #     if(eid != "nill"):
-    #         temp_H.del_edge(eid)
-    #     temp_core = {}
-    #     for node in temp_H.nodes():
-    #         temp_core[node] = core[node]
-    #     # print(eid, H.get_edge_byindex(eid), temp_H.nodes(), len(temp_H.nodes()))
-    #     result[eid] = propagate_for_all_vertices(temp_H, temp_core, p = p, verbose=verbose)
     
-    # print(result)
-
     # Top-k edge-deletion intervention strategy. 
     temp_core = {}
     for node in H.nodes():
@@ -287,22 +229,7 @@ def run_intervention_exp(H, core, p = 0.5, verbose = False):
         # print(eid, H.get_edge_byindex(eid), temp_H.nodes(), len(temp_H.nodes()))
     result['nill'] = propagate_for_all_vertices(H, temp_core, p = p, original_n = len(all_nodes), verbose=verbose)
     
-    # max_e = 15
-    # todelete = [] 
-    # for eid in random.choices(strongly_induced_eids, k = max_e):
-    #     todelete.append(eid)
     
-    # print('will delete: ',todelete)
-    # temp_H = deepcopy(H)
-    # for i in range(0,max_e,5):
-    #     for eid in todelete[i:i+5]:
-    #         print('deleting ',eid)
-    #         temp_H.del_edge(eid)
-    #     temp_core = {}
-    #     for node in temp_H.nodes():
-    #         temp_core[node] = core[node]   
-    #     result['top'+str(i+5)] = propagate_for_all_vertices(temp_H, temp_core, p = p, verbose=verbose)
-
     # Random k% edge-deletion intervention strategy TODO
     for eperc in [5,10,15]:
         len_dele = int(len(temp_core)* eperc/100.0)

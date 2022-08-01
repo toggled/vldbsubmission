@@ -45,6 +45,7 @@ if(args.sir or args.sir_exp2 or args.sir_exp3 or args.sir_exp3_explanation or ar
 
     # Loading/saving to file
     os.system("mkdir -p tests/tmp")
+    os.system("mkdir -p ../output/")
     fname = "tests/tmp/" + args.dataset + "_" + args.algo + ".pkl"
     if(not os.path.isfile(fname)):
         hgDecompose = HGDecompose()
@@ -102,18 +103,20 @@ if(args.sir or args.sir_exp2 or args.sir_exp3 or args.sir_exp3_explanation or ar
     entry['result'] = None
     entry['timestep_results'] = None  
     entry['intervention_results'] = None 
+
+    
     
     if(args.sir):
         entry['result'] = propagate_for_all_vertices(H, core_base, p = float(args.prob), verbose=args.verbose)
         result = pd.DataFrame()
         result = result.append(entry, ignore_index=True)
-        result.to_csv('output/propagation_result.csv', header=False,
+        result.to_csv('../output/propagation_result.csv', header=False,
                             index=False, mode='a')
     elif(args.sir_exp2):
         entry['timestep_results'] = propagate_for_random_seeds(H, core_base, p = float(args.prob), verbose=args.verbose)
         result = pd.DataFrame()
         result = result.append(entry, ignore_index=True)
-        result.to_csv('output/propagation_result.csv', header=False,
+        result.to_csv('../output/propagation_result.csv', header=False,
                             index=False, mode='a')
     elif(args.sir_exp3):
         # entry['result'], entry['timestep_results'] = propagate_for_random_seeds(H, core_base, p = float(args.prob), verbose=args.verbose)
@@ -122,7 +125,7 @@ if(args.sir or args.sir_exp2 or args.sir_exp3 or args.sir_exp3_explanation or ar
         entry['intervention_results'] = run_intervention_exp2(args.dataset+"_"+args.algo, original_n = None, p = float(args.prob),verbose = args.verbose)
         result = pd.DataFrame()
         result = result.append(entry, ignore_index=True)
-        result.to_csv('data/output/propagation_result_recursive_delinner_'+args.dataset+"_"+args.algo+'3.csv', header=False,
+        result.to_csv('../output/propagation_result_recursive_delinner_'+args.dataset+"_"+args.algo+'3.csv', header=False,
                          index=False, mode='a')
     elif(args.sir_exp3_explanation):
         run_intervention_exp2_explain(args.dataset+"_"+args.algo,verbose = args.verbose)
@@ -137,7 +140,7 @@ if(args.sir or args.sir_exp2 or args.sir_exp3 or args.sir_exp3_explanation or ar
         print("\n")
         print(", ".join(["\'" + column + "\'" for column in result.columns.tolist()]))
 
-    os.system("mkdir -p output")
+    
     print(result)
     # result.to_csv('data/output/propagation_result_exp3.csv', header=False,
     #                         index=False, mode='a')

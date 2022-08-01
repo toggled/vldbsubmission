@@ -1,7 +1,7 @@
 import math
 import itertools
 import random
-from typing import final 
+# from typing import final 
 
 class Hypergraph:
     """ 

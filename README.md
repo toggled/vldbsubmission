@@ -35,7 +35,7 @@ output/ : Output folder that contains algorithm outputs.
   - `bash hgrun.sh` // Deactivate(Activate) load-balancing by setting lb=0(lb=1) 
 - Application I (Diffusion):
   - `cd python_src`
-  - `python distribution_SIS.py` / `./todo.sh`
+  - `bash todo.sh`
   - Run notebook `propagationPlots.ipynb`
 - Application II (Densest subhypergraph extraction)
   - `cd cpp_src`
