@@ -4,7 +4,7 @@ from copy import deepcopy
 from multiprocessing import Pool
 import os,pickle 
 from hgDecompose.utils import check_connectivity,component_sz,save_dict,avg_shortest_pathlen
-
+pkl_path = 'sirdata/'
 def propagate_for_all_vertices(H, core, num_vertex_per_core = 100, top_k = 100,  p = 0.5, num_iterations = 100, original_n = None, verbose=True):
 
 
@@ -60,7 +60,7 @@ def propagate_for_all_vertices(H, core, num_vertex_per_core = 100, top_k = 100, 
     return result
 
 def run_intervention_exp2(name, original_n, p = 0.5, verbose = False):
-    path = 'data/datasets/sirdata/'+name+'.pkl'
+    path = pkl_path+name+'.pkl'
     with open(os.path.join(path), 'rb') as handle:
         data = pickle.load(handle)
         print("loaded ",path)
@@ -94,7 +94,8 @@ def run_intervention_exp2(name, original_n, p = 0.5, verbose = False):
     return result 
 
 def run_intervention_exp2_explain(name, verbose = False):
-    path = 'data/datasets/sirdata/'+name+'.pkl'
+    # 'temp.pkl' => 
+    path = pkl_path+name+'.pkl'
     with open(os.path.join(path), 'rb') as handle:
         data = pickle.load(handle)
         print("loaded ",path)
@@ -134,7 +135,7 @@ def run_intervention_exp2_explain(name, verbose = False):
     save_dict(result,'data/output/'+name+'_comp3.pkl')
         
 def run_intervention_exp2_explain_splen(name, verbose = False):
-    path = 'data/datasets/sirdata/'+name+'.pkl'
+    path = pkl_path+name+'.pkl'
     with open(os.path.join(path), 'rb') as handle:
         data = pickle.load(handle)
         print("loaded ",path)
@@ -194,11 +195,10 @@ def run_intervention_exp2_explain_splen(name, verbose = False):
             result[k][core_number] = np.mean(list(tmp.values()))
     
 
-    print("Done, hurrah")
     save_dict(result,'data/output/'+name+'_sp4.pkl')
 
 def run_intervention_exp2_explain_splen_prev(name, verbose = False):
-    path = 'data/datasets/sirdata/'+name+'.pkl'
+    path = pkl_path+name+'.pkl'
     with open(os.path.join(path), 'rb') as handle:
         data = pickle.load(handle)
         print("loaded ",path)

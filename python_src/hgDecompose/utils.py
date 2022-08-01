@@ -110,11 +110,8 @@ def get_hg(dataset):
         # file location
         dataset_to_filename = {
             # real
-            "enron" : "data/datasets/real/Enron.hyp"
+            "enron" : "../data/datasets/real/Enron.hyp"
         }
-        # print(dataset_to_filename[dataset])
-        for key,val in scal_dataset_to_filename.items():
-            dataset_to_filename[key] = val 
 
         # # split by
         # dataset_to_split = {

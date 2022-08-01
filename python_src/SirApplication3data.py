@@ -22,7 +22,7 @@ def del_innercore(H, diction):
 
 def gen_nested_hypergraph():
     # Delete innermost core 10 times, each time operating on the hypergraph from previous iteration.
-    pathstring = "data/datasets/sirdata/"
+    pathstring = "sirdata/"
     output = {} 
     os.system('mkdir -p '+pathstring)
     os.system("mkdir -p tests/tmp")
@@ -60,10 +60,10 @@ def gen_nested_hypergraph():
     output[0] = {}
     output[0]['H'] = input_H
     output[0]['core'] = core_base 
-    output_core_fname = "tests/tmp/" + name + "_" + algoname + "_"+str(0)+".csv"
-    output_hg_fname = "tests/tmp/" + name + "_" + algoname + "_"+str(0)+".hyp"
-    writeHypergraphHg(output[0]['H'],output_hg_fname)
-    save_dictascsv(output[0]['core'],output_core_fname)
+    # output_core_fname = "tests/tmp/" + name + "_" + algoname + "_"+str(0)+".csv"
+    # output_hg_fname = "tests/tmp/" + name + "_" + algoname + "_"+str(0)+".hyp"
+    # writeHypergraphHg(output[0]['H'],output_hg_fname)
+    # save_dictascsv(output[0]['core'],output_core_fname)
 
     remainder_vertices = del_innercore(input_H, core_base)
     for i in range(1,level):
@@ -92,13 +92,13 @@ def gen_nested_hypergraph():
         output[i]['core'] = core_base
         remainder_vertices = del_innercore(output[i]['H'], core_base)
 
-        output_core_fname = "tests/tmp/" + name + "_" + algoname + "_"+str(i)+".csv"
-        output_hg_fname = "tests/tmp/" + name + "_" + algoname + "_"+str(i)+".hyp"
-        writeHypergraphHg(output[i]['H'],output_hg_fname)
-        save_dictascsv(output[i]['core'],output_core_fname)
+        # output_core_fname = "tests/tmp/" + name + "_" + algoname + "_"+str(i)+".csv"
+        # output_hg_fname = "tests/tmp/" + name + "_" + algoname + "_"+str(i)+".hyp"
+        # writeHypergraphHg(output[i]['H'],output_hg_fname)
+        # save_dictascsv(output[i]['core'],output_core_fname)
             
-    # with open(os.path.join(pathstring,name+'_'+algoname+'.pkl'), 'wb') as handle:
-    #         pickle.dump(output, handle, protocol= 4)
+    with open(os.path.join(pathstring,name+'_'+algoname+'.pkl'), 'wb') as handle:
+            pickle.dump(output, handle, protocol= 4)
 
 
 gen_nested_hypergraph()
