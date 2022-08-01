@@ -42,3 +42,4 @@ fig/
 main
 hgmain
 notebooks/.ipynb_checkpoints/
+python_src/.ipynb_checkpoints/
