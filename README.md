@@ -45,6 +45,10 @@ output/ : Output folder that contains algorithm outputs.
 - C++11
 - OpenMP 3.5 
 
-## Python requirements:
-- python 3.9
-- dependencies: disjoint-set (`pip install disjoint-set`)
+## Python and notebook requirements:
+- python 3.8 or above
+- dependencies: 
+  - disjoint-set (`pip install disjoint-set`)
+  - hypernetx (`pip install hypernetx`)
+  - pandas (`pip install pandas`)
+  - numpy (`pip install numpy`)

@@ -17,22 +17,17 @@ from copy import deepcopy
 
 # arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("-t", "--thread", help="index of thread", default=-1, type=int)
 parser.add_argument("-d", "--dataset", type=str, default="default")
 parser.add_argument("-a", "--algo", type=str, default="naive_nbr")
 parser.add_argument("-v", "--verbose", action='store_true')
-parser.add_argument("-s", "--param_s", help="parameter for improve2_nbr", default=1, type=int)
 parser.add_argument("--iterations", help="number of iterations", default=1, type=int)
-parser.add_argument("-nt", "--nthreads", help="number of threads for improve3_nbr", default=4, type=int)
-parser.add_argument("--sis", action='store_true')
-parser.add_argument("--sir", action='store_true')
-parser.add_argument("--sir_exp2", action='store_true')
-parser.add_argument("--sir_exp3", action='store_true') # intervention
-parser.add_argument("--sir_exp3_explanation", action = 'store_true')
-parser.add_argument("--sir_exp3_explanation_splen", action = 'store_true')
+parser.add_argument("-sir", "--sir", default=0, type=int)
+parser.add_argument("-sir_exp2", "--sir_exp2", default=0, type=int)
+parser.add_argument("-sir_exp3", "--sir_exp3", default=0, type=int) # intervention
+parser.add_argument("-sir_exp3_explanation", "--sir_exp3_explanation", default=0, type=int)
+parser.add_argument("-sir_exp3_explanation_splen", "--sir_exp3_explanation_splen", default=0, type=int)
 parser.add_argument("-p", "--prob", help="parameter for Probability", default= 0.3, type=float)
 parser.add_argument("-g", "--gamma", help="parameter for Probability", default= 0.01, type=float)
-
 args = parser.parse_args()
 
 # Pandemic propagation
@@ -126,7 +121,7 @@ if(args.sir or args.sir_exp2 or args.sir_exp3 or args.sir_exp3_explanation or ar
         result = pd.DataFrame()
         result = result.append(entry, ignore_index=True)
         result.to_csv('../output/propagation_result_recursive_delinner_'+args.dataset+"_"+args.algo+'3.csv', header=False,
-                         index=False, mode='a')
+                        index=False, mode='a')
     elif(args.sir_exp3_explanation):
         run_intervention_exp2_explain(args.dataset+"_"+args.algo,verbose = args.verbose)
         quit()
