@@ -567,14 +567,14 @@ int main (int argc, char *argv[]) {
     	printf("#Threads:%lu/Time:%f seconds/steps: %lu\n\n",working_threads, core_time,steps);
 	printf("Init time: %lf\n",init_time);
 	// write_core(A, N, init_nodes, node_index, node_index_index, "../output/"+std::string(argv[1]));
-	if (lbflag)	output["algo"] = "LocalP";
+	if (lbflag)	output["algo"] = "LocalP(B+CSR)2";
 	else	output["algo"] = "LocalP(nolb)";
     output["dataset"]=argv[1];
     output["num_threads"] = std::to_string(working_threads);
     output["execution time"]= std::to_string(init_time + core_time);
     output["total iteration"] = std::to_string(steps);
-	if (lbflag)	write_results(output);
-	else 	write_results(output,"../output/results_nolb.csv");
+	if (lbflag)	write_results(output,"../output/parout/results.csv");
+	else 	write_results(output,"../output/parout/results_nolb.csv");
 	
 	delete[] Elock;
 
