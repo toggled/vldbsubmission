@@ -11,6 +11,7 @@ Each line is a hyperedge consisting of comma separated node ids.
 
 ## Notebooks for plots and case-studies
 - plots.ipynb: Notebook for plots in the paper
+- python_src/propationPlots.ipynb: Notebook for Diffusion Application plots.
 - densest_subhypergraph.ipynb: Effectiveness analysis & plots for volume densests and degree densest subhypergraphs.
 - casestudyI.ipynb: Notebook for case study I (CORUM Protein complex)
 - casestudyII.ipynb: Notebook for case study II (Kenneth lay ego hypergraph)
@@ -52,3 +53,5 @@ output/ : Output folder that contains algorithm outputs.
   - hypernetx (`pip install hypernetx`)
   - pandas (`pip install pandas`)
   - numpy (`pip install numpy`)
+  - seaborn (`pip install seaborn`)
+  - matplotlib (`pip install matplotlib`)
