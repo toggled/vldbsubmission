@@ -33,7 +33,6 @@
 *.pyc
 
 data/
-output/
 .DS_Store
 .vscode/
 main.dSYM/

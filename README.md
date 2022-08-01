@@ -34,7 +34,8 @@ output/ : Output folder that contains algorithm outputs.
   - `cd par_src`
   - `bash hgrun.sh` // Deactivate(Activate) load-balancing by setting lb=0(lb=1) 
 - Application I (Diffusion):
-  - TODO
+  - `cd python_src`
+  - Run notebook `propagationPlots.ipynb`
 - Application II (Densest subhypergraph extraction)
   - `cd cpp_src`
   - `bash denseSrun.sh`
@@ -44,4 +45,5 @@ output/ : Output folder that contains algorithm outputs.
 - OpenMP 3.5 
 
 ## Python requirements:
-- python_src/requirements.txt
+- python 3.9
+- dependencies: disjoint-set
