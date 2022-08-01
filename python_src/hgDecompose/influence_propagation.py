@@ -94,6 +94,7 @@ def run_intervention_exp2(name, original_n, p = 0.5, verbose = False):
     return result 
 
 def run_intervention_exp2_explain(name, verbose = False):
+    """ COnnected components/reachable nodes """
     # 'temp.pkl' => 
     path = pkl_path+name+'.pkl'
     with open(os.path.join(path), 'rb') as handle:
@@ -135,6 +136,7 @@ def run_intervention_exp2_explain(name, verbose = False):
     save_dict(result,'data/output/'+name+'_comp3.pkl')
         
 def run_intervention_exp2_explain_splen(name, verbose = False):
+    """ SHortest path length """
     path = pkl_path+name+'.pkl'
     with open(os.path.join(path), 'rb') as handle:
         data = pickle.load(handle)
@@ -194,52 +196,51 @@ def run_intervention_exp2_explain_splen(name, verbose = False):
             # print(tmp)
             result[k][core_number] = np.mean(list(tmp.values()))
     
-
     save_dict(result,'data/output/'+name+'_sp4.pkl')
 
-def run_intervention_exp2_explain_splen_prev(name, verbose = False):
-    path = pkl_path+name+'.pkl'
-    with open(os.path.join(path), 'rb') as handle:
-        data = pickle.load(handle)
-        print("loaded ",path)
-    result = {}
-    for k in data:
-        # if (k!=2):
-        #     continue  
-        print('Core deletion#: ', k)
-        result[k] = {}
-        temp_core = data[k]['core']
-        H = data[k]['H']
-        print('N: ',len(H.inc_dict))
-        # check_connectivity(H)
-        # continue 
-        core_to_vertex_map = {}
-        distinct_core_numbers = []
-        for v in temp_core:
-            if(temp_core[v] not in core_to_vertex_map):
-                core_to_vertex_map[temp_core[v]] = [v]
-                distinct_core_numbers.append(temp_core[v])
-            else:
-                core_to_vertex_map[temp_core[v]].append(v)
+# def run_intervention_exp2_explain_splen_prev(name, verbose = False):
+#     path = pkl_path+name+'.pkl'
+#     with open(os.path.join(path), 'rb') as handle:
+#         data = pickle.load(handle)
+#         print("loaded ",path)
+#     result = {}
+#     for k in data:
+#         # if (k!=2):
+#         #     continue  
+#         print('Core deletion#: ', k)
+#         result[k] = {}
+#         temp_core = data[k]['core']
+#         H = data[k]['H']
+#         print('N: ',len(H.inc_dict))
+#         # check_connectivity(H)
+#         # continue 
+#         core_to_vertex_map = {}
+#         distinct_core_numbers = []
+#         for v in temp_core:
+#             if(temp_core[v] not in core_to_vertex_map):
+#                 core_to_vertex_map[temp_core[v]] = [v]
+#                 distinct_core_numbers.append(temp_core[v])
+#             else:
+#                 core_to_vertex_map[temp_core[v]].append(v)
 
-        distinct_core_numbers.sort(reverse=True)
+#         distinct_core_numbers.sort(reverse=True)
 
-        for core_number in distinct_core_numbers[:100]:
-            print('core: ',core_number)
-            # result[k][core_number] = {}
-            tmp = {}
-            for v in random.choices(core_to_vertex_map[core_number], k=100):
-                # if(core_number not in result):
-                #     result[core_number] = [propagate(H, starting_vertex=v, p = p, num_iterations = 100, original_n = original_n, verbose = verbose)[0]]
-                # else:
-                #     result[core_number].append(propagate(H, starting_vertex=v, p = p, num_iterations = 100, original_n = original_n, verbose = verbose)[0])
-                # result[k][core_number][v] = avg_shortest_pathlen(v,H,100)
-                tmp[v] = avg_shortest_pathlen(v,H,100)
-                if (verbose):
-                    print('v ',v,' avg SP length: ',result[k][core_number][v])
-            result[k][core_number] = np.mean(list(tmp.values()))
-    # save_dict(result,'data/output/'+name+'_sp.pkl')
-    save_dict(result,'data/output/'+name+'_sp3.pkl')
+#         for core_number in distinct_core_numbers[:100]:
+#             print('core: ',core_number)
+#             # result[k][core_number] = {}
+#             tmp = {}
+#             for v in random.choices(core_to_vertex_map[core_number], k=100):
+#                 # if(core_number not in result):
+#                 #     result[core_number] = [propagate(H, starting_vertex=v, p = p, num_iterations = 100, original_n = original_n, verbose = verbose)[0]]
+#                 # else:
+#                 #     result[core_number].append(propagate(H, starting_vertex=v, p = p, num_iterations = 100, original_n = original_n, verbose = verbose)[0])
+#                 # result[k][core_number][v] = avg_shortest_pathlen(v,H,100)
+#                 tmp[v] = avg_shortest_pathlen(v,H,100)
+#                 if (verbose):
+#                     print('v ',v,' avg SP length: ',result[k][core_number][v])
+#             result[k][core_number] = np.mean(list(tmp.values()))
+#     # save_dict(result,'data/output/'+name+'_sp.pkl')
+#     save_dict(result,'../output/'+name+'_sp3.pkl')
 
 
 def run_intervention_exp(H, core, p = 0.5, verbose = False):
