@@ -10,11 +10,12 @@ Our datasets can be downloaded from https://drive.google.com/file/d/1--B6vLUL1DF
 Each line is a hyperedge consisting of comma separated node ids. 
 
 ## Notebooks for plots and case-studies
-- plots.ipynb: Notebook for plots in the paper
-- python_src/propationPlots.ipynb: Notebook for Diffusion Application plots.
-- densest_subhypergraph.ipynb: Effectiveness analysis & plots for volume densests and degree densest subhypergraphs.
-- casestudyI.ipynb: Notebook for case study I (CORUM Protein complex)
-- casestudyII.ipynb: Notebook for case study II (Kenneth lay ego hypergraph)
+- notebooks/:
+  - plots.ipynb: Notebook for plots in the paper
+  - python_src/propationPlots.ipynb: Notebook for Diffusion Application plots.
+  - densest_subhypergraph.ipynb: Effectiveness analysis & plots for volume densests and degree densest subhypergraphs.
+  - casestudyI.ipynb: Notebook for case study I (CORUM Protein complex)
+  - casestudyII.ipynb: Notebook for case study II (Kenneth lay ego hypergraph)
 
 ## source codes
 - cpp_src/: 
@@ -25,7 +26,7 @@ Each line is a hyperedge consisting of comma separated node ids.
 - python_src/: Python code to run Application I (Diffusion).
 
 ## Output
-output/ : Output folder that contains algorithm outputs.
+output/: Output folder that contains algorithm outputs.
 
 ## How to run:
 - Sequential Algorithms: Peel, E-Peel, Local-core, Local-core+OptI, Local-core+OptI+II,Local-core+OptI+II+III and Local-core(opt): 
@@ -58,5 +59,5 @@ output/ : Output folder that contains algorithm outputs.
 
 ## Reproducing the plots:
   - Install python dependencies
-  - Download output.zip folder from  and extract in the repository folder.
+  - Download `output.zip` file from https://drive.google.com/file/d/1-1oZc-ajChoZkRu9C-4Vbw6VFGqB-YtO/view?usp=sharing and extract in the repository folder.
   - Run the notebooks plots.ipynb, python_src/propationPlots.ipynb, densest_subhypergraph.ipynb, casestudyI.ipynb and casestudyII.ipynb
