@@ -55,3 +55,8 @@ output/ : Output folder that contains algorithm outputs.
   - numpy (`pip install numpy`)
   - seaborn (`pip install seaborn`)
   - matplotlib (`pip install matplotlib`)
+
+## Reproducing the plots:
+  - Install python dependencies
+  - Download output.zip folder from  and extract in the repository folder.
+  - Run the notebooks plots.ipynb, python_src/propationPlots.ipynb, densest_subhypergraph.ipynb, casestudyI.ipynb and casestudyII.ipynb
