@@ -166,7 +166,6 @@ class HGDecompose():
         
 
         for k in range(1, max_degree + 1):
-
             while len(bucket.get(k, [])) != 0:
                 v = bucket[k].pop(0)  # get first element in the
 
@@ -174,25 +173,26 @@ class HGDecompose():
                     print("k:", k, "node:", v)
     
                 self.core[v] = k
-                temp_nodes = nodes[:] 
-                temp_nodes.remove(v) 
+                # temp_nodes = nodes[:] 
+                # temp_nodes.remove(v) 
+                nbr_v = H.neighbors(v)
 
                 start_subgraph_time = time()
-                H_temp = H.strong_subgraph(temp_nodes) # Store.... + executation time.. 
+                # H_temp = H.strong_subgraph(temp_nodes) # Store.... + executation time.. 
+                H.removeV_transform(v, False)
                 self.subgraph_time += time() - start_subgraph_time
                 self.num_subgraph_call += 1
 
 
 
                 # enumerating over all neighbors of v
-                for u in H.neighbors(v):  
-
+                for u in nbr_v:  
                     if(verbose):
                         print(self._node_to_degree)
                         print("Considering neighbor", u)
 
                     start_degree_call = time()
-                    degree_u = H_temp.degree(u)
+                    degree_u = H.degree(u)
                     self.degree_call_time  += time() - start_degree_call
                     self.num_degree_computation += 1
                     # How many times is neighborhood computation done? and executation time...
@@ -224,8 +224,8 @@ class HGDecompose():
                         print(bucket)
                         print()
 
-                nodes = temp_nodes
-                H = H_temp
+                # nodes = temp_nodes
+                # H = H_temp
 
 
         self.execution_time = time() - start_execution_time
