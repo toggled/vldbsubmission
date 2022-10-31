@@ -24,6 +24,7 @@ parser.add_argument("--iterations", help="number of iterations", default=1, type
 parser.add_argument("-sir", "--sir", default=0, type=int)
 parser.add_argument("-sir_exp2", "--sir_exp2", default=0, type=int)
 parser.add_argument("-sir_exp3", "--sir_exp3", default=0, type=int) # intervention
+parser.add_argument("-n", "--num_delete", type=int, default=20, help="how many vertices are deleted")
 parser.add_argument("-sir_exp3_explanation", "--sir_exp3_explanation", default=0, type=int)
 parser.add_argument("-sir_exp3_explanation_splen", "--sir_exp3_explanation_splen", default=0, type=int)
 parser.add_argument("-p", "--prob", help="parameter for Probability", default= 0.3, type=float)
@@ -117,7 +118,8 @@ if(args.sir or args.sir_exp2 or args.sir_exp3 or args.sir_exp3_explanation or ar
         # entry['result'], entry['timestep_results'] = propagate_for_random_seeds(H, core_base, p = float(args.prob), verbose=args.verbose)
         # entry['intervention_results'] = run_intervention_exp(H, core_base, p = float(args.prob),verbose = args.verbose)
         # entry['intervention_results'] = run_intervention_exp2(args.dataset+"_"+args.algo, original_n = len(H.nodes()), p = float(args.prob),verbose = args.verbose)
-        entry['intervention_results'] = run_intervention_exp2(args.dataset+"_"+args.algo, original_n = None, p = float(args.prob),verbose = args.verbose)
+        entry['intervention_results'] = run_intervention_exp2(args.dataset+"_"+args.algo + "_" + str(args.num_delete), original_n = None, p = float(args.prob),verbose = args.verbose)
+        entry['num delete'] = args.num_delete
         result = pd.DataFrame()
         result = result.append(entry, ignore_index=True)
         result.to_csv('../output/propagation_result_recursive_delinner_'+args.dataset+"_"+args.algo+'3.csv', header=False,

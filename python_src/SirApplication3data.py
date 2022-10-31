@@ -10,14 +10,31 @@ import networkx as nx
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--dataset", type=str, default="default")
 parser.add_argument("-a", "--algo", type=str, default="naive_nbr")
+parser.add_argument("-n", "--num_delete", type=int, default=20, help="how many vertices are deleted")
 parser.add_argument("-l", "--level", help="how many times innermost core is deleted", default=1, type=int)
+args = parser.parse_args()
+
 
 def del_innercore(H, diction):
     max_core = max(diction.values())
     remainder = {}
+    deleted = {}
     for k,v in diction.items():
         if v < max_core:
             remainder[k] = v 
+        else:
+            deleted[k] = v
+    deleted_list = list(deleted.keys())
+
+    print(len(deleted_list))
+    
+    # delete num_delete nodes only
+    num_delete_local = args.num_delete
+    if(num_delete_local > len(deleted_list)):
+        num_delete_local = len(deleted_list)
+    sampled_list = random.sample(deleted_list, len(deleted_list) - num_delete_local)
+    for k in sampled_list:
+        remainder[k] = deleted[k]
     return remainder
 
 def gen_nested_hypergraph():
@@ -26,7 +43,6 @@ def gen_nested_hypergraph():
     output = {} 
     os.system('mkdir -p '+pathstring)
     os.system("mkdir -p tests/tmp")
-    args = parser.parse_args()
     
     name = args.dataset
     algoname = args.algo
@@ -97,7 +113,7 @@ def gen_nested_hypergraph():
         # writeHypergraphHg(output[i]['H'],output_hg_fname)
         # save_dictascsv(output[i]['core'],output_core_fname)
             
-    with open(os.path.join(pathstring,name+'_'+algoname+'.pkl'), 'wb') as handle:
+    with open(os.path.join(pathstring,name+'_'+algoname + "_" + str(args.num_delete) +'.pkl'), 'wb') as handle:
             pickle.dump(output, handle, protocol= 4)
 
 
