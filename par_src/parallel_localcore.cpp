@@ -527,7 +527,6 @@ int main (int argc, char *argv[]) {
 	size_t* inc_edges_N = NULL;
 	size_t* inc_edges_F = NULL;
 	init_cores(hyperedges,min_e_hindex,llb,glb,init_nodes,node_index,Elock,&nbrs_N, &nbrs_F, &inc_edges_N, &inc_edges_F);
-	double init_time = omp_get_wtime() - start_init;
 	intintVec B;
 	intvec prefixsum_partition;
 	intvec node_index_index(node_index.size());
@@ -559,19 +558,20 @@ int main (int argc, char *argv[]) {
 	 }
 	B.resize(0);
 	B.shrink_to_fit();
-
+	double init_time = omp_get_wtime() - start_init;
     //core-computation
 	double core_start = omp_get_wtime();
 	size_t steps = compute_k_core(N, working_threads, A, node_index_index, min_e_hindex, Elock, prefixsum_partition, llb, glb, nbrs_N, nbrs_F, inc_edges_N,inc_edges_F,hyperedges, node_index, true);
 	double core_time = omp_get_wtime() - core_start;
-    	printf("#Threads:%lu/Time:%f seconds/steps: %lu\n\n",working_threads, core_time,steps);
+    printf("#Threads:%lu/Time:%f seconds/steps: %lu\n\n",working_threads, core_time,steps);
 	printf("Init time: %lf\n",init_time);
 	// write_core(A, N, init_nodes, node_index, node_index_index, "../output/"+std::string(argv[1]));
 	if (lbflag)	output["algo"] = "LocalP(B+CSR)2";
 	else	output["algo"] = "LocalP(nolb)";
     output["dataset"]=argv[1];
     output["num_threads"] = std::to_string(working_threads);
-    output["execution time"]= std::to_string(init_time + core_time);
+    output["execution time"]= std::to_string(core_time);
+	output["init_time"] = std::to_string(init_time);
     output["total iteration"] = std::to_string(steps);
 	if (lbflag)	write_results(output,"../output/parout/results.csv");
 	else 	write_results(output,"../output/parout/results_nolb.csv");
