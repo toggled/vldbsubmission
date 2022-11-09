@@ -243,7 +243,7 @@ void Peel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map<
         bucket[len_neighbors].insert(node);
     }
     clock_t e_tm = clock();
-    a.output["init_time"] = double(e_tm - start) / double(CLOCKS_PER_SEC);
+    a.output["init_time"] = std::to_string(double(e_tm - start) / double(CLOCKS_PER_SEC));
     for (size_t k=1; k<= num_nodes; k++){
         while (true){
             if (bucket[k].size()==0)    break;
@@ -376,7 +376,7 @@ void EPeel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map
         setlb[node] = true;
     }
     clock_t e_tm = clock();
-    a.output["init_time"] = double(e_tm - start) / double(CLOCKS_PER_SEC);
+    a.output["init_time"] = std::to_string(double(e_tm - start) / double(CLOCKS_PER_SEC));
 
     
     for (size_t k = lb1; k <= ub1; k++){
@@ -615,7 +615,7 @@ void local_core( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, s
         edges[M] = std::move(_tmp);
         M+=1;
     }
-    a.output["init_time"] = double(clock() - start) / double(CLOCKS_PER_SEC);
+    a.output["init_time"] = std::to_string(double(clock() - start) / double(CLOCKS_PER_SEC));
     // initialise core to a upper bound
     for (size_t i = 0; i < N; i++){
         pcore[i] = nbrsizes[i]; // initialize pcore
@@ -854,7 +854,7 @@ void local_core_OPTI( std::string dataset, std::map<size_t, strvec > &e_id_to_ed
             inc_edges_F[_index++] = i;
         }
     }
-    a.output["init_time"] = double(clock() - start) / double(CLOCKS_PER_SEC);
+    a.output["init_time"] = std::to_string(double(clock() - start) / double(CLOCKS_PER_SEC));
 
     // initialise core to a upper bound
     for (size_t i = 0; i < N; i++){
@@ -1090,7 +1090,7 @@ void local_core_OPTII( std::string dataset, std::map<size_t, strvec > &e_id_to_e
             inc_edges_F[_index++] = i;
         }
     }
-    a.output["init_time"] = double(clock() - start) / double(CLOCKS_PER_SEC);
+    a.output["init_time"] = std::to_string(double(clock() - start) / double(CLOCKS_PER_SEC));
     // initialise core to a upper bound
     for (size_t i = 0; i < N; i++){
         pcore[i] = nbrsizes[i]; // initialize pcore
@@ -1330,7 +1330,7 @@ void local_core_OPTIII( std::string dataset, std::map<size_t, strvec > &e_id_to_
             inc_edges_F[_index++] = i;
         }
     }
-    a.output["init_time"] = double(clock() - start) / double(CLOCKS_PER_SEC);
+    a.output["init_time"] = std::to_string(double(clock() - start) / double(CLOCKS_PER_SEC));
 
     // initialise core to a upper bound
     for (size_t i = 0; i < N; i++){
@@ -1624,7 +1624,7 @@ void local_core_OPTIV( std::string dataset, std::map<size_t, strvec > &e_id_to_e
             inc_edges_F[_index++] = i;
         }
     }
-    a.output["init_time"] = double(clock() - start) / double(CLOCKS_PER_SEC);
+    a.output["init_time"] = std::to_string(double(clock() - start) / double(CLOCKS_PER_SEC));
 
 
     // initialise core to a upper bound
