@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
             h.initialise();
             std::string alg;
             int iterations;
-            bool log = false;
+            // bool log = false;
             if (argc>=4){
                 alg = argv[3];
             }
@@ -39,21 +39,23 @@ int main(int argc, char *argv[])
             }
             else
             iterations = 1;
-            if(argc>=6){
-                std::string s = argv[5];
-                if(s[0]=='1') 
-                log = true;
-            }
+            // if(argc>=6){
+            //     std::string s = argv[5];
+            //     if(s[0]=='1') 
+            //     log = true;
+            // }
             std::cout << argv[2]<<" "<<argv[3]<<" "<<argv[4]<<" "<<argv[5]<<"\n";
-            if (alg == "kdcore"){  
-                Algorithm a(h);
-                local_kdcore(h.dataset, h.e_id_to_edge, h.inc_dict, h.init_nodes, a, log);
-                a.output["num_threads"] = std::to_string(num_threads);
-                a.write_results();
-                a.writecore();
-                // a.writelog();
-            }
-                
+            std::cout<<"Iter: "<<iterations<<"\n";
+            for(int i=1;i<=iterations;i++){
+                if (alg == "kdcore"){  
+                    Algorithm a(h);
+                    local_kdcore(h.dataset, h.e_id_to_edge, h.inc_dict, h.init_nodes, a);
+                    a.output["num_threads"] = std::to_string(num_threads);
+                    a.write_results();
+                    a.writecore();
+                    // a.writelog();
+                }
+            }                
         }
     }
 }

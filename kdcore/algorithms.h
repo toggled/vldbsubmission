@@ -55,7 +55,7 @@ class Algorithm{
     void writelog();
     void writeNbrQ();
 };
-void local_kdcore( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, std::map<std::string, std::set<size_t> > &inc_dict, strvec &init_nodes, Algorithm& a, bool log); 
+void local_kdcore( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, std::map<std::string, std::set<size_t> > &inc_dict, strvec &init_nodes, Algorithm& a); 
 
 
 #endif

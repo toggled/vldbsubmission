@@ -13,9 +13,10 @@ for dataset in "${dset[@]}"
 do
     for algo in "${algorithms[@]}"
     do
-        ./kdmain 1 $dataset $algo $it $log
+        ./kdmain 1 $dataset $algo $it
         echo "------------" 
     done 
 done
 
-# output order: algo,dataset,execution time,init_time,num_threads,total iteration(p),total iteration(s)
+# output order (results.csv): algo,dataset,execution time,init_time,num_threads,total iteration(p),total iteration(s)
+# output order (kdcore.csv): node id, primary core, secondary core.
