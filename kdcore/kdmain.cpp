@@ -12,16 +12,11 @@ int main(int argc, char *argv[])
 {
     if (argc >= 2)
     {
-        std::istringstream iss( argv[1] );
-        int num_threads;
-
-        if (iss >> num_threads)
-        {
-            std::cout << num_threads<<"\n";
             Hypergraph h;
             if (argc>=3){
                 getHg(argv[2],h);
                 h.dataset = argv[2];
+
             }
             std::string init_type = "nbr"; // or "lub" (local upper bound)
             h.initialise();
@@ -30,6 +25,7 @@ int main(int argc, char *argv[])
             // bool log = false;
             if (argc>=4){
                 alg = argv[3];
+                std::cout<<argv[2]<<" - "<<argv[3]<<"\n";
             }
             else{
                alg = "Peel";
@@ -48,15 +44,15 @@ int main(int argc, char *argv[])
             std::cout<<"Iter: "<<iterations<<"\n";
             for(int i=1;i<=iterations;i++){
                 if (alg == "kdcore"){  
+                    std::cout<<"alg==kdcore\n";
                     Algorithm a(h);
                     local_kdcore(h.dataset, h.e_id_to_edge, h.inc_dict, h.init_nodes, a);
-                    a.output["num_threads"] = std::to_string(num_threads);
+                    // a.output["num_threads"] = std::to_string(num_threads);
                     a.write_results();
                     a.writecore();
                     // a.writelog();
                 }
             }                
         }
-    }
 }
     

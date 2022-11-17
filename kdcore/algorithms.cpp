@@ -377,7 +377,7 @@ void local_kdcore( std::string dataset, std::map<size_t, strvec > &e_id_to_edge,
         // printf("%d processing: %d\n",omp_get_thread_num(),i);
         pcore[i] = nbrsizes[i]; // initialize pcore
         llb[i] = std::max(llb[i],glb);
-        score[i] = inc_edges[i].size();
+        score[i] = inc_edges_N[i+1]-inc_edges_N[i];
     }
     intvec hn(N);
     intvec gn(N);
