@@ -1,6 +1,6 @@
 #!/bin/bash
 export OMP_WAIT_POLICY=active
-export OMP_DYNAMIC=false
+export OMP_DYNAMIC=true
 export OMP_PROC_BIND=true
 
 #g++ -std=c++11 -fopenmp -o hgmain parallel_localcore.cpp    #ubuntu_cpp
