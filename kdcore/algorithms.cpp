@@ -22,9 +22,9 @@ void Algorithm::writecore(){
     // std::cout << "core: \n";
     std::string file = "../output/"+output["algo"]+"_"+hg.dataset+".csv";
     std::stringstream ss;
-    // for(auto node: hg.init_nodes){
-    //     ss << node <<","<<std::to_string(core[node])<<","<<std::to_string(secondcore[node])<<"\n";
-    // }
+    for(auto node: hg.init_nodes){
+         ss << node <<","<<std::to_string(core[node])<<","<<std::to_string(secondcore[node])<<"\n";
+    }
     std::ofstream out(file.c_str());
     if(out.fail())
     {
