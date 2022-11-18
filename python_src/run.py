@@ -8,7 +8,7 @@ import networkx as nx
 # from hgDecompose.newhgDecompose import HGDecompose
 from hgDecompose.optimizedhgDecompose import HGDecompose
 from hgDecompose.utils import get_hg,check_connectivity,writeHypergraphHg
-from hgDecompose.influence_propagation import propagate_for_all_vertices, propagate_for_random_seeds, run_intervention_exp2,run_intervention_exp2_explain,run_intervention_exp2_explain_splen
+from hgDecompose.influence_propagation import propagate_for_all_vertices, propagate_for_random_seeds, run_intervention_exp2,run_intervention_exp2_explain,run_intervention_exp2_explain_splen, propagate_for_all_vertices_for_kd
 import argparse
 import pandas as pd
 import pickle
@@ -22,6 +22,7 @@ parser.add_argument("-a", "--algo", type=str, default="naive_nbr")
 parser.add_argument("-v", "--verbose", action='store_true')
 parser.add_argument("--iterations", help="number of iterations", default=1, type=int)
 parser.add_argument("-sir", "--sir", default=0, type=int)
+parser.add_argument("-sir_kd", "--sir_kd", default=0, type=int)
 parser.add_argument("-sir_exp2", "--sir_exp2", default=0, type=int)
 parser.add_argument("-sir_exp3", "--sir_exp3", default=0, type=int) # intervention
 parser.add_argument("-n", "--num_delete", type=int, default=20, help="how many vertices are deleted")
@@ -32,7 +33,7 @@ parser.add_argument("-g", "--gamma", help="parameter for Probability", default= 
 args = parser.parse_args()
 
 # Pandemic propagation
-if(args.sir or args.sir_exp2 or args.sir_exp3 or args.sir_exp3_explanation or args.sir_exp3_explanation_splen):
+if(args.sir or args.sir_kd or args.sir_exp2 or args.sir_exp3 or args.sir_exp3_explanation or args.sir_exp3_explanation_splen):
 
     input_H = get_hg(args.dataset)
 
@@ -85,6 +86,8 @@ if(args.sir or args.sir_exp2 or args.sir_exp3 or args.sir_exp3_explanation or ar
     assert not (args.sir and args.sir_exp2)
     if(args.sir):
         entry['exp'] = "sir"
+    elif(args.sir_kd):
+        entry['exp'] = "sir_kd"
     elif(args.sir_exp2):
         entry['exp'] = "sir_exp2"
     elif(args.sir_exp3):
@@ -119,6 +122,8 @@ if(args.sir or args.sir_exp2 or args.sir_exp3 or args.sir_exp3_explanation or ar
         # entry['intervention_results'] = run_intervention_exp(H, core_base, p = float(args.prob),verbose = args.verbose)
         # entry['intervention_results'] = run_intervention_exp2(args.dataset+"_"+args.algo, original_n = len(H.nodes()), p = float(args.prob),verbose = args.verbose)
         entry['intervention_results'] = run_intervention_exp2(args.dataset+"_"+args.algo + "_" + str(args.num_delete), original_n = None, p = float(args.prob),verbose = args.verbose)
+        import pprint
+        pprint.pprint(entry['intervention_results'])
         entry['num delete'] = args.num_delete
         result = pd.DataFrame()
         result = result.append(entry, ignore_index=True)
@@ -130,6 +135,23 @@ if(args.sir or args.sir_exp2 or args.sir_exp3 or args.sir_exp3_explanation or ar
     elif(args.sir_exp3_explanation_splen):
         run_intervention_exp2_explain_splen(args.dataset+"_"+args.algo,verbose = args.verbose)
         quit()
+    elif(args.sir_kd):
+        import pandas as pd
+        kd_result = pd.read_csv("../data/kdcore_" + args.dataset + ".csv", header=None)
+        kd_result.columns = ['vertex', 'k', 'd']
+        # kd_result.sort_values(by=['k', 'd'], ascending=False, inplace=True)
+
+        kd = {} # a dictionary, where key = (k, d) and value is a list of vertex belonging to that (k, d) core
+        for key, item in kd_result.groupby(['k', 'd'], as_index=False):
+            # print(item[''])
+            assert len(item['vertex'].unique()) == item.shape[0]
+            kd[key] = list(item['vertex'].unique())
+       
+        entry['result'] = propagate_for_all_vertices_for_kd(H, kd, p = float(args.prob), verbose=args.verbose)
+        result = pd.DataFrame()
+        result = result.append(entry, ignore_index=True)
+        result.to_csv('../output/propagation_result.csv', header=False,
+                            index=False, mode='a')
     result = pd.DataFrame()
     result = result.append(entry, ignore_index=True)
     if(args.verbose): 
