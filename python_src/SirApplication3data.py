@@ -27,12 +27,15 @@ def del_innercore(H, diction):
     deleted_list = list(deleted.keys())
 
     print(len(deleted_list))
+    # quit()
     
     # delete num_delete nodes only
     num_delete_local = args.num_delete
     if(num_delete_local > len(deleted_list)):
         num_delete_local = len(deleted_list)
     sampled_list = random.sample(deleted_list, len(deleted_list) - num_delete_local)
+    # print(sampled_list)
+    # quit()
     for k in sampled_list:
         remainder[k] = deleted[k]
     return remainder
@@ -49,6 +52,8 @@ def gen_nested_hypergraph():
     level = int(args.level)
 
     input_H = get_hg(name)
+    print(len(input_H.nodes()))
+    quit()
     fname = "tests/tmp/" + name + "_" + algoname + ".pkl"
     if(not os.path.isfile(fname)):
         hgDecompose = HGDecompose()

@@ -106,12 +106,14 @@ def get_hg(dataset):
 
         H = Hypergraph(dic)
 
-    elif(dataset in ['enron', "syn"]):
+    elif(dataset in ['enron', "syn", "klay"]):
         # file location
         dataset_to_filename = {
             # real
-            "enron" : "../data/datasets/real/Enron.hyp"
+            "enron" : "../data/datasets/real/Enron.hyp",
+            "klay" : "../data/klay_s.hyp"
         }
+        
 
         # # split by
         # dataset_to_split = {
