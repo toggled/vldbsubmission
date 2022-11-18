@@ -82,8 +82,7 @@ def propagate_for_all_vertices_for_kd(H, kd_core, num_vertex_per_core=100, top_k
                 result[core_number].append(propagate(
                     H, starting_vertex=str(v), p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose)[0])
             # print(component_sz(v))
-
-    
+   
     return result
 
 
