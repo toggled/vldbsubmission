@@ -8,7 +8,7 @@ declare -a dset=("congress" "enron" "dblp" "pref" "aminer")
 declare -a algorithms=("kdcore")
 
 it=1 # #Iterations to run each algorithm on each dataset.
-log=0 # logging is not implemented
+# log=0 # logging is not implemented
 for dataset in "${dset[@]}"
 do
     for algo in "${algorithms[@]}"

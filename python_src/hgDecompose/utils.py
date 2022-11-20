@@ -106,12 +106,13 @@ def get_hg(dataset):
 
         H = Hypergraph(dic)
 
-    elif(dataset in ['enron', "syn", "klay"]):
+    elif(dataset in ['enron', "syn", "klay","dblp"]):
         # file location
         dataset_to_filename = {
             # real
             "enron" : "../data/datasets/real/Enron.hyp",
-            "klay" : "../data/klay_s.hyp"
+            "klay" : "../data/klay_s.hyp",
+            "dblp" : "../data/datasets/real/DBLP.hyp"
         }
         
 

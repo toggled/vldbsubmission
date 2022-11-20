@@ -45,3 +45,4 @@ output/
 data/
 kdcore/kdmain
 bishwa/
+kdcore/*.csv

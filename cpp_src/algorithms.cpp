@@ -1285,7 +1285,6 @@ void local_core_OPTIII( std::string dataset, std::map<size_t, strvec > &e_id_to_
     size_t* nbrs_F = (size_t*)malloc(sz_init_nbrs*sizeof(size_t));
 
     size_t glb = std::numeric_limits<size_t>::max();
-    size_t gub = std::numeric_limits<size_t>::min();
 
     int _i = 1, _index=0;
     for (auto node : init_nodes){
@@ -1297,7 +1296,6 @@ void local_core_OPTIII( std::string dataset, std::map<size_t, strvec > &e_id_to_
             sz+=1;
         }
         glb = std::min(glb, sz);
-        gub = std::max(gub, sz);
     }
     end4 = clock();
 
@@ -1567,7 +1565,6 @@ void local_core_OPTIV( std::string dataset, std::map<size_t, strvec > &e_id_to_e
     size_t* nbrs_F = (size_t*)malloc(sz_init_nbrs*sizeof(size_t));
 
     size_t glb = std::numeric_limits<size_t>::max();
-    size_t gub = std::numeric_limits<size_t>::min();
     // #pragma omp parallel for default(none) shared(init_nodes,node_index,init_nbr,nbrs)
     int _i = 1, _index=0;
     for (auto node : init_nodes){
@@ -1581,7 +1578,6 @@ void local_core_OPTIV( std::string dataset, std::map<size_t, strvec > &e_id_to_e
         }
         // nbrs[node_index[node]] = std::move(_tmp);
         glb = std::min(glb, sz);
-        gub = std::max(gub, sz);
     }
     // nbrs_N[N]++;
     end4 = clock();

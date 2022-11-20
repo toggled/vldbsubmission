@@ -246,6 +246,42 @@ size_t core_correct_OPTIV(size_t inc_edges_F[], size_t inc_edges_N[],intvec& min
         return core_u;
 }
 
+bool LCCSAT_check(intvec& inc_edges_u, std::vector<intvec>&edges, size_t u_id, size_t core_u, intvec &hn){
+
+    std::set <size_t> Nplus;
+    for (auto e_id :inc_edges_u){
+        bool flag = false;
+        for(auto v:edges[e_id]){
+            if(hn[v]<core_u){
+                flag = true;
+                break;
+            }
+        }
+        if(!flag){
+            for(auto v:edges[e_id]){
+                Nplus.insert(v);
+            }
+        }
+    }
+    auto sz_Nplus = Nplus.size();
+    if (sz_Nplus>0){
+        if (sz_Nplus-1 >= core_u)
+            return true;
+        else
+            return false;
+    }
+    else
+        return false;
+}
+size_t core_correct(intvec& inc_edges_u, std::vector<intvec>&edges, size_t u_id, size_t core_u, intvec &hn){   // This function is used in optimised local_correct_optIII
+        // """ Finds the correct \hat{h} by traversing in descending order from core_u, core_u-1,...,until correct."""
+        core_u = core_u - 1; 
+        while (LCCSAT_check(inc_edges_u, edges, u_id, core_u, hn) == false) {
+            core_u = core_u - 1;
+        }
+
+        return core_u;
+}
 void local_kdcore( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, std::map<std::string, std::set<size_t> > &inc_dict, strvec &init_nodes, Algorithm& a){
     std::cout<<"start of local_kdcore\n";
     a.output["algo"] = "kdcore";
@@ -255,9 +291,13 @@ void local_kdcore( std::string dataset, std::map<size_t, strvec > &e_id_to_edge,
     size_t N = init_nodes.size();
     intvec pcore(N); //
     intvec score(N); //
+    std::set<size_t> A; // Initialization for gaberts algorithm.
     // strIntMap node_index; //key = node id (string), value = array index of node (integer)
     strInthashMap node_index; // (use hashtable instead of dictionary => Faster on large |V| datasets.)
-    for(size_t i = 0; i<N; i++) node_index[init_nodes[i]] = i; // initialize node_index
+    for(size_t i = 0; i<N; i++) {
+        node_index[init_nodes[i]] = i; // initialize node_index
+        A.insert(i); /* Initializatoin for gaberts Alg.*/
+    }
     intvec nbrsizes(N); //
     // std::map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours.
     std::unordered_map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
@@ -311,7 +351,6 @@ void local_kdcore( std::string dataset, std::map<size_t, strvec > &e_id_to_edge,
     size_t* nbrs_F = (size_t*)malloc(sz_init_nbrs*sizeof(size_t));
 
     size_t glb = std::numeric_limits<size_t>::max();
-    size_t gub = std::numeric_limits<size_t>::min();
     int _i = 1, _index=0;
     for (auto node : init_nodes){
         nbrs_N[_i] = nbrs_N[_i-1] + init_nbr[node].size();
@@ -324,7 +363,6 @@ void local_kdcore( std::string dataset, std::map<size_t, strvec > &e_id_to_edge,
         }
         // nbrs[node_index[node]] = std::move(_tmp);
         glb = std::min(glb, sz);
-        gub = std::max(gub, sz);
     }
 
 
@@ -371,6 +409,11 @@ void local_kdcore( std::string dataset, std::map<size_t, strvec > &e_id_to_edge,
     }
     a.output["init_time"] = std::to_string(double(clock() - start) / double(CLOCKS_PER_SEC));
     start = clock();
+    
+    intvec hn(N);
+    intvec gn(N);
+    size_t iterations = 0;
+
     // initialise core to a upper bound
     // #pragma omp parallel for default(none) shared(nbrsizes,pcore,N,glb,llb)
     for (size_t i = 0; i < N; i++){
@@ -379,9 +422,7 @@ void local_kdcore( std::string dataset, std::map<size_t, strvec > &e_id_to_edge,
         llb[i] = std::max(llb[i],glb);
         score[i] = inc_edges_N[i+1]-inc_edges_N[i];
     }
-    intvec hn(N);
-    intvec gn(N);
-    size_t iterations = 0;
+    
     while (1){
         iterations+=1;
         bool flag = true;
@@ -417,8 +458,60 @@ void local_kdcore( std::string dataset, std::map<size_t, strvec > &e_id_to_edge,
         if (flag)
             break;
     }
-    a.output["total iteration(p)"] = std::to_string(iterations);
 
+    // while (1){
+    //     iterations+=1;
+    //     // std::cout<<"iteration: "<<iteration<<"\n";
+    //     // for(size_t i=0; i<N; i++)
+    //     // {
+    //     //     auto node = hg.init_nodes[i];
+    //     //     std::cout << i<< ": "<< node << "->"<< pcore[i] <<"\n";
+    //     // }
+        
+    //     bool flag = true;
+    //     // compute h-index and update core
+    //     for(size_t i = 0; i<N; i++){
+    //         intvec vals(nbrsizes[i]);
+    //         size_t ii=0;
+    //         for (auto u_id : nbrs[i]){
+    //             vals[ii++] = pcore[u_id];
+    //         }
+    //         size_t H_value = hIndex(vals);
+    //         if (H_value < pcore[i]) 
+    //         hn[i] = H_value;
+    //         else hn[i] = pcore[i];
+    //     }
+        
+    //     for (size_t i = 0; i<N; i++){
+    //         bool lccsat = LCCSAT_check(inc_edges[i],edges,i,hn[i],hn);
+    //         if (lccsat == false){ 
+    //             flag = false;   //Why this step
+    //             auto hhatn = core_correct(inc_edges[i],edges,i,hn[i],hn);
+    //             pcore[i]  = hhatn;
+    //         }else{
+    //             pcore[i] = hn[i];
+    //         }
+    //     }
+    //     // time_t end1 = clock();
+    //     // if (log){
+    //     //     strstrMap h0;
+    //     //     for(int i=0;i<N;i++){
+    //     //         h0[init_nodes[i]] = std::to_string(pcore[i]);
+    //     //     }
+    //     //     h0["Time"] = std::to_string(double(end1 - start_main) / double(CLOCKS_PER_SEC));
+    //     //     a.hnlog.push_back(h0);
+    //     // }
+    //     if (flag)
+    //         break;
+    
+    // }
+
+    a.output["total iteration(p)"] = std::to_string(iterations);
+    // for(size_t i = 0; i< M; i++){
+    //     size_t _min = N+1;      //Why M+1 and why calculate 
+    //     for (auto u_id: edges[i])   _min = std::min(_min,pcore[u_id]);
+    //     min_e_hindex[i] = _min;
+    // }
     // Compute secondary core-numbers
     iterations = 0;
     intIntMap eid_minh;
@@ -469,6 +562,47 @@ void local_kdcore( std::string dataset, std::map<size_t, strvec > &e_id_to_edge,
         }
         if (flag)   break;
      }
+
+    // /* Apply gaberts algorithm. */
+    // while (A.size()){
+    //     iterations+=1;
+    //     // compute h-index and update core
+    //     std::set<size_t> Ap;
+    //     for(auto i: A){
+    //         bool local_flag = false;
+    //         intvec vals;
+    //         for(auto e_id: inc_edges[i]){
+    //             if (min_e_hindex[e_id]>=pcore[i]){
+    //                 size_t min_h = std::numeric_limits<size_t>::max();
+    //                 for(auto u: edges[e_id]){
+    //                     if (u!=i){
+    //                         min_h = std::min(min_h,score[u]);
+    //                     }    
+    //                 }
+    //                 vals.push_back(min_h);
+    //             }
+    //         }
+    //         auto tmp = hIndex(vals);
+    //         if (tmp!=score[i])  {
+    //             local_flag = true;
+    //         }
+    //         score[i] = tmp;
+    //         if (local_flag){
+    //             Ap.insert(i);
+    //             // Insert all neighors j of i such that
+    //             // pcore[j] >= pcore[i] and edge containing i,j has min-p hindex >= pcore[i]
+    //             for(auto e_id: inc_edges[i]){
+    //                 if (min_e_hindex[e_id]>=pcore[i]){
+    //                     for(auto u:  edges[e_id]){
+    //                         if (u!=i)   Ap.insert(u);
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     A = std::move(Ap);
+    // }
+
     a.output["total iteration(s)"] = std::to_string(iterations);
 
     end = clock();
@@ -477,7 +611,7 @@ void local_kdcore( std::string dataset, std::map<size_t, strvec > &e_id_to_edge,
         auto node = init_nodes[i];
         a.core[node] = pcore[i];
         a.secondcore[node] = score[i];
-        std::cout <<node<<","<<a.core[node]<<","<<a.secondcore[node]<<"\n";
+        // std::cout <<node<<","<<a.core[node]<<","<<a.secondcore[node]<<"\n";
     }
     a.exec_time = double(end - start) / double(CLOCKS_PER_SEC);
     a.output["execution time"]= std::to_string(a.exec_time);

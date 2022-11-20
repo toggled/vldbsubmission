@@ -2,6 +2,7 @@
 #define UTILS_H
 #include <cstddef>
 #include "hypergraph.h"
+
 size_t hIndex(intvec & citations) {
         if(citations.empty())
             return 0;

@@ -77,7 +77,7 @@ if(args.sir or args.sir_kd or args.sir_exp2 or args.sir_exp3 or args.sir_exp3_ex
             hgDecompose = pickle.load(handle)
             core_base = hgDecompose.core
     
-    # quit()
+    quit()
     # print(core_base)
     entry = {}
     entry['dataset'] = args.dataset
