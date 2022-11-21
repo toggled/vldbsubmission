@@ -23,14 +23,25 @@ def propagate_for_all_vertices(H, core, num_vertex_per_core=100, top_k=100,  p=0
 
     distinct_core_numbers.sort(reverse=True)
 
+
+
     for core_number in distinct_core_numbers[:top_k]:
-        for v in random.choices(core_to_vertex_map[core_number], k=num_vertex_per_core):
+        # check size
+        v_sampled = None
+        if(len(core_to_vertex_map[core_number]) < num_vertex_per_core):
+            v_sampled = core_to_vertex_map[core_number]
+        else:
+            v_sampled = random.choices(core_to_vertex_map[core_number], k=num_vertex_per_core)
+
+        
+
+        for v in v_sampled:
             if(core_number not in result):
-                result[core_number] = [propagate(
-                    H, starting_vertex=v, p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose)[0]]
+                result[core_number] = [propagate2(
+                    H, starting_vertex=v, p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose)]
             else:
-                result[core_number].append(propagate(
-                    H, starting_vertex=v, p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose)[0])
+                result[core_number].append(propagate2(
+                    H, starting_vertex=v, p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose))
             # print(component_sz(v))
 
     # TODO: Parallelize this loop
@@ -56,14 +67,13 @@ def propagate_for_all_vertices(H, core, num_vertex_per_core=100, top_k=100,  p=0
     #     #     result[core_number] = [propagate(H, starting_vertex=v, p = p, num_iterations = num_iterations, verbose = verbose)[0]]
     #     # else:
     #     #     result[core_number].append(propagate(H, starting_vertex=v, p = p, num_iterations = num_iterations, verbose = verbose)[0])
-
     return result
 
 def propagate_for_all_vertices_for_kd(H, kd_core, num_vertex_per_core=100, top_k=150,  p=0.5, num_iterations=10, original_n=None, verbose=True):
 
     result = {}  # Entry is a core number. value is a list of percentages of the infected population for all vertices with the same core number
 
-    distinct_core_numbers = sorted(kd_core.keys(), key=lambda tup: (tup[0],tup[1]), reverse=True)
+    distinct_core_numbers = sorted(kd_core.keys(), key=lambda tup: (tup[0], tup[1]), reverse=True)
     
     for core_number in distinct_core_numbers[:top_k]:
 
@@ -76,11 +86,11 @@ def propagate_for_all_vertices_for_kd(H, kd_core, num_vertex_per_core=100, top_k
 
         for v in v_sampled:
             if(core_number not in result):
-                result[core_number] = [propagate(
-                    H, starting_vertex=str(v), p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose)[0]]
+                result[core_number] = [propagate2(
+                    H, starting_vertex=str(v), p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose)]
             else:
-                result[core_number].append(propagate(
-                    H, starting_vertex=str(v), p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose)[0])
+                result[core_number].append(propagate2(
+                    H, starting_vertex=str(v), p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose))
             # print(component_sz(v))
    
     return result
@@ -390,6 +400,9 @@ def propagate2(H, starting_vertex, p=0.5, num_iterations=10, original_n=None, ve
     timestep_of_infection[starting_vertex] = 0
     recovered = []
 
+    # print(starting_vertex, len(H.neighbors(starting_vertex)))
+    # quit()
+
     for i in range(num_iterations):
         if(verbose):
             print('\n\n\nIteration:', i)
@@ -431,4 +444,5 @@ def propagate2(H, starting_vertex, p=0.5, num_iterations=10, original_n=None, ve
             infected.remove(v)
     # print(len_nodes, suscepted, len(suscepted))
     # print(len_nodes - len(suscepted), timestep_of_infection)
-    return len_nodes - len(suscepted), timestep_of_infection
+    # return len_nodes - len(suscepted), timestep_of_infection
+    return len_nodes - len(suscepted), len(H.neighbors(starting_vertex))
