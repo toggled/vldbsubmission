@@ -73,10 +73,11 @@ if(args.sir or args.sir_kd or args.sir_exp2 or args.sir_exp3 or args.sir_exp3_ex
             pickle.dump(hgDecompose, handle, protocol= 4)
 
     else:
-        # print("Retrieving saved file")
+        print("Retrieving saved file")
         with open(fname, 'rb') as handle:
             hgDecompose = pickle.load(handle)
             core_base = hgDecompose.core
+            quit()
     
     #quit()
     # print(core_base)

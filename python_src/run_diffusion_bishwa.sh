@@ -45,22 +45,13 @@
 
 
 
-python run.py --sir 1 --dataset default --max_propagation_time 1 --algo naive_nbr
-python run.py --sir 1 --dataset default --max_propagation_time 1 --algo naive_degree
-python run.py --sir 1 --dataset default --max_propagation_time 2 --algo naive_nbr
-python run.py --sir 1 --dataset default --max_propagation_time 2 --algo naive_degree
-# python run.py --sir 1 --dataset default --max_propagation_time 3 --algo naive_nbr
-# python run.py --sir 1 --dataset default --max_propagation_time 3 --algo naive_degree
+python run.py --sir 1 --dataset dblp --max_propagation_time 1 --algo naive_nbr
+python run.py --sir 1 --dataset dblp --max_propagation_time 1 --algo naive_degree
+# python run.py --sir 1 --dataset dblp --max_propagation_time 2 --algo naive_nbr
+# python run.py --sir 1 --dataset dblp --max_propagation_time 2 --algo naive_degree
 
-python run.py --sir_kd 1 --dataset default --max_propagation_time 1 --algo naive_nbr
-python run.py --sir_kd 1 --dataset default --max_propagation_time 1 --algo naive_degree
-python run.py --sir_kd 1 --dataset default --max_propagation_time 2 --algo naive_nbr
-python run.py --sir_kd 1 --dataset default --max_propagation_time 2 --algo naive_degree
+python run.py --sir_kd 1 --dataset dblp --max_propagation_time 1 --algo naive_nbr
+python run.py --sir_kd 1 --dataset dblp --max_propagation_time 1 --algo naive_degree
+# python run.py --sir_kd 1 --dataset dblp --max_propagation_time 2 --algo naive_nbr
+# python run.py --sir_kd 1 --dataset dblp --max_propagation_time 2 --algo naive_degree
 
-
-# python run.py --sir 1 --dataset enron --max_propagation_time 1 --algo naive_nbr
-# python run.py --sir 1 --dataset enron --max_propagation_time 1 --algo naive_degree
-# python run.py --sir 1 --dataset enron --max_propagation_time 2 --algo naive_nbr
-# python run.py --sir 1 --dataset enron --max_propagation_time 2 --algo naive_degree
-# python run.py --sir 1 --dataset enron --max_propagation_time 3 --algo naive_nbr
-# python run.py --sir 1 --dataset enron --max_propagation_time 3 --algo naive_degree
