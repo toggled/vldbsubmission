@@ -20,6 +20,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--dataset", type=str, default="default")
 parser.add_argument("-a", "--algo", type=str, default="naive_nbr")
 parser.add_argument("-v", "--verbose", action='store_true')
+parser.add_argument("--max_propagation_time", help="number of iterations in sir", default=100, type=int)
 parser.add_argument("--iterations", help="number of iterations", default=1, type=int)
 parser.add_argument("-sir", "--sir", default=0, type=int)
 parser.add_argument("-sir_kd", "--sir_kd", default=0, type=int)
@@ -101,12 +102,16 @@ if(args.sir or args.sir_kd or args.sir_exp2 or args.sir_exp3 or args.sir_exp3_ex
 
     entry['result'] = None
     entry['timestep_results'] = None  
-    entry['intervention_results'] = None 
+    entry['intervention_results'] = None
+    entry['max propagation time'] = None
 
     
     
     if(args.sir):
-        entry['result'] = propagate_for_all_vertices(H, core_base, p = float(args.prob), verbose=args.verbose)
+        entry['result'] = propagate_for_all_vertices(H, core_base, num_iterations=args.max_propagation_time, p = float(args.prob), verbose=args.verbose)
+        entry['max propagation time'] = args.max_propagation_time
+        # import pprint
+        # pprint.pprint(entry['result'])
         result = pd.DataFrame()
         result = result.append(entry, ignore_index=True)
         result.to_csv('../output/propagation_result.csv', header=False,
@@ -147,7 +152,8 @@ if(args.sir or args.sir_kd or args.sir_exp2 or args.sir_exp3 or args.sir_exp3_ex
             assert len(item['vertex'].unique()) == item.shape[0]
             kd[key] = list(item['vertex'].unique())
        
-        entry['result'] = propagate_for_all_vertices_for_kd(H, kd, p = float(args.prob), verbose=args.verbose)
+        entry['result'] = propagate_for_all_vertices_for_kd(H, kd, num_iterations=args.max_propagation_time, p = float(args.prob), verbose=args.verbose)
+        entry['max propagation time'] = args.max_propagation_time
         result = pd.DataFrame()
         result = result.append(entry, ignore_index=True)
         result.to_csv('../output/propagation_result.csv', header=False,
