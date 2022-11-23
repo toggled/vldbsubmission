@@ -283,6 +283,232 @@ size_t core_correct(intvec& inc_edges_u, std::vector<intvec>&edges, size_t u_id,
         return core_u;
 }
 void local_kdcore( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, std::map<std::string, std::set<size_t> > &inc_dict, strvec &init_nodes, Algorithm& a){
+    a.output["algo"] = "Local-kdcore";
+    clock_t start, end;
+    clock_t start1,end1,start2,end2,start3,end3;
+    /* Recording the starting clock tick.*/
+    start = clock();
+    size_t N = init_nodes.size();
+    intvec pcore(N); //
+    intvec score(N); //
+    // strIntMap node_index; //key = node id (string), value = array index of node (integer)
+    strInthashMap node_index; // (use hashtable instead of dictionary => Faster on large |V| datasets.)
+    for(size_t i = 0; i<N; i++) node_index[init_nodes[i]] = i; // initialize node_index
+    intvec nbrsizes(N); //
+    // std::map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours.
+    std::unordered_map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
+    std::vector<intvec> nbrs(N);
+    // compute initial neighbors and number of neighbors
+    start3 = clock();
+    for(auto elem: e_id_to_edge){
+        auto edge_sz = elem.second.size();
+        for(auto v_id: elem.second){
+            auto j = node_index[v_id];  // j is of type int
+        // initialise number of neighbours and set of neighbours
+            if ( init_nbr.find(v_id) == init_nbr.end() ) { // first insertion of v_id to init_nbr map
+                auto _tmp = strset();
+                int _tmp_sz = 0;
+                for (auto u: elem.second){
+                    if (u!=v_id){
+                        _tmp.insert(u);
+                        _tmp_sz+=1;
+                    }
+                }
+                init_nbr[v_id] = std::move(_tmp);
+                // init_nbrsize[v_id] =  _tmp.size();
+                nbrsizes[j] = _tmp_sz;
+            }
+            else{  // v_id exists in init_nbr map
+                auto _tmp = &init_nbr[v_id];
+                for (auto u: elem.second){
+                    if (u!=v_id){
+                        _tmp->insert(u);
+                    }
+                }
+                // init_nbrsize[v_id] = init_nbr[v_id].size();
+                nbrsizes[j] = init_nbr[v_id].size();
+            }
+        }
+    }
+    
+    end3 = clock();
+    time_t start4,end4;
+    start4 = clock();
+    for (auto node : init_nodes){
+        auto _tmp = intvec();
+        size_t sz = 0;
+        for (auto u: init_nbr[node]){
+            _tmp.push_back(node_index[u]);
+            sz+=1;
+        }
+        nbrs[node_index[node]] = std::move(_tmp);
+    }
+    end4 = clock();
+    /* Auxiliary variables for Parallelisation */
+    // edge_id is always in [0,M]
+    size_t M = 0;
+    std::vector< intvec > edges( e_id_to_edge.size() ); // i = edge_id, value = vector of vertices in e[edge_id]
+    std::vector<intvec> inc_edges(N); // i=node_id, value = vector of edge ids incident on node_id
+    for (auto elem: e_id_to_edge){
+        // construct edge
+        auto e_id = elem.first;
+        auto _tmp = intvec();
+
+        for(auto u: elem.second)  {
+            auto i = node_index[u];
+            _tmp.push_back(i); 
+            inc_edges[i].push_back(e_id);
+        }
+        edges[M] = std::move(_tmp);
+        M+=1;
+    }
+
+    // initialise core to a upper bound
+    for (size_t i = 0; i < N; i++){
+        pcore[i] = nbrsizes[i]; // initialize pcore
+        score[i] =  inc_edges[i].size();
+    }
+    intvec hn(N);
+    intvec gn(N);
+    size_t iterations = 0;
+    size_t correction_number=0;
+    time_t start_main, end_main;
+    start_main = clock();
+    while (1){
+        iterations+=1;
+        bool flag = true;
+        // compute h-index and update core
+        for(size_t i = 0; i<N; i++){
+            intvec vals(nbrsizes[i]);
+            size_t ii=0;
+            for (auto u_id : nbrs[i]){
+                vals[ii++] = pcore[u_id];
+            }
+            size_t H_value = hIndex(vals);
+            if (H_value < pcore[i]) 
+            hn[i] = H_value;
+            else hn[i] = pcore[i];
+        }
+        
+        start1 = clock();
+        for (size_t i = 0; i<N; i++){
+            bool lccsat = LCCSAT_check(inc_edges[i],edges,i,hn[i],hn);
+            if (lccsat == false){ 
+                flag = false;   //Why this step
+                auto hhatn = core_correct(inc_edges[i],edges,i,hn[i],hn);
+                pcore[i]  = hhatn;
+            }else{
+                pcore[i] = hn[i];
+            }
+        }
+        end1 = clock();
+        if (flag)
+            break;
+    
+    }
+    a.output["total iteration(p)"] = std::to_string(iterations);
+
+    // Compute secondary core-numbers
+    iterations = 0;
+    intIntMap eid_minh;
+    intIntMap eid_ming;
+
+    intIntMap monotonicity;
+     while (1){
+        iterations+=1;
+        // std::cout<<iterations<<"\n";
+        bool flag = true;
+
+        for (auto elem: e_id_to_edge){
+            auto e_id = elem.first;
+            auto _tmp = intvec();
+            size_t _mins = std::numeric_limits<size_t>::max();
+            size_t _minp = std::numeric_limits<size_t>::max();
+            bool same_pcore = true;
+            for(auto u: elem.second)  {
+                auto i = node_index[u];
+                _mins = std::min(_mins,score[i]);
+                _minp = std::min(_minp,pcore[i]);
+            }
+            eid_ming[e_id] = _mins;
+            eid_minh[e_id] = _minp;
+        }
+        intvec temp(N); 
+        for(size_t i = 0; i<N; i++){
+            // size_t degSubg=0;
+            intvec vals;
+            for (auto e_id : inc_edges[i]){
+                // if(eid_minh[e_id]>= pcore[i])   degSubg +=1;
+                if(eid_minh[e_id]>= pcore[i]) vals.push_back(eid_ming[e_id]);
+            }
+            // score[i] = degSubg;
+            auto Hvalue = hIndex(vals);
+            
+            if (Hvalue<= score[i]) {    
+                    if (iterations == 1) monotonicity[i] = true;
+                    else{
+                        if (!monotonicity[i]) {}
+                    }
+            }else{
+                monotonicity[i] = false;
+            }
+            // // size_t count = 0;
+            // // for (auto e_id : inc_edges[i]){ 
+            // //     if (eid_ming[e_id]>= Hvalue)    count++;
+            // // }
+            // // if (count != score[i]){
+            // if (Hvalue != score[i]){
+            //     score[i] = Hvalue,; 
+            //     // score[i] = count; 
+            //     flag = false;
+            // }
+            // temp[i] = std::min(Hvalue,score[i]);
+            temp[i] = Hvalue;
+            if (temp[i]!=score[i]) flag = false;
+        }
+        for(size_t i = 0; i<N; i++) {
+            score[i] = temp[i];
+        }
+        // if (log){
+        //      for(size_t i = 0; i<N; i++)
+        //         std::cout<< init_nodes[i]<<":"<< score[i]<<"\n";
+        // }
+
+        // for(size_t i = 0; i<N; i++){
+        //     intvec vals(inc_edges[i].size());
+        //     size_t ii=0;
+        //     for (auto e_id : inc_edges[i]){
+        //         vals[ii++] = eid_minh[e_id];
+        //     }
+        //     size_t H_value = hIndex(vals);
+        //     if (H_value < score[i]){
+        //         score[i] = H_value;
+        //         flag = false;
+        //     }
+        //     // else gn[i] = score[i];
+        //     std::cout<< init_nodes[i]<<":"<< score[i]<<"\n";
+        // }
+        if (flag)
+            break;
+     }
+    a.output["total iteration(s)"] = std::to_string(iterations);
+    end_main = clock();
+
+    end = clock();
+    for(size_t i=0; i<N; i++)
+    {
+        auto node = init_nodes[i];
+        a.core[node] = pcore[i];
+        a.secondcore[node] = score[i];
+        // std::cout << i<< ": "<< node << "->"<< pcore[i] <<" , "<<score[i]<<"\n";
+    }
+    // std::cout<<"monotonicity: \n";
+    // for(size_t i = 0; i<N; i++) std::cout<<monotonicity[i]<<" ";
+    // std::cout<<"\n";
+    a.exec_time = double(end - start) / double(CLOCKS_PER_SEC);
+    a.output["execution time"]= std::to_string(a.exec_time);
+}
+void local_kdcoreTest( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, std::map<std::string, std::set<size_t> > &inc_dict, strvec &init_nodes, Algorithm& a){
     std::cout<<"start of local_kdcore\n";
     a.output["algo"] = "kdcore";
     clock_t start, end;
