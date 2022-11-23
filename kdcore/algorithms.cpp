@@ -283,7 +283,7 @@ size_t core_correct(intvec& inc_edges_u, std::vector<intvec>&edges, size_t u_id,
         return core_u;
 }
 void local_kdcore( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, std::map<std::string, std::set<size_t> > &inc_dict, strvec &init_nodes, Algorithm& a){
-    a.output["algo"] = "Local-kdcore";
+    a.output["algo"] = "kdcore";
     clock_t start, end;
     clock_t start1,end1,start2,end2,start3,end3;
     /* Recording the starting clock tick.*/
@@ -362,7 +362,9 @@ void local_kdcore( std::string dataset, std::map<size_t, strvec > &e_id_to_edge,
         edges[M] = std::move(_tmp);
         M+=1;
     }
-
+    a.output["init_time"] = std::to_string(double(clock() - start) / double(CLOCKS_PER_SEC));
+    
+    start = clock();
     // initialise core to a upper bound
     for (size_t i = 0; i < N; i++){
         pcore[i] = nbrsizes[i]; // initialize pcore
@@ -413,7 +415,7 @@ void local_kdcore( std::string dataset, std::map<size_t, strvec > &e_id_to_edge,
     intIntMap eid_minh;
     intIntMap eid_ming;
 
-    intIntMap monotonicity;
+    // intIntMap monotonicity;
      while (1){
         iterations+=1;
         // std::cout<<iterations<<"\n";
@@ -444,14 +446,14 @@ void local_kdcore( std::string dataset, std::map<size_t, strvec > &e_id_to_edge,
             // score[i] = degSubg;
             auto Hvalue = hIndex(vals);
             
-            if (Hvalue<= score[i]) {    
-                    if (iterations == 1) monotonicity[i] = true;
-                    else{
-                        if (!monotonicity[i]) {}
-                    }
-            }else{
-                monotonicity[i] = false;
-            }
+            // if (Hvalue<= score[i]) {    
+            //         if (iterations == 1) monotonicity[i] = true;
+            //         else{
+            //             if (!monotonicity[i]) {}
+            //         }
+            // }else{
+            //     monotonicity[i] = false;
+            // }
             // // size_t count = 0;
             // // for (auto e_id : inc_edges[i]){ 
             // //     if (eid_ming[e_id]>= Hvalue)    count++;
