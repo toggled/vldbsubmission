@@ -56,6 +56,7 @@ class Algorithm{
     void writeNbrQ();
 };
 void local_kdcore( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, std::map<std::string, std::set<size_t> > &inc_dict, strvec &init_nodes, Algorithm& a); 
+void local_kdcoreTest( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, std::map<std::string, std::set<size_t> > &inc_dict, strvec &init_nodes, Algorithm& a);
 
 
 #endif
