@@ -31,7 +31,6 @@ size_t hIndex_CSR(size_t l, size_t r, size_t nbrs_f[], intvec & pcore) {
 
 void local_core_clique( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, std::map<std::string, std::set<size_t> > &inc_dict, strvec &init_nodes, Algorithm& a){   
     std::cout<<"local-core(clique)\n";
-    a.output["algo"] = "Clique-core";
     clock_t start, end;
     clock_t start1,end1,start2,end2,start3,end3;
     /* Recording the starting clock tick.*/
@@ -224,6 +223,7 @@ int main(int argc, char *argv[])
             // EPeel(h.dataset, h.e_id_to_edge, h.inc_dict, h.init_nodes, a);
             // else if(alg == "Local-core")
             local_core_clique(h.dataset, h.e_id_to_edge, h.inc_dict, h.init_nodes, a);
+            a.output["algo"] = alg;
             a.output["num_threads"] = std::to_string(num_threads);
             a.output["total iteration"] = std::to_string(1);
             // a.output["execution time"] += ck_time;
