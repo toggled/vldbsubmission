@@ -223,7 +223,7 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
     }
 	double init2 = omp_get_wtime() - start_init;
 
-	start_init = omp_get_wtime()
+	start_init = omp_get_wtime();
 	size_t M = 0;
     std::vector<intvec> inc_edges(N); // i=node_id, value = vector of edge ids incident on node_id
      for (size_t eid = 0; eid < hyperedges.size(); eid++){
@@ -278,11 +278,11 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
         }
     }
 	double initcsr2 = omp_get_wtime() - start_init;
-	std::cout<< "node_index: "<<init1<<" s";
-	std::cout<< "nbrsize & nbr construction from Edges: "<<init2<<" s";
-	std::cout << "incident edgeList construction: "<<init3<<" s";
-	std::cout << "nbr_N & nbr_F: "<<initcsr1<<" s";
-	std::cout<< "incedges_N & incedges_F: "<<initcsr2<<" s";
+	std::cout<< "node_index: "<<init1<<" s\n";
+	std::cout<< "nbrsize & nbr construction from Edges: "<<init2<<" s\n";
+	std::cout << "incident edgeList construction: "<<init3<<" s\n";
+	std::cout << "nbr_N & nbr_F: "<<initcsr1<<" s\n";
+	std::cout<< "incedges_N & incedges_F: "<<initcsr2<<" s\n";
 	return 1;
 }
 
@@ -370,8 +370,8 @@ int main (int argc, char *argv[]) {
 	// 	B[i].resize(0);	B[i].shrink_to_fit();
 	// 	//std::cout<<"done A for Thread "<<i<<"\n";
 	//  }
-	B.resize(0);
-	B.shrink_to_fit();
+	//B.resize(0);
+	//B.shrink_to_fit();
 	double init_time = omp_get_wtime() - start_init;
     //core-computation
 	// double core_start = omp_get_wtime();
