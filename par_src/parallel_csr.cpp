@@ -189,15 +189,24 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
     std::vector<intvec> nbrs(N);
     size_t sz_init_nbrs = 0;    // stores the number of initial neighbours for all vertices
     size_t sz_inc_edge = 0;     // stores the number of incident edges for all vertices
-
+	size_t M = 0;
+    std::vector<intvec> inc_edges(N); // i=node_id, value = vector of edge ids incident on node_id
 	start_init = omp_get_wtime();
     for (size_t eid = 0; eid < hyperedges.size(); eid++){
 		auto hype = hyperedges[eid];
         auto edge_sz = hype.size();
         sz_inc_edge += edge_sz;
+		
+		omp_init_lock(&(lock[eid]));
+        size_t _min = INT_MAX;
+
         for(auto v_id: hype){
             auto j = node_index[v_id];  
             llb[j] = std::max(edge_sz - 1,llb[j]);
+			size_t i = node_index[v_id];
+            inc_edges[i].push_back(eid);
+			min_e_hindex[M] = _min; // initialize edge h_indices,
+			M+=1;
             if ( init_nbr.find(v_id) == init_nbr.end() ) { // first insertion of v_id to init_nbr map
                 auto _tmp = intset();
                 int _tmp_sz = 0;
@@ -224,19 +233,7 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
 	double init2 = omp_get_wtime() - start_init;
 
 	start_init = omp_get_wtime();
-	size_t M = 0;
-    std::vector<intvec> inc_edges(N); // i=node_id, value = vector of edge ids incident on node_id
-     for (size_t eid = 0; eid < hyperedges.size(); eid++){
-		omp_init_lock(&(lock[eid]));
-		auto hype = hyperedges[eid];
-        size_t _min = INT_MAX;
-        for(auto u: hype)  {
-            size_t i = node_index[u];
-            inc_edges[i].push_back(eid);
-        }
-        min_e_hindex[M] = _min; // initialize edge h_indices,
-        M+=1;
-    }
+	
 	double init3 = omp_get_wtime() - start_init;
 
     for(auto i : init_nodes){
@@ -379,7 +376,7 @@ int main (int argc, char *argv[]) {
 	// double core_time = omp_get_wtime() - core_start;
     // printf("#Threads:%lu/Time:%f seconds/steps: %lu\n\n",working_threads, core_time,steps);
 	printf("Init time: %lf\n",init_time);
-	// // write_core(A, N, init_nodes, node_index, node_index_index, "../output/"+std::string(argv[1]));
+	// write_core(A, N, init_nodes, node_index,  node_index_index, "../output/"+std::string(argv[1]));
 	// if (lbflag)	output["algo"] = "LocalP(B+CSR)2";
 	// else	output["algo"] = "LocalP(nolb)";
     // output["dataset"]=argv[1];
