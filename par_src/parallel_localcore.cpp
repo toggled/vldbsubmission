@@ -377,6 +377,7 @@ int compute_k_core(size_t n, size_t working_threads, std::vector<graph_node>& A,
 	size_t continue_itr = 1;
 	while (continue_itr) {
 		D(std::cout <<"Superstep: "<<supersteps<<"\n");
+		// #pragma omp parallel num_threads(working_threads)
 		#pragma omp parallel schedule(dynamic) num_threads(working_threads)
 		{
 			size_t tid = omp_get_thread_num();
