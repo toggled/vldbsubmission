@@ -46,3 +46,5 @@ data/
 kdcore/kdmain
 bishwa/
 kdcore/*.csv
+existing/ckmain
+existing/bpmain

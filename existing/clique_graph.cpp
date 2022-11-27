@@ -236,19 +236,19 @@ int main(int argc, char *argv[])
             // a.writelog();
             // a.writeNbrQ();
             // std::cout << "core: \n";
-            // std::string file = "../output/core_"+a.output["algo"]+"_"+h.dataset+".csv";
-            // std::stringstream ss;
-            // for(auto elem: a.core)
-            // {
-            //     ss << elem.first << "," << elem.second << "\n";
-            // }
-            // std::ofstream out(file.c_str());
-            // if(out.fail())
-            // {
-            //     out.close();
-            // }
-            // out << ss.str();
-            // out.close();
+            std::string file = "../output/core_"+a.output["algo"]+"_"+h.dataset+".csv";
+            std::stringstream ss;
+            for(auto elem: a.core)
+            {
+                ss << elem.first << "," << elem.second << "\n";
+            }
+            std::ofstream out(file.c_str());
+            if(out.fail())
+            {
+                out.close();
+            }
+            out << ss.str();
+            out.close();
 
         }
     }
