@@ -8,7 +8,7 @@ from hgDecompose.utils import check_connectivity, component_sz, save_dict, avg_s
 pkl_path = 'sirdata/'
 
 
-def propagate_for_all_vertices(H, core, num_vertex_per_core=100, top_k=100,  p=0.5, num_iterations=100, original_n=None, verbose=True):
+def propagate_for_all_vertices(H, core, num_vertex_per_core=100, top_k=5,  p=0.5, num_iterations=100, original_n=None, verbose=True):
 
     result = {}  # Entry is a core number. value is a list of percentages of the infected population for all vertices with the same core number
 
@@ -69,7 +69,7 @@ def propagate_for_all_vertices(H, core, num_vertex_per_core=100, top_k=100,  p=0
     #     #     result[core_number].append(propagate(H, starting_vertex=v, p = p, num_iterations = num_iterations, verbose = verbose)[0])
     return result
 
-def propagate_for_all_vertices_for_kd(H, kd_core, num_vertex_per_core=100, top_k=150,  p=0.5, num_iterations=10, original_n=None, verbose=True):
+def propagate_for_all_vertices_for_kd(H, kd_core, num_vertex_per_core=100, top_k=5,  p=0.5, num_iterations=10, original_n=None, verbose=True):
 
     result = {}  # Entry is a core number. value is a list of percentages of the infected population for all vertices with the same core number
 
@@ -400,6 +400,8 @@ def propagate2(H, starting_vertex, p=0.5, num_iterations=10, original_n=None, ve
     timestep_of_infection[starting_vertex] = 0
     recovered = []
 
+    results_each_time_step = []
+
     # print(starting_vertex, len(H.neighbors(starting_vertex)))
     # quit()
 
@@ -442,7 +444,9 @@ def propagate2(H, starting_vertex, p=0.5, num_iterations=10, original_n=None, ve
         recovered += new_recovered
         for v in new_recovered:
             infected.remove(v)
+
+        results_each_time_step.append(len_nodes - len(suscepted))
     # print(len_nodes, suscepted, len(suscepted))
     # print(len_nodes - len(suscepted), timestep_of_infection)
     # return len_nodes - len(suscepted), timestep_of_infection
-    return len_nodes - len(suscepted), len(H.neighbors(starting_vertex))
+    return len_nodes - len(suscepted), len(H.neighbors(starting_vertex)), results_each_time_step
