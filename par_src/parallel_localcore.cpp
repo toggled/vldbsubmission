@@ -377,8 +377,7 @@ int compute_k_core(size_t n, size_t working_threads, std::vector<graph_node>& A,
 	size_t continue_itr = 1;
 	while (continue_itr) {
 		D(std::cout <<"Superstep: "<<supersteps<<"\n");
-		// #pragma omp parallel num_threads(working_threads)
-		#pragma omp parallel schedule(dynamic) num_threads(working_threads)
+		#pragma omp parallel num_threads(working_threads)
 		{
 			size_t tid = omp_get_thread_num();
 			size_t slice_start,slice_end;
@@ -391,7 +390,7 @@ int compute_k_core(size_t n, size_t working_threads, std::vector<graph_node>& A,
 				slice_end = prefixsum_partition[tid];
 			}
 			D(std::cout<<"Thread: "<<tid<<": "<<slice_start<<" "<<slice_end<<"\n");
-
+			#pragma omp for schedule(dynamic) // Comment out for not-dyn sched.
 			for (size_t z = slice_start; z<slice_end; z++) {
 				/* Want to stride across assigned blocks.
 				 */
