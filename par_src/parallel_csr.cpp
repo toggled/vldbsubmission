@@ -40,6 +40,7 @@ typedef std::unordered_map<size_t,size_t> intintMap;
 #endif
 	
 strstrMap dataset_to_filename = {
+
  			{"enron" , "../data/datasets/real/Enron.hyp"},
             {"congress" , "../data/datasets/real/congress-bills.hyp"},
             {"contact" , "../data/datasets/real/contact-primary-school.hyp"},
@@ -47,7 +48,8 @@ strstrMap dataset_to_filename = {
             {"aminer","../data/datasets/real/aminer.hyp"},
             {"bin_2" , "../data/datasets/synthetic/binomial_5_500_4_0.200000_sample_2_iter_1.txt"},
             {"bin_5" , "../data/datasets/synthetic/binomial_5_500_3_0.200000_sample_5_iter_1.txt"},
-            {"pref", "../data/datasets/synthetic/pref_1000000_3_1.hyp"}
+            {"pref", "../data/datasets/synthetic/pref_1000000_3_1.hyp"},
+			{"default" , "../data/datasets/synthetic/default.hyp"}
         };
 
 typedef struct edge {
@@ -138,6 +140,7 @@ bool write_results(const strstrMap &output, std::string file = "../output/result
 size_t IO_construct_hypergraph(const char *hg_file, intintVec &hyperedges, intvec& init_nodes, size_t &maxid){
 	/* Reads in the hypergraph file and initializes core values.
 	 */
+	bool log = true;
 	FILE *fp;
 	char *line = NULL;
 	size_t len = 0;
@@ -179,7 +182,8 @@ size_t IO_construct_hypergraph(const char *hg_file, intintVec &hyperedges, intve
 }
 size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size_t& glb, intvec& init_nodes, intintMap& node_index, omp_lock_t lock[], size_t** nbrs_N,size_t** nbrs_F, size_t** inc_edges_N, size_t** inc_edges_F, size_t working_threads) {
     /* Reads the incidence list init_nbr and initialises the data structure required for local core. */
-    size_t N = init_nodes.size();
+    bool log = false;
+	size_t N = init_nodes.size();
 	double start_init = omp_get_wtime();
     for(size_t i = 0; i<N; i++) node_index[init_nodes[i]] = i; // initialize node_index
 	double init1 = omp_get_wtime() - start_init;
@@ -247,32 +251,62 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
     (*nbrs_N)[0] = 0;
     *nbrs_F = (size_t*)malloc(sz_init_nbrs*sizeof(size_t));
 //    _index=0;
-	#pragma omp parallel for schedule(dynamic) num_threads(working_threads)
-    for (int _i = 1; _i<= N; _i ++){
+	int _i;
+	if (log){
+		std::cout<<"init_nodes: \n";
+		for(int i = 0; i<N; i++) 	std::cout<<init_nodes[i]<<" ";
+		std::cout<<"\n----\n";
+		std::cout<<"node_index: \n";
+		for(int i = 0; i<N; i++) 	std::cout<<node_index[init_nodes[i]]<<" ";
+		std::cout<<"\n----\n";
+	}
+    for (_i = 1; _i<= N; _i ++){
 		auto node = init_nodes[_i-1];
-		// std::cout<<node<<" "<<_i<<"/"<<N<<"\n";
+		// std::cout<<node<<" "<<_i<<"/"<<N<<": "<<omp_get_thread_num()<<"\n";
         (*nbrs_N)[_i] = (*nbrs_N)[_i-1] + init_nbr[node].size();
-    // }
-	// for (int _i = 1; _i< N; _i ++){
-		auto it = init_nbr[node].begin();
+		// std::cout<<node<<" "<<(*nbrs_N)[_i] <<" "<<_i<<"/"<<N<<": "<<omp_get_thread_num()<<"\n";
+    }
+	#pragma omp parallel for schedule(static) num_threads(working_threads)
+	for (int _i = 1; _i< N; _i ++){
+		auto node = init_nodes[_i-1];
+		// auto it = init_nbr[node].begin();
+				// std::cout<<node<<" "<<(*nbrs_N)[_i] <<" it "<<&it<<" "<<_i<<"/"<<N<<": "<<omp_get_thread_num()<<"\n";
+
 		// _tmp.push_back(node_index[u]);
 		// std::cout<<(*nbrs_N)[_i-1]<<" - "<<(*nbrs_N)[_i];
-		for(int _index = (*nbrs_N)[_i-1]; _index < (*nbrs_N)[_i]; _index++){
-			// std::cout<<"["<<*it<<" , "<<node_index[*it]<<"]";
-			(*nbrs_F)[_index] = node_index[*it];
-			it++;
+		// for(int _index = (*nbrs_N)[_i-1]; _index < (*nbrs_N)[_i]; _index++){
+		// 	// std::cout<<"["<<*it<<" , "<<node_index[*it]<<"]";
+		// 	(*nbrs_F)[_index] = node_index[*it];
+		// 	it++;
+		// }
+		int _index = (*nbrs_N)[_i-1];
+		for(auto u: init_nbr[node]){
+			(*nbrs_F)[_index++] = node_index[u];
 		}
 		// std::cout<<"\n";
 	}
+	#pragma omp barrier
 	double initcsr1 = omp_get_wtime() - start_init;
-	for(int i = 0; i<20; i++)	std::cout<<(*nbrs_F)[i]<<" ";
-	std::cout<<"\n";
+	if (log){
+		std::cout<<"nbrs_F\n";
+		for(int i = 0; i<20; i++)	std::cout<<(*nbrs_F)[i]<<" ";
+		std::cout<<"\n";
+		std::cout<<"init_nbr: \n";
+		for (int i = 0; i< N; i++){
+			auto node = init_nodes[i];
+			std::cout<< node<<": ";
+			for(auto u: init_nbr[node])	std::cout<<u<<" ";
+			std::cout<<"\n";
+		}
+		std::cout<<"---\n";
+	}
 	start_init = omp_get_wtime();
     // Calculate csr representation for incident edges
     *inc_edges_N = (size_t*)malloc((N+1)*sizeof(size_t));
     (*inc_edges_N)[0] = 0;
     *inc_edges_F = (size_t*)malloc(sz_inc_edge*sizeof(size_t));
-    int _i = 1, _index=0;
+    _i = 1;
+	int _index=0;
     for(auto node : init_nodes){
         size_t j = node_index[node];
         (*inc_edges_N)[_i] = (*inc_edges_N)[_i-1] + inc_edges[j].size();
