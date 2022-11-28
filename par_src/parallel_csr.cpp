@@ -20,6 +20,7 @@
 typedef  std::vector<std::string> strvec;
 typedef  std::vector<size_t> intvec;
 typedef  std::set<size_t> intset;
+typedef	 std::vector<intset> vintset;
 typedef std::map<std::string, std::string> strstrMap;
 // typedef std::map<size_t, intvec> intintVMap;
 typedef std::map<size_t, intset> intintSMap;
@@ -189,8 +190,9 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
 	double init1 = omp_get_wtime() - start_init;
 
     intvec nbrsizes(N); 
-    std::unordered_map<size_t, intset > init_nbr;  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
-    std::vector<intvec> nbrs(N);
+    // std::unordered_map<size_t, intset > init_nbr;  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
+	vintset init_nbr(N,intset({}));
+	std::vector<intvec> nbrs(N);
     size_t sz_init_nbrs = 0;    // stores the number of initial neighbours for all vertices
     size_t sz_inc_edge = 0;     // stores the number of incident edges for all vertices
 	size_t M = 0;
@@ -211,28 +213,31 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
             llb[j] = std::max(edge_sz - 1,llb[j]);
 			// size_t i = node_index[v_id];
             inc_edges[j].push_back(eid);
-            if (!traversed[j]) { // first insertion of v_id to init_nbr map
-                auto _tmp = intset();
-                int _tmp_sz = 0;
-                for (auto u: hype){
-                    if (u!=v_id){
-                        _tmp.insert(u);
-                        _tmp_sz+=1;
-                    }
-                }
-                init_nbr[v_id] = std::move(_tmp);
-                nbrsizes[j] = _tmp_sz;
-				traversed[j] = true;
-            }
-            else{  // v_id exists in init_nbr map
-                auto _tmp = &init_nbr[v_id];
+            // if (!traversed[j]) { // first insertion of v_id to init_nbr map
+            //     auto _tmp = intset();
+            //     int _tmp_sz = 0;
+            //     for (auto u: hype){
+            //         if (u!=v_id){
+            //             _tmp.insert(u);
+            //             _tmp_sz+=1;
+            //         }
+            //     }
+            //     // init_nbr[v_id] = std::move(_tmp);
+			// 	init_nbr[j] = std::move(_tmp);
+            //     nbrsizes[j] = _tmp_sz;
+			// 	traversed[j] = true;
+            // }
+            // else{  // v_id exists in init_nbr map
+                // auto _tmp = &init_nbr[v_id];
+				auto _tmp = &init_nbr[j];
                 for (auto u: hype){
                     if (u!=v_id){
                         _tmp->insert(u);
                     }
                 }
-                nbrsizes[j] = init_nbr[v_id].size();
-            }
+                // nbrsizes[j] = init_nbr[v_id].size();
+				nbrsizes[j] = init_nbr[j].size();
+            // }
         }
     }
 	double init2 = omp_get_wtime() - start_init;
@@ -242,8 +247,13 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
 	double init3 = omp_get_wtime() - start_init;
 
 	glb = INT_MAX;
-    for(auto i : init_nodes){
-		auto sz = init_nbr[i].size();
+    // for(auto i : init_nodes){
+	// 	auto sz = init_nbr[i].size();
+    //     sz_init_nbrs += sz;
+	// 	glb = std::min(glb, sz);
+    // }
+	for(int _i = 0; _i< N; _i ++){
+		auto sz = init_nbr[_i].size();
         sz_init_nbrs += sz;
 		glb = std::min(glb, sz);
     }
@@ -263,14 +273,14 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
 		std::cout<<"\n----\n";
 	}
     for (_i = 1; _i<= N; _i ++){
-		auto node = init_nodes[_i-1];
+		// auto node = init_nodes[_i-1];
 		// std::cout<<node<<" "<<_i<<"/"<<N<<": "<<omp_get_thread_num()<<"\n";
-        (*nbrs_N)[_i] = (*nbrs_N)[_i-1] + init_nbr[node].size();
+        (*nbrs_N)[_i] = (*nbrs_N)[_i-1] + init_nbr[_i-1].size();
 		// std::cout<<node<<" "<<(*nbrs_N)[_i] <<" "<<_i<<"/"<<N<<": "<<omp_get_thread_num()<<"\n";
     }
 	#pragma omp parallel for schedule(dynamic) num_threads(working_threads)
 	for (int _i = 1; _i< N; _i ++){
-		auto node = init_nodes[_i-1];
+		// auto node = init_nodes[_i-1];
 		// auto it = init_nbr[node].begin();
 				// std::cout<<node<<" "<<(*nbrs_N)[_i] <<" it "<<&it<<" "<<_i<<"/"<<N<<": "<<omp_get_thread_num()<<"\n";
 
@@ -282,12 +292,14 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
 		// 	it++;
 		// }
 		int _index = (*nbrs_N)[_i-1];
-		for(auto u: init_nbr[node]){
+		// for(auto u: init_nbr[node]){
+		for(auto u: init_nbr[_i-1]){
 			(*nbrs_F)[_index++] = node_index[u];
 		}
 		// std::cout<<"\n";
 	}
 	#pragma omp barrier
+	log = true;
 	double initcsr1 = omp_get_wtime() - start_init;
 	if (log){
 		std::cout<<"nbrs_F\n";
@@ -297,7 +309,7 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
 		for (int i = 0; i< N; i++){
 			auto node = init_nodes[i];
 			std::cout<< node<<": ";
-			for(auto u: init_nbr[node])	std::cout<<u<<" ";
+			for(auto u: init_nbr[i])	std::cout<<u<<" ";
 			std::cout<<"\n";
 		}
 		std::cout<<"---\n";
