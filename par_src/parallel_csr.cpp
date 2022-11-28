@@ -369,7 +369,7 @@ int main (int argc, char *argv[]) {
     }
 	size_t N = init_nodes.size();
     //initialisation 
-	double start_init = omp_get_wtime();
+	
 	std::vector<graph_node> A;	
 	intvec min_e_hindex( hyperedges.size() );// min edge h-index for optimization II
 	omp_lock_t *Elock = new omp_lock_t[hyperedges.size()]; // lock for hyperedges to apply optimization II without race-condition
@@ -380,6 +380,7 @@ int main (int argc, char *argv[]) {
 	size_t* nbrs_F = NULL;
 	size_t* inc_edges_N = NULL;
 	size_t* inc_edges_F = NULL;
+	double start_init = omp_get_wtime();
 	init_cores(hyperedges,min_e_hindex,llb,glb,init_nodes,node_index,Elock,&nbrs_N, &nbrs_F, &inc_edges_N, &inc_edges_F, working_threads);
 	// intintVec B;
 	// intvec prefixsum_partition;
