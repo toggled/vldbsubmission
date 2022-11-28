@@ -196,6 +196,7 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
 	size_t M = 0;
     std::vector<intvec> inc_edges(N); // i=node_id, value = vector of edge ids incident on node_id
 	start_init = omp_get_wtime();
+	std::vector<bool> traversed(N,false);
     for (size_t eid = 0; eid < hyperedges.size(); eid++){
 		auto hype = hyperedges[eid];
         auto edge_sz = hype.size();
@@ -210,7 +211,7 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
             llb[j] = std::max(edge_sz - 1,llb[j]);
 			// size_t i = node_index[v_id];
             inc_edges[j].push_back(eid);
-            if ( init_nbr.find(v_id) == init_nbr.end() ) { // first insertion of v_id to init_nbr map
+            if (!traversed[j]) { // first insertion of v_id to init_nbr map
                 auto _tmp = intset();
                 int _tmp_sz = 0;
                 for (auto u: hype){
