@@ -177,7 +177,7 @@ size_t IO_construct_hypergraph(const char *hg_file, intintVec &hyperedges, intve
 	}
     return 1;
 }
-size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size_t& glb, intvec& init_nodes, intintMap& node_index, omp_lock_t lock[], size_t** nbrs_N,size_t** nbrs_F, size_t** inc_edges_N, size_t** inc_edges_F ) {
+size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size_t& glb, intvec& init_nodes, intintMap& node_index, omp_lock_t lock[], size_t** nbrs_N,size_t** nbrs_F, size_t** inc_edges_N, size_t** inc_edges_F, size_t working_threads) {
     /* Reads the incidence list init_nbr and initialises the data structure required for local core. */
     size_t N = init_nodes.size();
 	double start_init = omp_get_wtime();
@@ -247,6 +247,7 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
     (*nbrs_N)[0] = 0;
     *nbrs_F = (size_t*)malloc(sz_init_nbrs*sizeof(size_t));
 //    _index=0;
+	#pragma omp parallel for schedule(dynamic) num_threads(working_threads)
     for (int _i = 1; _i<= N; _i ++){
 		auto node = init_nodes[_i-1];
 		// std::cout<<node<<" "<<_i<<"/"<<N<<"\n";
@@ -343,7 +344,7 @@ int main (int argc, char *argv[]) {
 	size_t* nbrs_F = NULL;
 	size_t* inc_edges_N = NULL;
 	size_t* inc_edges_F = NULL;
-	init_cores(hyperedges,min_e_hindex,llb,glb,init_nodes,node_index,Elock,&nbrs_N, &nbrs_F, &inc_edges_N, &inc_edges_F);
+	init_cores(hyperedges,min_e_hindex,llb,glb,init_nodes,node_index,Elock,&nbrs_N, &nbrs_F, &inc_edges_N, &inc_edges_F, working_threads);
 	// intintVec B;
 	// intvec prefixsum_partition;
 	// intvec node_index_index(node_index.size());
