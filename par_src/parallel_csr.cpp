@@ -266,7 +266,7 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
         (*nbrs_N)[_i] = (*nbrs_N)[_i-1] + init_nbr[node].size();
 		// std::cout<<node<<" "<<(*nbrs_N)[_i] <<" "<<_i<<"/"<<N<<": "<<omp_get_thread_num()<<"\n";
     }
-	#pragma omp parallel for schedule(static) num_threads(working_threads)
+	#pragma omp parallel for schedule(dynamic) num_threads(working_threads)
 	for (int _i = 1; _i< N; _i ++){
 		auto node = init_nodes[_i-1];
 		// auto it = init_nbr[node].begin();
