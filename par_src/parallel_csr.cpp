@@ -189,7 +189,7 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
     for(size_t i = 0; i<N; i++) node_index[init_nodes[i]] = i; // initialize node_index
 	double init1 = omp_get_wtime() - start_init;
 
-    intvec nbrsizes(N); 
+    // intvec nbrsizes(N); 
     // std::unordered_map<size_t, intset > init_nbr;  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
 	vintset init_nbr(N,intset({}));
 	std::vector<intvec> nbrs(N);
@@ -198,7 +198,7 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
 	size_t M = 0;
     std::vector<intvec> inc_edges(N); // i=node_id, value = vector of edge ids incident on node_id
 	start_init = omp_get_wtime();
-	std::vector<bool> traversed(N,false);
+	// std::vector<bool> traversed(N,false);
     for (size_t eid = 0; eid < hyperedges.size(); eid++){
 		auto hype = hyperedges[eid];
         auto edge_sz = hype.size();
@@ -230,13 +230,13 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
             // else{  // v_id exists in init_nbr map
                 // auto _tmp = &init_nbr[v_id];
 				auto _tmp = &init_nbr[j];
-                for (auto u: hype){
+                // for (auto u: hype){
                     if (u!=v_id){
                         _tmp->insert(u);
                     }
-                }
+                // }
                 // nbrsizes[j] = init_nbr[v_id].size();
-				nbrsizes[j] = init_nbr[j].size();
+				// nbrsizes[j] = init_nbr[j].size();
             // }
         }
     }
