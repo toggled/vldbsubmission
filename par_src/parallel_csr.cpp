@@ -203,8 +203,8 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
         for(auto v_id: hype){
             auto j = node_index[v_id];  
             llb[j] = std::max(edge_sz - 1,llb[j]);
-			size_t i = node_index[v_id];
-            inc_edges[i].push_back(eid);
+			// size_t i = node_index[v_id];
+            inc_edges[j].push_back(eid);
 			min_e_hindex[M] = _min; // initialize edge h_indices,
 			M+=1;
             if ( init_nbr.find(v_id) == init_nbr.end() ) { // first insertion of v_id to init_nbr map
@@ -371,7 +371,7 @@ int main (int argc, char *argv[]) {
 	//B.shrink_to_fit();
 	double init_time = omp_get_wtime() - start_init;
     //core-computation
-	// double core_start = omp_get_wtime();
+	// double core_start = omp_get_wtime();sta
 	// size_t steps = compute_k_core(N, working_threads, A, node_index_index, min_e_hindex, Elock, prefixsum_partition, llb, glb, nbrs_N, nbrs_F, inc_edges_N,inc_edges_F,hyperedges, node_index, true);
 	// double core_time = omp_get_wtime() - core_start;
     // printf("#Threads:%lu/Time:%f seconds/steps: %lu\n\n",working_threads, core_time,steps);
