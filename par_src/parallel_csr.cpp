@@ -199,14 +199,13 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
 		
 		omp_init_lock(&(lock[eid]));
         size_t _min = INT_MAX;
-
+		min_e_hindex[M] = _min; // initialize edge h_indices,
+		M+=1;
         for(auto v_id: hype){
             auto j = node_index[v_id];  
             llb[j] = std::max(edge_sz - 1,llb[j]);
 			// size_t i = node_index[v_id];
             inc_edges[j].push_back(eid);
-			min_e_hindex[M] = _min; // initialize edge h_indices,
-			M+=1;
             if ( init_nbr.find(v_id) == init_nbr.end() ) { // first insertion of v_id to init_nbr map
                 auto _tmp = intset();
                 int _tmp_sz = 0;
