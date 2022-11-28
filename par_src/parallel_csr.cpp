@@ -222,6 +222,7 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
                 }
                 init_nbr[v_id] = std::move(_tmp);
                 nbrsizes[j] = _tmp_sz;
+				traversed[j] = true;
             }
             else{  // v_id exists in init_nbr map
                 auto _tmp = &init_nbr[v_id];
