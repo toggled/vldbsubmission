@@ -235,36 +235,43 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
 	
 	double init3 = omp_get_wtime() - start_init;
 
+	glb = INT_MAX;
     for(auto i : init_nodes){
-        sz_init_nbrs += init_nbr[i].size();
+		auto sz = init_nbr[i].size();
+        sz_init_nbrs += sz;
+		glb = std::min(glb, sz);
     }
     
 	start_init = omp_get_wtime();
     *nbrs_N = (size_t*)malloc((N+1)*sizeof(size_t));
     (*nbrs_N)[0] = 0;
     *nbrs_F = (size_t*)malloc(sz_init_nbrs*sizeof(size_t));
-
-    glb = INT_MAX;
-    int _i = 1, _index=0;
-    for (auto node : init_nodes){
+//    _index=0;
+    for (int _i = 1; _i<= N; _i ++){
+		auto node = init_nodes[_i-1];
+		// std::cout<<node<<" "<<_i<<"/"<<N<<"\n";
         (*nbrs_N)[_i] = (*nbrs_N)[_i-1] + init_nbr[node].size();
-        _i++;
-        size_t sz = 0;
-        for (auto u: init_nbr[node]){
-            // _tmp.push_back(node_index[u]);
-            (*nbrs_F)[_index++] = node_index[u];
-            sz+=1;
-        }
-        glb = std::min(glb, sz);
-    }
+    // }
+	// for (int _i = 1; _i< N; _i ++){
+		auto it = init_nbr[node].begin();
+		// _tmp.push_back(node_index[u]);
+		// std::cout<<(*nbrs_N)[_i-1]<<" - "<<(*nbrs_N)[_i];
+		for(int _index = (*nbrs_N)[_i-1]; _index < (*nbrs_N)[_i]; _index++){
+			// std::cout<<"["<<*it<<" , "<<node_index[*it]<<"]";
+			(*nbrs_F)[_index] = node_index[*it];
+			it++;
+		}
+		// std::cout<<"\n";
+	}
 	double initcsr1 = omp_get_wtime() - start_init;
-
+	for(int i = 0; i<20; i++)	std::cout<<(*nbrs_F)[i]<<" ";
+	std::cout<<"\n";
 	start_init = omp_get_wtime();
     // Calculate csr representation for incident edges
     *inc_edges_N = (size_t*)malloc((N+1)*sizeof(size_t));
     (*inc_edges_N)[0] = 0;
     *inc_edges_F = (size_t*)malloc(sz_inc_edge*sizeof(size_t));
-    _i = 1, _index=0;
+    int _i = 1, _index=0;
     for(auto node : init_nodes){
         size_t j = node_index[node];
         (*inc_edges_N)[_i] = (*inc_edges_N)[_i-1] + inc_edges[j].size();
