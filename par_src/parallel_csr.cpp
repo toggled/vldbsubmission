@@ -181,12 +181,15 @@ size_t IO_construct_hypergraph(const char *hg_file, intintVec &hyperedges, intve
 	}
     return 1;
 }
-size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size_t& glb, intvec& init_nodes, intintMap& node_index, omp_lock_t lock[], size_t** nbrs_N,size_t** nbrs_F, size_t** inc_edges_N, size_t** inc_edges_F, size_t working_threads) {
+size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size_t& glb, intvec& init_nodes, intintMap& node_index, omp_lock_t lock[], size_t** nbrs_N,size_t** nbrs_F, size_t** inc_edges_N, size_t** inc_edges_F, size_t working_threads, omp_lock_t Vlock[]) {
     /* Reads the incidence list init_nbr and initialises the data structure required for local core. */
     bool log = false;
 	size_t N = init_nodes.size();
 	double start_init = omp_get_wtime();
-    for(size_t i = 0; i<N; i++) node_index[init_nodes[i]] = i; // initialize node_index
+    for(size_t i = 0; i<N; i++) {
+		node_index[init_nodes[i]] = i; // initialize node_index
+		omp_init_lock(&(Vlock[i]));
+	}
 	double init1 = omp_get_wtime() - start_init;
 
     // intvec nbrsizes(N); 
@@ -199,49 +202,71 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
     std::vector<intvec> inc_edges(N); // i=node_id, value = vector of edge ids incident on node_id
 	start_init = omp_get_wtime();
 	// std::vector<bool> traversed(N,false);
-    for (size_t eid = 0; eid < hyperedges.size(); eid++){
+    // for (size_t eid = 0; eid < hyperedges.size(); eid++){
+	// 	auto hype = hyperedges[eid];
+    //     auto edge_sz = hype.size();
+    //     sz_inc_edge += edge_sz;
+		
+	// 	omp_init_lock(&(lock[eid]));
+    //     size_t _min = INT_MAX;
+	// 	min_e_hindex[M] = _min; // initialize edge h_indices,
+	// 	M+=1;
+    //     for(auto v_id: hype){
+    //         auto j = node_index[v_id];  
+    //         llb[j] = std::max(edge_sz - 1,llb[j]);
+	// 		// size_t i = node_index[v_id];
+    //         inc_edges[j].push_back(eid);
+    //         // if (!traversed[j]) { // first insertion of v_id to init_nbr map
+    //         //     auto _tmp = intset();
+    //         //     int _tmp_sz = 0;
+    //         //     for (auto u: hype){
+    //         //         if (u!=v_id){
+    //         //             _tmp.insert(u);
+    //         //             _tmp_sz+=1;
+    //         //         }
+    //         //     }
+    //         //     // init_nbr[v_id] = std::move(_tmp);
+	// 		// 	init_nbr[j] = std::move(_tmp);
+    //         //     nbrsizes[j] = _tmp_sz;
+	// 		// 	traversed[j] = true;
+    //         // }
+    //         // else{  // v_id exists in init_nbr map
+    //             // auto _tmp = &init_nbr[v_id];
+	// 			auto _tmp = &init_nbr[j];
+    //             for (auto u: hype){
+    //                 if (u!=v_id){
+    //                     _tmp->insert(u);
+    //                 }
+    //             }
+    //             // nbrsizes[j] = init_nbr[v_id].size();
+	// 			// nbrsizes[j] = init_nbr[j].size();
+    //         // }
+    //     }
+    // }
+	size_t eid;
+	#pragma omp parallel for schedule(dynamic) num_threads(working_threads)
+	for (eid = 0; eid < hyperedges.size(); eid++){
 		auto hype = hyperedges[eid];
         auto edge_sz = hype.size();
-        sz_inc_edge += edge_sz;
-		
-		omp_init_lock(&(lock[eid]));
-        size_t _min = INT_MAX;
-		min_e_hindex[M] = _min; // initialize edge h_indices,
-		M+=1;
-        for(auto v_id: hype){
-            auto j = node_index[v_id];  
+        // sz_inc_edge += edge_sz;
+		min_e_hindex[eid] = INT_MAX;
+		for(auto v_id: hype){
+            auto j = node_index[v_id]; 
+			omp_set_lock(&(Vlock[j]));     
             llb[j] = std::max(edge_sz - 1,llb[j]);
-			// size_t i = node_index[v_id];
-            inc_edges[j].push_back(eid);
-            // if (!traversed[j]) { // first insertion of v_id to init_nbr map
-            //     auto _tmp = intset();
-            //     int _tmp_sz = 0;
-            //     for (auto u: hype){
-            //         if (u!=v_id){
-            //             _tmp.insert(u);
-            //             _tmp_sz+=1;
-            //         }
-            //     }
-            //     // init_nbr[v_id] = std::move(_tmp);
-			// 	init_nbr[j] = std::move(_tmp);
-            //     nbrsizes[j] = _tmp_sz;
-			// 	traversed[j] = true;
-            // }
-            // else{  // v_id exists in init_nbr map
-                // auto _tmp = &init_nbr[v_id];
-				auto _tmp = &init_nbr[j];
-                // for (auto u: hype){
-                    if (u!=v_id){
-                        _tmp->insert(u);
-                    }
-                // }
-                // nbrsizes[j] = init_nbr[v_id].size();
-				// nbrsizes[j] = init_nbr[j].size();
-            // }
-        }
-    }
+			inc_edges[j].push_back(eid);
+			auto _tmp = &init_nbr[j];
+			for (auto u: hype){
+				if (u!=v_id){
+					_tmp->insert(u);
+				}
+			}
+			omp_unset_lock(&(Vlock[j])); 
+		}
+	}	
+	#pragma omp barrier
 	double init2 = omp_get_wtime() - start_init;
-
+	
 	start_init = omp_get_wtime();
 	
 	double init3 = omp_get_wtime() - start_init;
@@ -257,6 +282,9 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
         sz_init_nbrs += sz;
 		glb = std::min(glb, sz);
     }
+	for (auto hyp: hyperedges){
+		sz_inc_edge += hyp.size();
+	}
     
 	start_init = omp_get_wtime();
     *nbrs_N = (size_t*)malloc((N+1)*sizeof(size_t));
@@ -299,7 +327,7 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
 		// std::cout<<"\n";
 	}
 	#pragma omp barrier
-	log = true;
+	// log = true;
 	double initcsr1 = omp_get_wtime() - start_init;
 	if (log){
 		std::cout<<"nbrs_F\n";
@@ -319,16 +347,24 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
     *inc_edges_N = (size_t*)malloc((N+1)*sizeof(size_t));
     (*inc_edges_N)[0] = 0;
     *inc_edges_F = (size_t*)malloc(sz_inc_edge*sizeof(size_t));
-    _i = 1;
-	int _index=0;
-    for(auto node : init_nodes){
-        size_t j = node_index[node];
-        (*inc_edges_N)[_i] = (*inc_edges_N)[_i-1] + inc_edges[j].size();
-        _i++;
-        for(size_t eid : inc_edges[j]){
-            (*inc_edges_F)[_index++] = eid;
-        }
-    }
+    // _i = 1;
+	// int _index=0;
+    // for(auto node : init_nodes){
+    //     size_t j = node_index[node];
+    //     (*inc_edges_N)[_i] = (*inc_edges_N)[_i-1] + inc_edges[j].size();
+    //     _i++;
+    //     for(size_t eid : inc_edges[j]){
+    //         (*inc_edges_F)[_index++] = eid;
+    //     }
+    // }
+	int _j;
+	#pragma omp parallel for schedule(dynamic) num_threads(working_threads)
+	for (_j = 1; _j<= N; _j++){
+		(*inc_edges_N)[_j] = (*inc_edges_N)[_j-1] + inc_edges[_j-1].size();
+		int _index = (*inc_edges_N)[_j-1];
+		for(size_t eid : inc_edges[_j-1])
+			(*inc_edges_F)[_index++] = eid;
+	}
 	double initcsr2 = omp_get_wtime() - start_init;
 	std::cout<< "node_index: "<<init1<<" s\n";
 	std::cout<< "nbrsize & nbr construction from Edges: "<<init2<<" s\n";
@@ -385,6 +421,7 @@ int main (int argc, char *argv[]) {
 	std::vector<graph_node> A;	
 	intvec min_e_hindex( hyperedges.size() );// min edge h-index for optimization II
 	omp_lock_t *Elock = new omp_lock_t[hyperedges.size()]; // lock for hyperedges to apply optimization II without race-condition
+	omp_lock_t *Vlock = new omp_lock_t[N];
 	intvec llb(N,0);
 	size_t glb;
 	intintMap node_index;
@@ -393,7 +430,7 @@ int main (int argc, char *argv[]) {
 	size_t* inc_edges_N = NULL;
 	size_t* inc_edges_F = NULL;
 	double start_init = omp_get_wtime();
-	init_cores(hyperedges,min_e_hindex,llb,glb,init_nodes,node_index,Elock,&nbrs_N, &nbrs_F, &inc_edges_N, &inc_edges_F, working_threads);
+	init_cores(hyperedges,min_e_hindex,llb,glb,init_nodes,node_index,Elock,&nbrs_N, &nbrs_F, &inc_edges_N, &inc_edges_F, working_threads, Vlock);
 	// intintVec B;
 	// intvec prefixsum_partition;
 	// intvec node_index_index(node_index.size());
@@ -444,6 +481,6 @@ int main (int argc, char *argv[]) {
 	// else 	write_results(output,"../output/parout/results_nolb.csv");
 	
 	delete[] Elock;
-
+	delete[] Vlock;
 	return 0;
 }
