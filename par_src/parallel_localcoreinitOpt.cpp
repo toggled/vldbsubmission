@@ -123,7 +123,7 @@ bool write_results(const strstrMap &output, std::string file = "../output/inresu
             ss<< i->second;
     }
     ss<<"\n";
-    
+    std::cout<<"\n";
 
     std::ofstream out(file.c_str(),std::ios::app);
     if(out.fail())
@@ -674,7 +674,7 @@ int main (int argc, char *argv[]) {
 	else
 		no_loadbalance(N,working_threads,B,prefixsum_partition,node_index_index, hyperedges,node_index,nbrs_N);
 	 size_t index = 0;
-	 std::cout<<"Allocating A:\n";
+	//  std::cout<<"Allocating A:\n";
 	 for (size_t i = 0; i< working_threads; i++){
 	 	for(size_t j=0; j<B[i].size();j++){
 	 		graph_node new_node;
@@ -692,7 +692,7 @@ int main (int argc, char *argv[]) {
 	 	}
 	 	prefixsum_partition.push_back(index);
 		B[i].resize(0);	B[i].shrink_to_fit();
-		std::cout<<"done A for Thread "<<i<<"\n";
+		// std::cout<<"done A for Thread "<<i<<"\n";
 	 }
 	// for(auto p: prefixsum_partition)	std::cout<<p<<"\n";
 	B.resize(0);
