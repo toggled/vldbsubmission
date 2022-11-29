@@ -525,7 +525,7 @@ int compute_k_core(size_t n, size_t working_threads, std::vector<graph_node>& A,
 				slice_end = prefixsum_partition[tid];
 			}
 			D(std::cout<<"Thread: "<<tid<<": "<<slice_start<<" "<<slice_end<<"\n");
-			#pragma omp for schedule(dynamic) // Comment  for not-dyn sched.
+			// #pragma omp for schedule(dynamic) // Comment  for not-dyn sched.
 			for (size_t z = slice_start; z<slice_end; z++) {
 				/* Want to stride across assigned blocks.
 				 */
@@ -704,7 +704,7 @@ int main (int argc, char *argv[]) {
 	double core_time = omp_get_wtime() - core_start;
     printf("#Threads:%lu/Time:%f seconds/steps: %lu\n\n",working_threads, core_time,steps);
 	printf("Init time: %lf\n",init_time);
-	// write_core(A, N, init_nodes, node_index, node_index_index, "../output/"+std::string(argv[1]));
+	write_core(A, N, init_nodes, node_index, node_index_index, "../output/parout/"+std::string(argv[1])+"_"+argv[2]);
 	if (lbflag)	output["algo"] = "LocalP(B+CSR)2";
 	else	output["algo"] = "LocalP(nolb)";
     output["dataset"]=argv[1];
