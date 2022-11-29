@@ -184,7 +184,7 @@ size_t IO_construct_hypergraph(const char *hg_file, intintVec &hyperedges, intve
 
 size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size_t& glb, intvec& init_nodes, intintMap& node_index, omp_lock_t lock[], size_t** nbrs_N,size_t** nbrs_F, size_t** inc_edges_N, size_t** inc_edges_F, size_t working_threads, omp_lock_t Vlock[]) {
     /* Reads the incidence list init_nbr and initialises the data structure required for local core. */
-    bool log = false;
+    // bool log = false;
 	size_t N = init_nodes.size();
 	double start_init = omp_get_wtime();
     for(size_t i = 0; i<N; i++) {
@@ -359,9 +359,10 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
     //     }
     // }
 	int _j;
+	for (_j = 1; _j<= N; _j++)
+		(*inc_edges_N)[_j] = (*inc_edges_N)[_j-1] + inc_edges[_j-1].size();
 	#pragma omp parallel for schedule(dynamic) num_threads(working_threads)
 	for (_j = 1; _j<= N; _j++){
-		(*inc_edges_N)[_j] = (*inc_edges_N)[_j-1] + inc_edges[_j-1].size();
 		int _index = (*inc_edges_N)[_j-1];
 		for(size_t eid : inc_edges[_j-1])
 			(*inc_edges_F)[_index++] = eid;
