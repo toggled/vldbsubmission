@@ -282,7 +282,7 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
 	// }
     // intvec nbrsizes(N); 
     // std::unordered_map<size_t, intset > init_nbr;  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
-	start_init = omp_get_wtime();
+	double start_init = omp_get_wtime();
 	vintset init_nbr(N, intset({}));
 	std::vector<intvec> nbrs(N);
         size_t sz_init_nbrs = 0;    // stores the number of initial neighbours for all vertices
@@ -490,7 +490,7 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
 	// for(int i = 0; i<sz_init_nbrs; i++) std::cout<< (*nbrs_F)[i]<<" ";
 	// std::cout<<"\n";
 
-	std::cout<< "node_index: "<<init1<<" s\n";
+	// std::cout<< "node_index: "<<init1<<" s\n";
 	std::cout<< "nbrsize & nbr construction from Edges: "<<init2<<" s\n";
 	//std::cout << "incident edgeList construction: "<<init3<<" s\n";
 	std::cout<< "prefix sum time: "<<prefixsum_tm<<" s\n";
