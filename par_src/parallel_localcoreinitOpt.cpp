@@ -17,9 +17,12 @@
 #include <functional> 
 #include <cassert>
 #include <unordered_map>
+#include <unordered_set>
+#include <array>
 typedef  std::vector<std::string> strvec;
 typedef  std::vector<size_t> intvec;
 typedef  std::set<size_t> intset;
+typedef	 std::vector<intset> vintset;
 typedef std::map<std::string, std::string> strstrMap;
 // typedef std::map<size_t, intvec> intintVMap;
 typedef std::map<size_t, intset> intintSMap;
@@ -47,7 +50,8 @@ strstrMap dataset_to_filename = {
             {"aminer","../data/datasets/real/aminer.hyp"},
             {"bin_2" , "../data/datasets/synthetic/binomial_5_500_4_0.200000_sample_2_iter_1.txt"},
             {"bin_5" , "../data/datasets/synthetic/binomial_5_500_3_0.200000_sample_5_iter_1.txt"},
-            {"pref", "../data/datasets/synthetic/pref_1000000_3_1.hyp"}
+            {"pref", "../data/datasets/synthetic/pref_1000000_3_1.hyp"},
+			{"default" , "../data/datasets/synthetic/default.hyp"}
         };
 
 typedef struct edge {
@@ -108,7 +112,7 @@ void no_loadbalance(size_t n, size_t k, intintVec& B, intvec& prefixsum_B, intve
  	}
 }
 
-bool write_results(const strstrMap &output, std::string file = "../output/results.csv"){
+bool write_results(const strstrMap &output, std::string file = "../output/inresults.csv"){
     std::stringstream ss;
     size_t j = 0;
     for(auto i=output.begin(); i != output.end();++i,++j )
@@ -121,7 +125,7 @@ bool write_results(const strstrMap &output, std::string file = "../output/result
             ss<< i->second;
     }
     ss<<"\n";
-    
+    std::cout<<"\n";
 
     std::ofstream out(file.c_str(),std::ios::app);
     if(out.fail())
@@ -269,98 +273,243 @@ size_t IO_construct_hypergraph(const char *hg_file, intintVec &hyperedges, intve
 	}
     return 1;
 }
-size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size_t& glb, intvec& init_nodes, intintMap& node_index, omp_lock_t lock[], size_t** nbrs_N,size_t** nbrs_F, size_t** inc_edges_N, size_t** inc_edges_F ) {
+size_t init_cores(intintVec& hyperedges, size_t N, intvec& min_e_hindex, intvec& llb, size_t& glb, intvec& init_nodes, intintMap& node_index, omp_lock_t lock[], size_t** nbrs_N,size_t** nbrs_F, size_t** inc_edges_N, size_t** inc_edges_F, size_t working_threads, omp_lock_t Vlock[]) {
     /* Reads the incidence list init_nbr and initialises the data structure required for local core. */
-    size_t N = init_nodes.size();
-    for(size_t i = 0; i<N; i++) node_index[init_nodes[i]] = i; // initialize node_index
-    intvec nbrsizes(N); 
-    std::unordered_map<size_t, intset > init_nbr;  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
-    std::vector<intvec> nbrs(N);
+    bool log = false;
+	// double start_init = omp_get_wtime();
+	// double init1 = omp_get_wtime() - start_init;
+	// for(size_t i = 0; i<N; i++) {
+	// 	std::cout<< i<<": init_nodes[i] = "<<init_nodes[i]<<" mapped to node_index: "<<node_index[init_nodes[i]]<<"\n";
+	// }
+    // intvec nbrsizes(N); 
+    // std::unordered_map<size_t, intset > init_nbr;  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
+	double start_init = omp_get_wtime();
+	// vintset init_nbr(N, intset({}));
+	std::vector< std::unordered_set<size_t>> init_nbr(N, std::unordered_set<size_t>{});
+	// std::vector< std::unordered_map<size_t,size_t>> init_nbr(N);
+	// std::vector<intvec> nbrs(N);
     size_t sz_init_nbrs = 0;    // stores the number of initial neighbours for all vertices
     size_t sz_inc_edge = 0;     // stores the number of incident edges for all vertices
-
-    for (size_t eid = 0; eid < hyperedges.size(); eid++){
+	size_t M = 0;
+    std::vector<intvec> inc_edges(N); // i=node_id, value = vector of edge ids incident on node_id
+	// std::vector<bool> traversed(N,false);
+    // for (size_t eid = 0; eid < hyperedges.size(); eid++){
+	// 	auto hype = hyperedges[eid];
+    //     auto edge_sz = hype.size();
+    //     sz_inc_edge += edge_sz;
+		
+	// 	omp_init_lock(&(lock[eid]));
+    //     size_t _min = INT_MAX;
+	// 	min_e_hindex[M] = _min; // initialize edge h_indices,
+	// 	M+=1;
+    //     for(auto v_id: hype){
+    //         auto j = node_index[v_id];  
+    //         llb[j] = std::max(edge_sz - 1,llb[j]);
+	// 		// size_t i = node_index[v_id];
+    //         inc_edges[j].push_back(eid);
+    //         // if (!traversed[j]) { // first insertion of v_id to init_nbr map
+    //         //     auto _tmp = intset();
+    //         //     int _tmp_sz = 0;
+    //         //     for (auto u: hype){
+    //         //         if (u!=v_id){
+    //         //             _tmp.insert(u);
+    //         //             _tmp_sz+=1;
+    //         //         }
+    //         //     }
+    //         //     // init_nbr[v_id] = std::move(_tmp);
+	// 		// 	init_nbr[j] = std::move(_tmp);
+    //         //     nbrsizes[j] = _tmp_sz;
+	// 		// 	traversed[j] = true;
+    //         // }
+    //         // else{  // v_id exists in init_nbr map
+    //             // auto _tmp = &init_nbr[v_id];
+	// 			auto _tmp = &init_nbr[j];
+    //             for (auto u: hype){
+    //                 if (u!=v_id){
+    //                     _tmp->insert(u);
+    //                 }
+    //             }
+    //             // nbrsizes[j] = init_nbr[v_id].size();
+	// 			// nbrsizes[j] = init_nbr[j].size();
+    //         // }
+    //     }
+    // }
+	size_t eid;
+	#pragma omp parallel for schedule(dynamic) num_threads(working_threads)
+	for (eid = 0; eid < hyperedges.size(); eid++){
 		auto hype = hyperedges[eid];
-        auto edge_sz = hype.size();
-        sz_inc_edge += edge_sz;
-        for(auto v_id: hype){
-            auto j = node_index[v_id];  
-            llb[j] = std::max(edge_sz - 1,llb[j]);
-            if ( init_nbr.find(v_id) == init_nbr.end() ) { // first insertion of v_id to init_nbr map
-                auto _tmp = intset();
-                int _tmp_sz = 0;
-                for (auto u: hype){
-                    if (u!=v_id){
-                        _tmp.insert(u);
-                        _tmp_sz+=1;
-                    }
-                }
-                init_nbr[v_id] = std::move(_tmp);
-                nbrsizes[j] = _tmp_sz;
-            }
-            else{  // v_id exists in init_nbr map
-                auto _tmp = &init_nbr[v_id];
-                for (auto u: hype){
-                    if (u!=v_id){
-                        _tmp->insert(u);
-                    }
-                }
-                nbrsizes[j] = init_nbr[v_id].size();
-            }
-        }
-    }
-    for(auto i : init_nodes){
-        sz_init_nbrs += init_nbr[i].size();
-    }
-   
+                auto edge_sz = hype.size();
+                // sz_inc_edge += edge_sz;
+		min_e_hindex[eid] = INT_MAX;
+		for(auto v_id: hype){
+            auto j = node_index[v_id]; 
+			omp_set_lock(&(Vlock[j]));     
+            		llb[j] = std::max(edge_sz - 1,llb[j]);
+			inc_edges[j].push_back(eid);
+			auto _tmp = &init_nbr[j];
+			for (auto u: hype){
+				if (u!=v_id){
+					_tmp->insert(u);
+				}
+				// if (u!=v_id){
+				// 	// not found
+				// 	if (_tmp->find(u) == _tmp->end()){
+				// 		(*_tmp)[u] = 1;
+				// 	}
+				// }
+			}
+			omp_unset_lock(&(Vlock[j])); 
+		}
+	}
+	double init2 = omp_get_wtime() - start_init;
+	// std::cout<<"init_nbr: \n";
+	// for(int j=0; j<N; j++){
+	// 	std::cout<<j<<": ";
+	// 	for(auto u: init_nbr[j])	std::cout<<u<<" ";
+	// 	std::cout<<"\n";
+	// }	
+	// std::cout<<"inc_edges: \n";
+	// for(int j=0; j<N; j++){
+	// 	std::cout<<j<<": ";
+	// 	for(auto eid: inc_edges[j])	std::cout<<eid<<" ";
+	// 	std::cout<<"\n";
+	// }	
+	// start_init = omp_get_wtime();
+	
+	// double init3 = omp_get_wtime() - start_init;
+
+	glb = INT_MAX;
+    // for(auto i : init_nodes){
+	// 	auto sz = init_nbr[i].size();
+    //     sz_init_nbrs += sz;
+	// 	glb = std::min(glb, sz);
+    // }
+	start_init = omp_get_wtime();
+	for(int _i = 0; _i< N; _i ++){
+		auto sz = init_nbr[_i].size();
+        sz_init_nbrs += sz;
+		glb = std::min(glb, sz);
+   	 }
+	// for (auto hyp: hyperedges){
+	for (eid = 0; eid < hyperedges.size(); eid++){
+		auto hyp = hyperedges[eid];
+		sz_inc_edge += hyp.size();
+		omp_init_lock(&(lock[eid]));
+	}
+	double prefixsum_tm = omp_get_wtime()-start_init;
+    
+	start_init = omp_get_wtime();
     *nbrs_N = (size_t*)malloc((N+1)*sizeof(size_t));
     (*nbrs_N)[0] = 0;
     *nbrs_F = (size_t*)malloc(sz_init_nbrs*sizeof(size_t));
-
-    glb = INT_MAX;
-    int _i = 1, _index=0;
-    for (auto node : init_nodes){
-        (*nbrs_N)[_i] = (*nbrs_N)[_i-1] + init_nbr[node].size();
-        _i++;
-        size_t sz = 0;
-        for (auto u: init_nbr[node]){
-            // _tmp.push_back(node_index[u]);
-            (*nbrs_F)[_index++] = node_index[u];
-            sz+=1;
-        }
-        glb = std::min(glb, sz);
-    }
-
-    size_t M = 0;
-    std::vector<intvec> inc_edges(N); // i=node_id, value = vector of edge ids incident on node_id
-     for (size_t eid = 0; eid < hyperedges.size(); eid++){
-		omp_init_lock(&(lock[eid]));
-		auto hype = hyperedges[eid];
-        size_t _min = INT_MAX;
-        for(auto u: hype)  {
-            size_t i = node_index[u];
-            inc_edges[i].push_back(eid);
-        }
-        min_e_hindex[M] = _min; // initialize edge h_indices,
-        M+=1;
-    }
-    // Calculate csr representation for incident edges
-    *inc_edges_N = (size_t*)malloc((N+1)*sizeof(size_t));
+	*inc_edges_N = (size_t*)malloc((N+1)*sizeof(size_t));
     (*inc_edges_N)[0] = 0;
     *inc_edges_F = (size_t*)malloc(sz_inc_edge*sizeof(size_t));
-    _i = 1, _index=0;
-    for(auto node : init_nodes){
-        size_t j = node_index[node];
-        (*inc_edges_N)[_i] = (*inc_edges_N)[_i-1] + inc_edges[j].size();
-        _i++;
-        for(size_t eid : inc_edges[j]){
-            (*inc_edges_F)[_index++] = eid;
-        }
+//    _index=0;
+	int _i;
+	if (log){
+		std::cout<<"init_nodes: \n";
+		for(int i = 0; i<N; i++) 	std::cout<<init_nodes[i]<<" ";
+		std::cout<<"\n----\n";
+		std::cout<<"node_index: \n";
+		for(int i = 0; i<N; i++) 	std::cout<<node_index[init_nodes[i]]<<" ";
+		std::cout<<"\n----\n";
+	}
+    for (_i = 1; _i<= N; _i ++){
+		// auto node = init_nodes[_i-1];
+		// std::cout<<node<<" "<<_i<<"/"<<N<<": "<<omp_get_thread_num()<<"\n";
+        (*nbrs_N)[_i] = (*nbrs_N)[_i-1] + init_nbr[_i-1].size();
+		(*inc_edges_N)[_i] = (*inc_edges_N)[_i-1] + inc_edges[_i-1].size();
+		// std::cout<<node<<" "<<(*nbrs_N)[_i] <<" "<<_i<<"/"<<N<<": "<<omp_get_thread_num()<<"\n";
     }
+	#pragma omp parallel for schedule(dynamic) num_threads(working_threads)
+	for (int _i = 1; _i< N; _i ++){
+		// auto node = init_nodes[_i-1];
+		// auto it = init_nbr[node].begin();
+				// std::cout<<node<<" "<<(*nbrs_N)[_i] <<" it "<<&it<<" "<<_i<<"/"<<N<<": "<<omp_get_thread_num()<<"\n";
+
+		// _tmp.push_back(node_index[u]);
+		// std::cout<<(*nbrs_N)[_i-1]<<" - "<<(*nbrs_N)[_i];
+		// for(int _index = (*nbrs_N)[_i-1]; _index < (*nbrs_N)[_i]; _index++){
+		// 	// std::cout<<"["<<*it<<" , "<<node_index[*it]<<"]";
+		// 	(*nbrs_F)[_index] = node_index[*it];
+		// 	it++;
+		// }
+		int _index = (*nbrs_N)[_i-1];
+		// for(auto u: init_nbr[node]){
+		for(auto u: init_nbr[_i-1]){
+			(*nbrs_F)[_index++] = node_index[u];
+			// (*nbrs_F)[_index++] = node_index[u.first];
+		}
+		_index = (*inc_edges_N)[_i-1];
+		for(size_t eid : inc_edges[_i-1])
+			(*inc_edges_F)[_index++] = eid;
+		// std::cout<<"\n";
+	}
+	// log = true;
+	double initcsr1 = omp_get_wtime() - start_init;
+	if (log){
+		std::cout<<"nbrs_F\n";
+		for(int i = 0; i<20; i++)	std::cout<<(*nbrs_F)[i]<<" ";
+		std::cout<<"\n";
+		std::cout<<"init_nbr: \n";
+		for (int i = 0; i< N; i++){
+			auto node = init_nodes[i];
+			std::cout<< node<<": ";
+			// for(auto u: init_nbr[i])	std::cout<<u<<" ";
+			// std::cout<<"\n";
+		}
+		std::cout<<"---\n";
+	}
+	start_init = omp_get_wtime();
+    // Calculate csr representation for incident edges
+    // *inc_edges_N = (size_t*)malloc((N+1)*sizeof(size_t));
+    // (*inc_edges_N)[0] = 0;
+    // *inc_edges_F = (size_t*)malloc(sz_inc_edge*sizeof(size_t));
+    // _i = 1;
+	// int _index=0;
+    // for(auto node : init_nodes){
+    //     size_t j = node_index[node];
+    //     (*inc_edges_N)[_i] = (*inc_edges_N)[_i-1] + inc_edges[j].size();
+    //     _i++;
+    //     for(size_t eid : inc_edges[j]){
+    //         (*inc_edges_F)[_index++] = eid;
+    //     }
+    // }
+	// int _j;
+	// for (_j = 1; _j<= N; _j++)
+	// 	(*inc_edges_N)[_j] = (*inc_edges_N)[_j-1] + inc_edges[_j-1].size();
+	
+	// #pragma omp parallel for schedule(dynamic) num_threads(working_threads)
+	// for (_j = 1; _j<= N; _j++){
+	// 	// (*inc_edges_N)[_j] = (*inc_edges_N)[_j-1] + inc_edges[_j-1].size();
+	// 	int _index = (*inc_edges_N)[_j-1];
+	// 	for(size_t eid : inc_edges[_j-1])
+	// 		(*inc_edges_F)[_index++] = eid;
+	// }
+	double initcsr2 = omp_get_wtime() - start_init;
+	
+	// std::cout<<"incedges_N & incedges_F: \n";
+	// for(int i = 0; i<N+1; i++) std::cout<< (*inc_edges_N)[i]<<" ";
+	// std::cout<<"\n";
+	// for(int i = 0; i<sz_inc_edge; i++) std::cout<< (*inc_edges_F)[i]<<" ";
+	// std::cout<<"\n";
+	// std::cout<<"nbrs_N & nbrs_F: \n";
+	// for(int i = 0; i<N+1; i++) std::cout<< (*nbrs_N)[i]<<" ";
+	// std::cout<<"\n";
+	// for(int i = 0; i<sz_init_nbrs; i++) std::cout<< (*nbrs_F)[i]<<" ";
+	// std::cout<<"\n";
+
+	// std::cout<< "node_index: "<<init1<<" s\n";
+	std::cout<< "nbrsize & nbr construction from Edges: "<<init2<<" s\n";
+	//std::cout << "incident edgeList construction: "<<init3<<" s\n";
+	std::cout<< "prefix sum time: "<<prefixsum_tm<<" s\n";
+	std::cout << "nbr_N & nbr_F: "<<initcsr1<<" s\n";
+	std::cout<< "incedges_N & incedges_F: "<<initcsr2<<" s\n";
 	return 1;
 }
-
 int compute_k_core(size_t n, size_t working_threads, std::vector<graph_node>& A, const intvec& node_index_index, intvec& min_e_hindex, omp_lock_t elock[], const intvec& prefixsum_partition, const intvec& llb, int glb, const size_t nbrs_N[], const size_t nbrs_F[], const size_t inc_edges_N[], const size_t inc_edges_F[], const intintVec& hyperedges, intintMap &node_index, bool core_cct = false){
+	// std::cout<<"compute_k_core\n";
 	size_t supersteps = 0;
 	if (working_threads > n) {
 		// The chances of this happening are very slim.
@@ -390,7 +539,7 @@ int compute_k_core(size_t n, size_t working_threads, std::vector<graph_node>& A,
 				slice_end = prefixsum_partition[tid];
 			}
 			D(std::cout<<"Thread: "<<tid<<": "<<slice_start<<" "<<slice_end<<"\n");
-			#pragma omp for schedule(dynamic) // Comment out for not-dyn sched.
+			// #pragma omp for schedule(dynamic) // Comment  for not-dyn sched.
 			for (size_t z = slice_start; z<slice_end; z++) {
 				/* Want to stride across assigned blocks.
 				 */
@@ -456,7 +605,7 @@ int compute_k_core(size_t n, size_t working_threads, std::vector<graph_node>& A,
 		#pragma omp barrier
 		#pragma omp single
 		{
-			// continue/not-continue decision
+			D(printf("continue/not-continue decision\n"));
 			if (supersteps != 0) {
 				continue_itr = 0;
 				for (i = 0; i < working_threads; i++) {
@@ -474,7 +623,7 @@ int compute_k_core(size_t n, size_t working_threads, std::vector<graph_node>& A,
 	return supersteps;
 }
 void write_core(std::vector<graph_node>& A, size_t N, const intvec& init_nodes, intintMap& node_index, intvec& node_index_index, std::string dataname = "output/hgcore"){
-	std::string file = dataname+".core";
+	std::string file = dataname+"_inopt.core";
     std::stringstream ss;
     for(size_t i=0; i<N; i++)
     {
@@ -508,36 +657,48 @@ int main (int argc, char *argv[]) {
     size_t maximum_id;
 	intintVec hyperedges;
     auto hypergraph_file = dataset_to_filename[argv[1]];
+	// std::cout<<hypergraph_file<<"\n";
 	intvec init_nodes;
+	intintMap node_index;
     if (IO_construct_hypergraph(hypergraph_file.c_str(), hyperedges, init_nodes,maximum_id) == 0){
         std::cout << "IO Error. Terminating..."<<"\n";
         return 1;
     }
 	size_t N = init_nodes.size();
-    //initialisation 
-	double start_init = omp_get_wtime();
 	std::vector<graph_node> A;	
 	intvec min_e_hindex( hyperedges.size() );// min edge h-index for optimization II
 	omp_lock_t *Elock = new omp_lock_t[hyperedges.size()]; // lock for hyperedges to apply optimization II without race-condition
+	omp_lock_t *Vlock = new omp_lock_t[N];
 	intvec llb(N,0);
 	size_t glb;
-	intintMap node_index;
+	for(size_t i = 0; i<N; i++) {
+		node_index[init_nodes[i]] = i; // initialize node_index
+		omp_init_lock(&(Vlock[i]));
+	}
+	// for(int i = 0; i<N; i++) std::cout<< init_nodes[i]<<"\n";
+    //initialisation 
+	double start_init = omp_get_wtime();
 	size_t* nbrs_N = NULL;
 	size_t* nbrs_F = NULL;
 	size_t* inc_edges_N = NULL;
 	size_t* inc_edges_F = NULL;
-	init_cores(hyperedges,min_e_hindex,llb,glb,init_nodes,node_index,Elock,&nbrs_N, &nbrs_F, &inc_edges_N, &inc_edges_F);
+	double start_initcores = omp_get_wtime();
+	init_cores(hyperedges, N, min_e_hindex,llb,glb,init_nodes,node_index,Elock,&nbrs_N, &nbrs_F, &inc_edges_N, &inc_edges_F, working_threads, Vlock);
+	double initctime = omp_get_wtime() - start_initcores;
 	intintVec B;
 	intvec prefixsum_partition;
 	intvec node_index_index(node_index.size());
+	double start_lb = omp_get_wtime();
 	// simple_loadbalance(A,N,working_threads,B,prefixsum_partition,node_index_index, hyperedges,node_index,nbrs_N);
 	if (lbflag)
 		re_order_loadbalance(N,working_threads,B,prefixsum_partition,node_index_index, hyperedges,node_index,nbrs_N);
 	else
 		no_loadbalance(N,working_threads,B,prefixsum_partition,node_index_index, hyperedges,node_index,nbrs_N);
-	 size_t index = 0;
-	 //std::cout<<"Allocating A:\n";
-	 for (size_t i = 0; i< working_threads; i++){
+	double lbtime = omp_get_wtime() - start_lb;
+	double start_all = omp_get_wtime();
+	size_t index = 0;
+	//  std::cout<<"Allocating A:\n";
+	for (size_t i = 0; i< working_threads; i++){
 	 	for(size_t j=0; j<B[i].size();j++){
 	 		graph_node new_node;
     		new_node.id = B[i][j];
@@ -553,30 +714,35 @@ int main (int argc, char *argv[]) {
 	 		index++;
 	 	}
 	 	prefixsum_partition.push_back(index);
-		B[i].resize(0);	B[i].shrink_to_fit();
-		//std::cout<<"done A for Thread "<<i<<"\n";
+		// B[i].resize(0);	B[i].shrink_to_fit();
+		// std::cout<<"done A for Thread "<<i<<"\n";
 	 }
-	B.resize(0);
-	B.shrink_to_fit();
+	// for(auto p: prefixsum_partition)	std::cout<<p<<"\n";
+	// B.resize(0);
+	// B.shrink_to_fit();
+	double arrayofstructtime = omp_get_wtime() - start_all;
 	double init_time = omp_get_wtime() - start_init;
     //core-computation
 	double core_start = omp_get_wtime();
 	size_t steps = compute_k_core(N, working_threads, A, node_index_index, min_e_hindex, Elock, prefixsum_partition, llb, glb, nbrs_N, nbrs_F, inc_edges_N,inc_edges_F,hyperedges, node_index, true);
 	double core_time = omp_get_wtime() - core_start;
-    printf("#Threads:%lu/Time:%f seconds/steps: %lu\n\n",working_threads, core_time,steps);
+        printf("#Threads:%lu/Time:%f seconds/steps: %lu\n\n",working_threads, core_time,steps);
 	printf("Init time: %lf\n",init_time);
-	// write_core(A, N, init_nodes, node_index, node_index_index, "../output/"+std::string(argv[1]));
+	printf("initcore(): %lf\n",initctime);
+	printf("arrayofst time: %lf\n",arrayofstructtime);
+	printf("lb time: %lf\n",lbtime);
+	write_core(A, N, init_nodes, node_index, node_index_index, "../output/parout/"+std::string(argv[1])+"_"+argv[2]);
 	if (lbflag)	output["algo"] = "LocalP(B+CSR)2";
 	else	output["algo"] = "LocalP(nolb)";
     output["dataset"]=argv[1];
     output["num_threads"] = std::to_string(working_threads);
     output["execution time"]= std::to_string(core_time);
 	output["init_time"] = std::to_string(init_time);
-    output["total iteration"] = std::to_string(steps);
-	if (lbflag)	write_results(output,"../output/parout/results.csv");
-	else 	write_results(output,"../output/parout/results_nolb.csv");
+    	output["total iteration"] = std::to_string(steps);
+	if (lbflag)	write_results(output,"../output/parout/inresults.csv");
+	else 	write_results(output,"../output/parout/inresults_nolb.csv");
 	
 	delete[] Elock;
-
+	delete[] Vlock;
 	return 0;
 }

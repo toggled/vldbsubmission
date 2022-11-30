@@ -46,3 +46,7 @@ data/
 kdcore/kdmain
 bishwa/
 kdcore/*.csv
+existing/ckmain
+existing/bpmain
+par_src/pcsr
+par_src/initoptlocalP

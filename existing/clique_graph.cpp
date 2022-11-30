@@ -213,9 +213,11 @@ int main(int argc, char *argv[])
             std::cout<<argv[2]<<" "<<argv[3]<<"\n";
             std::cout<<"Clique graph\n";
             std::string init_type = "nbr"; // or "lub" (local upper bound)
-            h.initialise();
+            // h.initialise();
             clock_t ck_start = clock();
             getClique(h);
+            h.initialise();
+            // h.printHypergraph();
             auto ck_time = double(clock()-ck_start)/double(CLOCKS_PER_SEC);
             // std::cout <<"E-Peel\n";
             Algorithm a(h);
