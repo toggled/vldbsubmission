@@ -527,24 +527,21 @@ int compute_k_core(size_t n, size_t working_threads, std::vector<graph_node>& A,
 	size_t continue_itr = 1;
 	while (continue_itr) {
 		D(std::cout <<"Superstep: "<<supersteps<<"\n");
-		size_t z;
-		#pragma omp parallel for schedule(dynamic) num_threads(working_threads)
-		for (z = 0; z<n; z++) {
-		// #pragma omp parallel num_threads(working_threads)
-		// {
+		#pragma omp parallel num_threads(working_threads)
+		{
 			size_t tid = omp_get_thread_num();
-		// 	size_t slice_start,slice_end;
-		// 	if (tid==0)	{
-		// 		slice_start = 0;
-		// 		slice_end = prefixsum_partition[tid];
-		// 	}
-		// 	else{ 
-		// 		slice_start = prefixsum_partition[tid-1];
-		// 		slice_end = prefixsum_partition[tid];
-		// 	}
-		// 	D(std::cout<<"Thread: "<<tid<<": "<<slice_start<<" "<<slice_end<<"\n");
-		// 	// #pragma omp for schedule(dynamic) // Comment  for not-dyn sched.
-		// 	for (size_t z = slice_start; z<slice_end; z++) {
+			size_t slice_start,slice_end;
+			if (tid==0)	{
+				slice_start = 0;
+				slice_end = prefixsum_partition[tid];
+			}
+			else{ 
+				slice_start = prefixsum_partition[tid-1];
+				slice_end = prefixsum_partition[tid];
+			}
+			D(std::cout<<"Thread: "<<tid<<": "<<slice_start<<" "<<slice_end<<"\n");
+			// #pragma omp for schedule(dynamic) // Comment  for not-dyn sched.
+			for (size_t z = slice_start; z<slice_end; z++) {
 				/* Want to stride across assigned blocks.
 				 */
 				if (A[z].valid) {
@@ -604,7 +601,7 @@ int compute_k_core(size_t n, size_t working_threads, std::vector<graph_node>& A,
 						}
 					}
 				}
-			// }
+			}
 		}
 		#pragma omp barrier
 		#pragma omp single
@@ -720,7 +717,7 @@ int main (int argc, char *argv[]) {
 	 	prefixsum_partition.push_back(index);
 		// B[i].resize(0);	B[i].shrink_to_fit();
 		// std::cout<<"done A for Thread "<<i<<"\n";
-	}
+	 }
 	// for(auto p: prefixsum_partition)	std::cout<<p<<"\n";
 	// B.resize(0);
 	// B.shrink_to_fit();
@@ -730,7 +727,7 @@ int main (int argc, char *argv[]) {
 	double core_start = omp_get_wtime();
 	size_t steps = compute_k_core(N, working_threads, A, node_index_index, min_e_hindex, Elock, prefixsum_partition, llb, glb, nbrs_N, nbrs_F, inc_edges_N,inc_edges_F,hyperedges, node_index, true);
 	double core_time = omp_get_wtime() - core_start;
-    printf("#Threads:%lu/Time:%f seconds/steps: %lu\n\n",working_threads, core_time,steps);
+        printf("#Threads:%lu/Time:%f seconds/steps: %lu\n\n",working_threads, core_time,steps);
 	printf("Init time: %lf\n",init_time);
 	printf("initcore(): %lf\n",initctime);
 	printf("arrayofst time: %lf\n",arrayofstructtime);
