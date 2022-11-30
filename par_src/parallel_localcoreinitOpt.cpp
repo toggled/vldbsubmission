@@ -382,7 +382,7 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
 	start_init = omp_get_wtime();
 	for(int _i = 0; _i< N; _i ++){
 		auto sz = init_nbr[_i].size();
-        	sz_init_nbrs += sz;
+        sz_init_nbrs += sz;
 		glb = std::min(glb, sz);
    	 }
 	// for (auto hyp: hyperedges){
@@ -397,6 +397,9 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
     *nbrs_N = (size_t*)malloc((N+1)*sizeof(size_t));
     (*nbrs_N)[0] = 0;
     *nbrs_F = (size_t*)malloc(sz_init_nbrs*sizeof(size_t));
+	*inc_edges_N = (size_t*)malloc((N+1)*sizeof(size_t));
+    (*inc_edges_N)[0] = 0;
+    *inc_edges_F = (size_t*)malloc(sz_inc_edge*sizeof(size_t));
 //    _index=0;
 	int _i;
 	if (log){
@@ -411,6 +414,7 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
 		// auto node = init_nodes[_i-1];
 		// std::cout<<node<<" "<<_i<<"/"<<N<<": "<<omp_get_thread_num()<<"\n";
         (*nbrs_N)[_i] = (*nbrs_N)[_i-1] + init_nbr[_i-1].size();
+		(*inc_edges_N)[_i] = (*inc_edges_N)[_i-1] + inc_edges[_i-1].size();
 		// std::cout<<node<<" "<<(*nbrs_N)[_i] <<" "<<_i<<"/"<<N<<": "<<omp_get_thread_num()<<"\n";
     }
 	#pragma omp parallel for schedule(dynamic) num_threads(working_threads)
@@ -431,6 +435,9 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
 		for(auto u: init_nbr[_i-1]){
 			(*nbrs_F)[_index++] = node_index[u];
 		}
+		_index = (*inc_edges_N)[_i-1];
+		for(size_t eid : inc_edges[_i-1])
+			(*inc_edges_F)[_index++] = eid;
 		// std::cout<<"\n";
 	}
 	// log = true;
@@ -450,9 +457,9 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
 	}
 	start_init = omp_get_wtime();
     // Calculate csr representation for incident edges
-    *inc_edges_N = (size_t*)malloc((N+1)*sizeof(size_t));
-    (*inc_edges_N)[0] = 0;
-    *inc_edges_F = (size_t*)malloc(sz_inc_edge*sizeof(size_t));
+    // *inc_edges_N = (size_t*)malloc((N+1)*sizeof(size_t));
+    // (*inc_edges_N)[0] = 0;
+    // *inc_edges_F = (size_t*)malloc(sz_inc_edge*sizeof(size_t));
     // _i = 1;
 	// int _index=0;
     // for(auto node : init_nodes){
@@ -463,17 +470,17 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
     //         (*inc_edges_F)[_index++] = eid;
     //     }
     // }
-	int _j;
-	for (_j = 1; _j<= N; _j++)
-		(*inc_edges_N)[_j] = (*inc_edges_N)[_j-1] + inc_edges[_j-1].size();
+	// int _j;
+	// for (_j = 1; _j<= N; _j++)
+	// 	(*inc_edges_N)[_j] = (*inc_edges_N)[_j-1] + inc_edges[_j-1].size();
 	
-	#pragma omp parallel for schedule(dynamic) num_threads(working_threads)
-	for (_j = 1; _j<= N; _j++){
-		// (*inc_edges_N)[_j] = (*inc_edges_N)[_j-1] + inc_edges[_j-1].size();
-		int _index = (*inc_edges_N)[_j-1];
-		for(size_t eid : inc_edges[_j-1])
-			(*inc_edges_F)[_index++] = eid;
-	}
+	// #pragma omp parallel for schedule(dynamic) num_threads(working_threads)
+	// for (_j = 1; _j<= N; _j++){
+	// 	// (*inc_edges_N)[_j] = (*inc_edges_N)[_j-1] + inc_edges[_j-1].size();
+	// 	int _index = (*inc_edges_N)[_j-1];
+	// 	for(size_t eid : inc_edges[_j-1])
+	// 		(*inc_edges_F)[_index++] = eid;
+	// }
 	double initcsr2 = omp_get_wtime() - start_init;
 	
 	// std::cout<<"incedges_N & incedges_F: \n";
