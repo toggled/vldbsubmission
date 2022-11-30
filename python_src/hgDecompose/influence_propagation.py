@@ -8,6 +8,7 @@ from hgDecompose.utils import check_connectivity, component_sz, save_dict, avg_s
 pkl_path = 'sirdata/'
 
 
+from tqdm import tqdm
 def propagate_for_all_vertices(H, core, num_vertex_per_core=100, top_k=5,  p=0.5, num_iterations=100, original_n=None, verbose=True):
 
     result = {}  # Entry is a core number. value is a list of percentages of the infected population for all vertices with the same core number
@@ -23,24 +24,21 @@ def propagate_for_all_vertices(H, core, num_vertex_per_core=100, top_k=5,  p=0.5
 
     distinct_core_numbers.sort(reverse=True)
 
-
-
-    for core_number in distinct_core_numbers[:top_k]:
+    for core_number in tqdm(distinct_core_numbers[:top_k]):
         # check size
         v_sampled = None
         if(len(core_to_vertex_map[core_number]) < num_vertex_per_core):
             v_sampled = core_to_vertex_map[core_number]
         else:
-            v_sampled = random.choices(core_to_vertex_map[core_number], k=num_vertex_per_core)
+            v_sampled = random.choices(
+                core_to_vertex_map[core_number], k=num_vertex_per_core)
 
-        
-
-        for v in v_sampled:
+        for v in tqdm(v_sampled):
             if(core_number not in result):
-                result[core_number] = [propagate2(
+                result[core_number] = [bfs_bounded(
                     H, starting_vertex=v, p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose)]
             else:
-                result[core_number].append(propagate2(
+                result[core_number].append(bfs_bounded(
                     H, starting_vertex=v, p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose))
             # print(component_sz(v))
 
@@ -69,30 +67,43 @@ def propagate_for_all_vertices(H, core, num_vertex_per_core=100, top_k=5,  p=0.5
     #     #     result[core_number].append(propagate(H, starting_vertex=v, p = p, num_iterations = num_iterations, verbose = verbose)[0])
     return result
 
+
 def propagate_for_all_vertices_for_kd(H, kd_core, num_vertex_per_core=100, top_k=5,  p=0.5, num_iterations=10, original_n=None, verbose=True):
 
     result = {}  # Entry is a core number. value is a list of percentages of the infected population for all vertices with the same core number
 
-    distinct_core_numbers = sorted(kd_core.keys(), key=lambda tup: (tup[0], tup[1]), reverse=True)
+    distinct_core_numbers = sorted(
+        kd_core.keys(), key=lambda tup: (tup[0], tup[1]), reverse=True)
     
-    for core_number in distinct_core_numbers[:top_k]:
+    # print(distinct_core_numbers)
+    visited_core_number = []
+    for core_number in tqdm(distinct_core_numbers):
+        # allow top_k core
+        if(core_number[0] in visited_core_number):
+            continue
+        if(len(visited_core_number) > top_k):
+            break
+
+        visited_core_number.append(core_number[0])
+        # print(core_number)
 
         # check size
         v_sampled = None
         if(len(kd_core[core_number]) < num_vertex_per_core):
             v_sampled = kd_core[core_number]
         else:
-            v_sampled = random.choices(kd_core[core_number], k=num_vertex_per_core)
+            v_sampled = random.choices(
+                kd_core[core_number], k=num_vertex_per_core)
 
-        for v in v_sampled:
+        for v in tqdm(v_sampled):
             if(core_number not in result):
-                result[core_number] = [propagate2(
+                result[core_number] = [bfs_bounded(
                     H, starting_vertex=str(v), p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose)]
             else:
-                result[core_number].append(propagate2(
+                result[core_number].append(bfs_bounded(
                     H, starting_vertex=str(v), p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose))
             # print(component_sz(v))
-   
+
     return result
 
 
@@ -125,7 +136,8 @@ def run_intervention_exp2(name, original_n, p=0.5, verbose=False):
             if(len(core_to_vertex_map[core_number]) < 100):
                 v_sampled = core_to_vertex_map[core_number]
             else:
-                v_sampled = random.choices(core_to_vertex_map[core_number], k=100)
+                v_sampled = random.choices(
+                    core_to_vertex_map[core_number], k=100)
 
             num_iterations = 10
             result_all_run = []
@@ -380,6 +392,33 @@ def propagate(H, starting_vertex, p=0.5, num_iterations=10, original_n=None, ver
             infected.remove(v)
 
     return 1 - float(len(suscepted) / len_nodes), timestep_of_infection
+
+
+def bfs_bounded(H, starting_vertex, p=0.3, num_iterations=10, original_n=None, verbose=True):
+    nodes = H.nodes()
+    visited = {}
+    for v in nodes:
+        visited[v] = False
+    results_each_time_step = []
+
+    queue = []
+    queue.append(starting_vertex)
+    visited[starting_vertex] = True
+    num_infected = 1
+    i = 0
+    while queue and i < num_iterations:
+        i += 1
+        v = queue.pop(0)
+        for u in H.neighbors(v):
+            if(not visited[u]):
+                if(random.random() <= p):
+                    queue.append(u)
+                    visited[v] = True
+                    num_infected += 1
+
+        results_each_time_step.append(num_infected)
+
+    return num_infected, len(H.neighbors(starting_vertex)), results_each_time_step
 
 
 def propagate2(H, starting_vertex, p=0.5, num_iterations=10, original_n=None, verbose=True):
