@@ -725,9 +725,9 @@ int main (int argc, char *argv[]) {
 	double init_time = omp_get_wtime() - start_init;
     //core-computation
 	double core_start = omp_get_wtime();
-	//size_t steps = compute_k_core(N, working_threads, A, node_index_index, min_e_hindex, Elock, prefixsum_partition, llb, glb, nbrs_N, nbrs_F, inc_edges_N,inc_edges_F,hyperedges, node_index, true);
+	size_t steps = compute_k_core(N, working_threads, A, node_index_index, min_e_hindex, Elock, prefixsum_partition, llb, glb, nbrs_N, nbrs_F, inc_edges_N,inc_edges_F,hyperedges, node_index, true);
 	double core_time = omp_get_wtime() - core_start;
-    // printf("#Threads:%lu/Time:%f seconds/steps: %lu\n\n",working_threads, core_time,steps);
+        printf("#Threads:%lu/Time:%f seconds/steps: %lu\n\n",working_threads, core_time,steps);
 	printf("Init time: %lf\n",init_time);
 	printf("initcore(): %lf\n",initctime);
 	printf("arrayofst time: %lf\n",arrayofstructtime);
@@ -739,7 +739,7 @@ int main (int argc, char *argv[]) {
     output["num_threads"] = std::to_string(working_threads);
     output["execution time"]= std::to_string(core_time);
 	output["init_time"] = std::to_string(init_time);
-    // output["total iteration"] = std::to_string(steps);
+    	output["total iteration"] = std::to_string(steps);
 	if (lbflag)	write_results(output,"../output/parout/inresults.csv");
 	else 	write_results(output,"../output/parout/inresults_nolb.csv");
 	
