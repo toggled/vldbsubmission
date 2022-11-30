@@ -283,12 +283,13 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
     // intvec nbrsizes(N); 
     // std::unordered_map<size_t, intset > init_nbr;  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
 	double start_init = omp_get_wtime();
-	vintset init_nbr(N, intset({}));
-	std::vector<intvec> nbrs(N);
-        size_t sz_init_nbrs = 0;    // stores the number of initial neighbours for all vertices
-        size_t sz_inc_edge = 0;     // stores the number of incident edges for all vertices
+	// vintset init_nbr(N, intset({}));
+	std::vector< std::unordered_map<size_t,size_t>> init_nbr(N);
+	// std::vector<intvec> nbrs(N);
+    size_t sz_init_nbrs = 0;    // stores the number of initial neighbours for all vertices
+    size_t sz_inc_edge = 0;     // stores the number of incident edges for all vertices
 	size_t M = 0;
-        std::vector<intvec> inc_edges(N); // i=node_id, value = vector of edge ids incident on node_id
+    std::vector<intvec> inc_edges(N); // i=node_id, value = vector of edge ids incident on node_id
 	// std::vector<bool> traversed(N,false);
     // for (size_t eid = 0; eid < hyperedges.size(); eid++){
 	// 	auto hype = hyperedges[eid];
@@ -345,8 +346,15 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
 			inc_edges[j].push_back(eid);
 			auto _tmp = &init_nbr[j];
 			for (auto u: hype){
+			// 	if (u!=v_id){
+			// 		_tmp->insert(u);
+			// 	}
+			// }
 				if (u!=v_id){
-					_tmp->insert(u);
+					// not found
+					if (_tmp->find(u) == _tmp->end()){
+						(*_tmp)[u] = 1;
+					}
 				}
 			}
 			omp_unset_lock(&(Vlock[j])); 
@@ -429,7 +437,8 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
 		int _index = (*nbrs_N)[_i-1];
 		// for(auto u: init_nbr[node]){
 		for(auto u: init_nbr[_i-1]){
-			(*nbrs_F)[_index++] = node_index[u];
+			// (*nbrs_F)[_index++] = node_index[u];
+			(*nbrs_F)[_index++] = node_index[u.first];
 		}
 		_index = (*inc_edges_N)[_i-1];
 		for(size_t eid : inc_edges[_i-1])
@@ -446,8 +455,8 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
 		for (int i = 0; i< N; i++){
 			auto node = init_nodes[i];
 			std::cout<< node<<": ";
-			for(auto u: init_nbr[i])	std::cout<<u<<" ";
-			std::cout<<"\n";
+			// for(auto u: init_nbr[i])	std::cout<<u<<" ";
+			// std::cout<<"\n";
 		}
 		std::cout<<"---\n";
 	}
