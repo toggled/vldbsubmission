@@ -1,4 +1,4 @@
-#define _GNU_SOURCE
+#define _GNU_SOURCE 
 #include <omp.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -53,27 +53,25 @@ strstrMap dataset_to_filename = {
             {"pref", "../data/datasets/synthetic/pref_1000000_3_1.hyp"},
 			{"default" , "../data/datasets/synthetic/default.hyp"}
         };
+intvec id;
+intvec valid;
+intvec kcore;
+intvec active;
+intvec num_nbrs;
+intintVec h_count;
 
-typedef struct edge {
-	/* Edge container.
-	 * Also doubles as a message.
-	 */
-	size_t id;
-	size_t est;
-	struct edge *next;
-} edge;
+// &id, &valid, &kcore, &active, &num_nbrs, &
+// typedef struct graph_node {
+// 	/* A vertex in a graph.
+// 	 */
+// 	size_t id;
+// 	size_t valid;
+// 	size_t kcore;
+// 	size_t active;
+// 	size_t num_nbrs;
+// 	std::vector<int> h_count;
 
-typedef struct graph_node {
-	/* A vertex in a graph.
-	 */
-	size_t id;
-	size_t valid;
-	size_t kcore;
-	size_t active;
-	size_t num_nbrs;
-	std::vector<int> h_count;
-
-} graph_node;
+// } graph_node;
 
 void re_order_loadbalance( size_t n, size_t k, intintVec& B, intvec& prefixsum_B, intvec& node_index_index, intintVec& hyperedges,intintMap& node_index, size_t nbrs_N[]){
 	std::priority_queue<pi, std::vector<pi>, std::greater<pi> > pq;
@@ -199,34 +197,34 @@ size_t core_correct_csr(const size_t inc_edges_F[], const size_t inc_edges_N[],i
         return core_u;
 }
 
-size_t process_message(size_t id, std::vector<graph_node>& A) {
+size_t process_message(size_t u_id) {
 	/* computes h-index.
 	 */
 
 	size_t ret = 0;
-	A[id].active = 0;
+	active[u_id] = 0;
 
 	// ----- csr + remapped to [0,n<<N]  ------
 	size_t t = 0;
-	if (A[id].num_nbrs!=0){
+	if (num_nbrs[u_id] !=0){
 		size_t paper = 0;
-		size_t n = A[id].num_nbrs;
+		size_t n = num_nbrs[u_id];
         for(size_t i = n; i >= 0; --i){
-            paper += A[id].h_count[i];
+            paper += h_count[u_id][i];
             if(paper >= i){
                 t = i;
 				break;
 			}
         }
 	}
-	if (t<A[id].kcore){
+	if (t<kcore[u_id]){
 		ret = 1;
-		A[id].active = 1;
-		D(printf("%d is setting core from %d to %d\n", id, A[id].kcore, t));
-		A[id].kcore = t;
+		active[u_id] = 1;
+		D(printf("%d is setting core from %d to %d\n", u_id, kcore[u_id], t));
+		kcore[u_id] = t;
 	}
 	else{
-		D(printf("%d not active\n",id));
+		D(printf("%d not active\n",u_id));
 	}
 	return ret;
 }
@@ -292,59 +290,18 @@ size_t init_cores(intintVec& hyperedges, size_t N, intvec& min_e_hindex, intvec&
     size_t sz_inc_edge = 0;     // stores the number of incident edges for all vertices
 	size_t M = 0;
     std::vector<intvec> inc_edges(N); // i=node_id, value = vector of edge ids incident on node_id
-	// std::vector<bool> traversed(N,false);
-    // for (size_t eid = 0; eid < hyperedges.size(); eid++){
-	// 	auto hype = hyperedges[eid];
-    //     auto edge_sz = hype.size();
-    //     sz_inc_edge += edge_sz;
-		
-	// 	omp_init_lock(&(lock[eid]));
-    //     size_t _min = INT_MAX;
-	// 	min_e_hindex[M] = _min; // initialize edge h_indices,
-	// 	M+=1;
-    //     for(auto v_id: hype){
-    //         auto j = node_index[v_id];  
-    //         llb[j] = std::max(edge_sz - 1,llb[j]);
-	// 		// size_t i = node_index[v_id];
-    //         inc_edges[j].push_back(eid);
-    //         // if (!traversed[j]) { // first insertion of v_id to init_nbr map
-    //         //     auto _tmp = intset();
-    //         //     int _tmp_sz = 0;
-    //         //     for (auto u: hype){
-    //         //         if (u!=v_id){
-    //         //             _tmp.insert(u);
-    //         //             _tmp_sz+=1;
-    //         //         }
-    //         //     }
-    //         //     // init_nbr[v_id] = std::move(_tmp);
-	// 		// 	init_nbr[j] = std::move(_tmp);
-    //         //     nbrsizes[j] = _tmp_sz;
-	// 		// 	traversed[j] = true;
-    //         // }
-    //         // else{  // v_id exists in init_nbr map
-    //             // auto _tmp = &init_nbr[v_id];
-	// 			auto _tmp = &init_nbr[j];
-    //             for (auto u: hype){
-    //                 if (u!=v_id){
-    //                     _tmp->insert(u);
-    //                 }
-    //             }
-    //             // nbrsizes[j] = init_nbr[v_id].size();
-	// 			// nbrsizes[j] = init_nbr[j].size();
-    //         // }
-    //     }
-    // }
+
 	size_t eid;
 	#pragma omp parallel for schedule(dynamic) num_threads(working_threads)
 	for (eid = 0; eid < hyperedges.size(); eid++){
 		auto hype = hyperedges[eid];
-                auto edge_sz = hype.size();
-                // sz_inc_edge += edge_sz;
+		auto edge_sz = hype.size();
+		// sz_inc_edge += edge_sz;
 		min_e_hindex[eid] = INT_MAX;
 		for(auto v_id: hype){
             auto j = node_index[v_id]; 
 			omp_set_lock(&(Vlock[j]));     
-            		llb[j] = std::max(edge_sz - 1,llb[j]);
+			llb[j] = std::max(edge_sz - 1,llb[j]);
 			inc_edges[j].push_back(eid);
 			auto _tmp = &init_nbr[j];
 			for (auto u: hype){
@@ -508,7 +465,8 @@ size_t init_cores(intintVec& hyperedges, size_t N, intvec& min_e_hindex, intvec&
 	std::cout<< "incedges_N & incedges_F: "<<initcsr2<<" s\n";
 	return 1;
 }
-int compute_k_core(size_t n, size_t working_threads, std::vector<graph_node>& A, const intvec& node_index_index, intvec& min_e_hindex, omp_lock_t elock[], const intvec& prefixsum_partition, const intvec& llb, int glb, const size_t nbrs_N[], const size_t nbrs_F[], const size_t inc_edges_N[], const size_t inc_edges_F[], const intintVec& hyperedges, intintMap &node_index, bool core_cct = false){
+
+int compute_k_core(size_t n, size_t working_threads, const intvec& node_index_index, intvec& min_e_hindex, omp_lock_t elock[], const intvec& prefixsum_partition, const intvec& llb, int glb, const size_t nbrs_N[], const size_t nbrs_F[], const size_t inc_edges_N[], const size_t inc_edges_F[], const intintVec& hyperedges, intintMap &node_index, bool core_cct = false){
 	// std::cout<<"compute_k_core\n";
 	size_t supersteps = 0;
 	if (working_threads > n) {
@@ -543,57 +501,57 @@ int compute_k_core(size_t n, size_t working_threads, std::vector<graph_node>& A,
 			for (size_t z = slice_start; z<slice_end; z++) {
 				/* Want to stride across assigned blocks.
 				 */
-				if (A[z].valid) {
+				if (valid[z]) {
 					if (0 == supersteps) {
-						std::fill(A[z].h_count.begin(), A[z].h_count.end(), 0);
+						std::fill(h_count[z].begin(), h_count[z].end(), 0);
 						if(core_cct){
 							// updates min-hindex[e] to min(current min-hindex[e],A[z].kcore) for every e incident on z
-							size_t l = inc_edges_N[A[z].id];
-							size_t h = inc_edges_N[A[z].id+1];
+							size_t l = inc_edges_N[id[z]];
+							size_t h = inc_edges_N[id[z]+1];
 							for(size_t i = l; i< h; i++){
 								size_t eid = inc_edges_F[i];
 								omp_set_lock(&(elock[eid]));
-								min_e_hindex[eid] = std::min(A[z].kcore,min_e_hindex[eid]);
+								min_e_hindex[eid] = std::min(kcore[z],min_e_hindex[eid]);
 								omp_unset_lock(&(elock[eid]));
 							}
 						}
 					} 
 					else 
 					{
-						std::fill(A[z].h_count.begin(), A[z].h_count.end(), 0);
-						size_t l = nbrs_N[A[z].id];
-						size_t h = nbrs_N[A[z].id+1];
+						std::fill(h_count[z].begin(), h_count[z].end(), 0);
+						size_t l = nbrs_N[id[z]];
+						size_t h = nbrs_N[id[z]+1];
 						for (size_t curr = l;  curr< h; curr++) {
 								size_t nbr = node_index_index[nbrs_F[curr]];
-								size_t inc_pos = std::min(A[z].num_nbrs, A[nbr].kcore);
-								A[z].h_count[inc_pos]++;
+								size_t inc_pos = std::min(num_nbrs[z], kcore[nbr]);
+								h_count[z][inc_pos]++;
 						}
-						offsets[tid] += process_message(z, A);
+						offsets[tid] += process_message(z);
 						if(core_cct){
-							if (A[z].active){
-								size_t l = inc_edges_N[A[z].id];
-								size_t h = inc_edges_N[A[z].id+1];
+							if (active[z]){
+								size_t l = inc_edges_N[id[z]];
+								size_t h = inc_edges_N[id[z]+1];
 								for(size_t i = l; i< h; i++){
 									size_t eid = inc_edges_F[i];
 									omp_set_lock(&(elock[eid]));
-									min_e_hindex[eid] = std::min(A[z].kcore,min_e_hindex[eid]);
+									min_e_hindex[eid] = std::min(kcore[z],min_e_hindex[eid]);
 									omp_unset_lock(&(elock[eid]));
 								}
 							}
-							bool lccsat = LCCSAT_csr(inc_edges_F,inc_edges_N,min_e_hindex,hyperedges, A[z].id, A[z].kcore);
+							bool lccsat = LCCSAT_csr(inc_edges_F,inc_edges_N,min_e_hindex,hyperedges, id[z], kcore[z]);
 							// std::cout <<"LCCSAT("<<z<<"/"<<A[z].id<<"):"<<lccsat<<"\n";
 							if (lccsat == false){
 								offsets[tid] += 1;
-								auto hhatn = core_correct_csr(inc_edges_F,inc_edges_N,min_e_hindex,hyperedges,A[z].id,A[z].kcore);
-								D(printf("%d: core corrected from %d to %d\n",A[z].id, A[z].kcore,hhatn));
-								A[z].kcore  = hhatn;
-								A[z].active = 1;
-								size_t l = inc_edges_N[A[z].id];
-								size_t h = inc_edges_N[A[z].id+1];
+								auto hhatn = core_correct_csr(inc_edges_F,inc_edges_N,min_e_hindex,hyperedges,id[z],kcore[z]);
+								D(printf("%d: core corrected from %d to %d\n",id[z], kcore[z],hhatn));
+								kcore[z]  = hhatn;
+								active[z] = 1;
+								size_t l = inc_edges_N[id[z]];
+								size_t h = inc_edges_N[id[z]+1];
 								for(size_t i = l; i< h; i++){
 									size_t eid = inc_edges_F[i];
 									omp_set_lock(&(elock[eid]));
-									min_e_hindex[eid] = std::min(A[z].kcore,min_e_hindex[eid]);
+									min_e_hindex[eid] = std::min(kcore[z],min_e_hindex[eid]);
 									omp_unset_lock(&(elock[eid]));
 								}
 							}
@@ -620,16 +578,17 @@ int compute_k_core(size_t n, size_t working_threads, std::vector<graph_node>& A,
 			supersteps++;
 		}
 	}
+	D(std::cout<<"done\n");
 	return supersteps;
 }
-void write_core(std::vector<graph_node>& A, size_t N, const intvec& init_nodes, intintMap& node_index, intvec& node_index_index, std::string dataname = "output/hgcore"){
+void write_core(size_t N, const intvec& init_nodes, intintMap& node_index, intvec& node_index_index, std::string dataname = "output/hgcore"){
 	std::string file = dataname+"_inopt.core";
     std::stringstream ss;
     for(size_t i=0; i<N; i++)
     {
-		if (A[i].valid) {
+		if (valid[i]) {
 			auto u = init_nodes[i];
-        	ss << u << "," << A[node_index_index[node_index[u]]].kcore << "\n";
+        	ss << u << "," << kcore[node_index_index[node_index[u]]] << "\n";
 		}
     }
     std::ofstream out(file.c_str());
@@ -660,15 +619,21 @@ int main (int argc, char *argv[]) {
 	// std::cout<<hypergraph_file<<"\n";
 	intvec init_nodes;
 	intintMap node_index;
-    if (IO_construct_hypergraph(hypergraph_file.c_str(), hyperedges, init_nodes,maximum_id) == 0){
+    if (IO_construct_hypergraph(hypergraph_file.c_str(), hyperedges, init_nodes, maximum_id) == 0){
         std::cout << "IO Error. Terminating..."<<"\n";
         return 1;
     }
 	size_t N = init_nodes.size();
-	std::vector<graph_node> A;	
 	intvec min_e_hindex( hyperedges.size() );// min edge h-index for optimization II
 	omp_lock_t *Elock = new omp_lock_t[hyperedges.size()]; // lock for hyperedges to apply optimization II without race-condition
 	omp_lock_t *Vlock = new omp_lock_t[N];
+	id.resize(N,0);
+	valid.resize(N,1);
+	kcore.resize(N,0);
+	active.resize(N,1);
+	num_nbrs.resize(N,0);
+	h_count.resize(N,intvec());
+	// std::cout<<"resized all\n";
 	intvec llb(N,0);
 	size_t glb;
 	for(size_t i = 0; i<N; i++) {
@@ -696,42 +661,65 @@ int main (int argc, char *argv[]) {
 		no_loadbalance(N,working_threads,B,prefixsum_partition,node_index_index, hyperedges,node_index,nbrs_N);
 	double lbtime = omp_get_wtime() - start_lb;
 	double start_all = omp_get_wtime();
-	size_t index = 0;
 	//  std::cout<<"Allocating A:\n";
-	for (size_t i = 0; i< working_threads; i++){
-	 	for(size_t j=0; j<B[i].size();j++){
-	 		graph_node new_node;
-    		new_node.id = B[i][j];
-	 		new_node.kcore = (nbrs_N[B[i][j]+1]-nbrs_N[B[i][j]]);
-			//std::cout<<"x\n";
-	 		new_node.h_count.resize(new_node.kcore+1);
-			//std::cout<<"y\n";
-	 		new_node.num_nbrs = new_node.kcore;
-	 		new_node.active = 1;
-	 		new_node.valid = 1;
-			A.push_back(new_node);
+	size_t i;
+	for (size_t i = 0,sum=0; i< working_threads; i++){	
+		sum+=B[i].size();
+		prefixsum_partition.push_back(sum);	
+	}
+	// for(auto p: prefixsum_partition)	std::cout<<p<<"\n";
+	#pragma omp parallel for schedule(dynamic) num_threads(working_threads)
+	for (i = 0; i< working_threads; i++){
+		size_t tid = omp_get_thread_num();
+		size_t index;
+		if (i==0) index = 0;
+		else	index = prefixsum_partition[i-1];
+		size_t h = B[i].size();
+	 	for(size_t j=0; j<h ;j++){
+	 		// graph_node new_node;
+    		// new_node.id = B[i][j];
+	 		// new_node.kcore = (nbrs_N[B[i][j]+1]-nbrs_N[B[i][j]]);
+			// //std::cout<<"x\n";
+	 		// new_node.h_count.resize(new_node.kcore+1);
+			// //std::cout<<"y\n";
+	 		// new_node.num_nbrs = new_node.kcore;
+	 		// new_node.active = 1;
+	 		// new_node.valid = 1;
+			// A.push_back(new_node);
+			id[index] = B[i][j];
+			auto nv = (nbrs_N[B[i][j]+1]-nbrs_N[B[i][j]]);
+			kcore[index] = nv;
+			// std::cout<<tid<<": "<<index<<"/"<<i<<" "<<j<< " "<<B[i][j]<<" "<<nv<<"\n";
+			h_count[index]= intvec(nv+1);
+			
+			num_nbrs[index] = nv;
+			active[index] = 1;
+			valid[index] = 1;
 	 		node_index_index[B[i][j]] = index;
 	 		index++;
 	 	}
-	 	prefixsum_partition.push_back(index);
+	 	// prefixsum_partition.push_back(index);
 		// B[i].resize(0);	B[i].shrink_to_fit();
 		// std::cout<<"done A for Thread "<<i<<"\n";
 	 }
-	// for(auto p: prefixsum_partition)	std::cout<<p<<"\n";
+	// for(int i = 0; i<N; i++)	std::cout<<i<<" "<<kcore[i]<<",";
+	// std::cout<<"\n";
+
 	// B.resize(0);
 	// B.shrink_to_fit();
 	double arrayofstructtime = omp_get_wtime() - start_all;
 	double init_time = omp_get_wtime() - start_init;
     //core-computation
+	std::cout<< arrayofstructtime;
 	double core_start = omp_get_wtime();
-	size_t steps = compute_k_core(N, working_threads, A, node_index_index, min_e_hindex, Elock, prefixsum_partition, llb, glb, nbrs_N, nbrs_F, inc_edges_N,inc_edges_F,hyperedges, node_index, true);
+	size_t steps = compute_k_core(N, working_threads, node_index_index, min_e_hindex, Elock, prefixsum_partition, llb, glb, nbrs_N, nbrs_F, inc_edges_N,inc_edges_F,hyperedges, node_index, true);
 	double core_time = omp_get_wtime() - core_start;
         printf("#Threads:%lu/Time:%f seconds/steps: %lu\n\n",working_threads, core_time,steps);
-	printf("Init time: %lf\n",init_time);
-	printf("initcore(): %lf\n",initctime);
-	printf("arrayofst time: %lf\n",arrayofstructtime);
-	printf("lb time: %lf\n",lbtime);
-	write_core(A, N, init_nodes, node_index, node_index_index, "../output/parout/"+std::string(argv[1])+"_"+argv[2]);
+	printf("init DS + Array init + LB: %lf\n",init_time);
+	printf("init DS: %lf\n",initctime);
+	printf("Array init(hindex,active array): %lf\n",arrayofstructtime);
+	printf("LB: %lf\n",lbtime);
+	write_core(N, init_nodes, node_index, node_index_index, "../output/parout/"+std::string(argv[1])+"_"+argv[2]);
 	if (lbflag)	output["algo"] = "LocalP(B+CSR)2";
 	else	output["algo"] = "LocalP(nolb)";
     output["dataset"]=argv[1];
