@@ -275,12 +275,8 @@ size_t init_cores(intintVec& hyperedges, intvec& min_e_hindex, intvec& llb, size
     /* Reads the incidence list init_nbr and initialises the data structure required for local core. */
     bool log = false;
 	size_t N = init_nodes.size();
-	double start_init = omp_get_wtime();
-        for(size_t i = 0; i<N; i++) {
-		node_index[init_nodes[i]] = i; // initialize node_index
-		omp_init_lock(&(Vlock[i]));
-	}
-	double init1 = omp_get_wtime() - start_init;
+	// double start_init = omp_get_wtime();
+	// double init1 = omp_get_wtime() - start_init;
 	// for(size_t i = 0; i<N; i++) {
 	// 	std::cout<< i<<": init_nodes[i] = "<<init_nodes[i]<<" mapped to node_index: "<<node_index[init_nodes[i]]<<"\n";
 	// }
@@ -653,21 +649,25 @@ int main (int argc, char *argv[]) {
     auto hypergraph_file = dataset_to_filename[argv[1]];
 	// std::cout<<hypergraph_file<<"\n";
 	intvec init_nodes;
+	intintMap node_index;
     if (IO_construct_hypergraph(hypergraph_file.c_str(), hyperedges, init_nodes,maximum_id) == 0){
         std::cout << "IO Error. Terminating..."<<"\n";
         return 1;
     }
 	size_t N = init_nodes.size();
-	// for(int i = 0; i<N; i++) std::cout<< init_nodes[i]<<"\n";
-    //initialisation 
-	double start_init = omp_get_wtime();
 	std::vector<graph_node> A;	
 	intvec min_e_hindex( hyperedges.size() );// min edge h-index for optimization II
 	omp_lock_t *Elock = new omp_lock_t[hyperedges.size()]; // lock for hyperedges to apply optimization II without race-condition
 	omp_lock_t *Vlock = new omp_lock_t[N];
 	intvec llb(N,0);
 	size_t glb;
-	intintMap node_index;
+	for(size_t i = 0; i<N; i++) {
+		node_index[init_nodes[i]] = i; // initialize node_index
+		omp_init_lock(&(Vlock[i]));
+	}
+	// for(int i = 0; i<N; i++) std::cout<< init_nodes[i]<<"\n";
+    //initialisation 
+	double start_init = omp_get_wtime();
 	size_t* nbrs_N = NULL;
 	size_t* nbrs_F = NULL;
 	size_t* inc_edges_N = NULL;
@@ -724,11 +724,11 @@ int main (int argc, char *argv[]) {
 	write_core(A, N, init_nodes, node_index, node_index_index, "../output/parout/"+std::string(argv[1])+"_"+argv[2]);
 	if (lbflag)	output["algo"] = "LocalP(B+CSR)2";
 	else	output["algo"] = "LocalP(nolb)";
-    	output["dataset"]=argv[1];
-    	output["num_threads"] = std::to_string(working_threads);
-    	output["execution time"]= std::to_string(core_time);
+    output["dataset"]=argv[1];
+    output["num_threads"] = std::to_string(working_threads);
+    output["execution time"]= std::to_string(core_time);
 	output["init_time"] = std::to_string(init_time);
-    	output["total iteration"] = std::to_string(steps);
+    // output["total iteration"] = std::to_string(steps);
 	if (lbflag)	write_results(output,"../output/parout/inresults.csv");
 	else 	write_results(output,"../output/parout/inresults_nolb.csv");
 	
