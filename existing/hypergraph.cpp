@@ -121,6 +121,28 @@
             }
         }
     }
+    void Hypergraph:: writeneighborhood(std::string file= "../output/log_dblpNv.csv"){
+        std::stringstream ss;
+        if(init_nbr.size()==0)  init_nbrs();
+        for(auto pair: init_nbr){
+            auto node = pair.first;
+            ss<<node<<",";
+            int _count = 0;
+            int N = pair.second.size();
+            for (auto nbr_v: pair.second){
+                _count++;
+                if(_count<N) ss<<nbr_v<<",";
+                else    ss<<nbr_v<<"\n";
+            }
+        }
+        std::ofstream out(file.c_str());
+        if(out.fail())
+        {
+            out.close();
+        }
+        out << ss.str();
+        out.close();
+    }
     size_t  Hypergraph:: get_number_of_nbrs(std::string v){
         std::set<std::string> nbrs;
         auto incident_edges = inc_dict[v];  //# {O(1)}

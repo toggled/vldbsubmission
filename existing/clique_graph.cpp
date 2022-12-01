@@ -210,13 +210,17 @@ int main(int argc, char *argv[])
             if(argc>=4){
                 alg = argv[3];
             }
-            std::cout<<argv[2]<<" "<<argv[3]<<"\n";
+            
+            // std::cout<<argv[2]<<" "<<argv[3]<<"\n";
             std::cout<<"Clique graph\n";
             std::string init_type = "nbr"; // or "lub" (local upper bound)
             // h.initialise();
             clock_t ck_start = clock();
             getClique(h);
             h.initialise();
+            if (argc>=5){
+                if (atoi(argv[4])!=0)   h.writeneighborhood("../output/log_"+h.dataset+"_Nv.csv");
+            }
             // h.printHypergraph();
             auto ck_time = double(clock()-ck_start)/double(CLOCKS_PER_SEC);
             // std::cout <<"E-Peel\n";

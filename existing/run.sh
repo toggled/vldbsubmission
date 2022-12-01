@@ -5,7 +5,7 @@
 declare -a dset=("bin_2" "bin_5"  "contact" "congress" "enron" "dblp" "pref")
 for dataset in "${dset[@]}"
 do
-	./bpmain 1 $dataset bipartite
+	./bpmain 1 $dataset bipartite 1
 
 done
 
