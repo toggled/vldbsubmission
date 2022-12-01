@@ -323,12 +323,16 @@ int main(int argc, char *argv[])
             std::cout<<"Bipartite graph\n";
             // std::string init_type = "nbr"; // or "lub" (local upper bound)
             h.initialise();
+            if (argc>=5){
+                if (atoi(argv[4])!=0)   h.writeneighborhood("../output/log_"+h.dataset+"_Nv.csv");
+                return 0;
+            }
             Algorithm a(h);
             // if(algo=="E-Peel"){
             //     bipartitedist2core(h);
             // }
             // else if(algo=="bipartite"){
-                bipartitedist2core_local(h,a);
+            bipartitedist2core_local(h,a);
             // }
             a.output["num_threads"] = std::to_string(num_threads);
             a.write_results();

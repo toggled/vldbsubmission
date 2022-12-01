@@ -5,10 +5,12 @@
 #include <map>
 #include <unordered_map>
 #include <string> 
-#include <iostream>
 #include <set>
 #include <algorithm>
 #include <limits>
+#include <iostream>
+#include <sstream>
+#include <fstream>
 
 typedef std::unordered_map<std::string, size_t> strInthashMap;
 typedef  std::map<std::string, size_t> strIntMap;
@@ -56,5 +58,6 @@ class Hypergraph{
 
     void test_initialisation();
     void printHypergraph();
+    void writeneighborhood(std::string);
 };
 #endif

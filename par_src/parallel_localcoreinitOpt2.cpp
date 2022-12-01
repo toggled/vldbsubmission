@@ -710,11 +710,11 @@ int main (int argc, char *argv[]) {
 	double arrayofstructtime = omp_get_wtime() - start_all;
 	double init_time = omp_get_wtime() - start_init;
     //core-computation
-	std::cout<< arrayofstructtime;
+	// std::cout<< arrayofstructtime;
 	double core_start = omp_get_wtime();
 	size_t steps = compute_k_core(N, working_threads, node_index_index, min_e_hindex, Elock, prefixsum_partition, llb, glb, nbrs_N, nbrs_F, inc_edges_N,inc_edges_F,hyperedges, node_index, true);
 	double core_time = omp_get_wtime() - core_start;
-        printf("#Threads:%lu/Time:%f seconds/steps: %lu\n\n",working_threads, core_time,steps);
+    printf("#Threads:%lu/Time:%f seconds/steps: %lu\n\n",working_threads, core_time,steps);
 	printf("init DS + Array init + LB: %lf\n",init_time);
 	printf("init DS: %lf\n",initctime);
 	printf("Array init(hindex,active array): %lf\n",arrayofstructtime);
