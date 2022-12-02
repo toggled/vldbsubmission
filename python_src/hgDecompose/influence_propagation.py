@@ -81,7 +81,7 @@ def propagate_for_all_vertices_for_kd(H, kd_core, num_vertex_per_core=100, top_k
         # allow top_k core
         if(core_number[0] in visited_core_number):
             continue
-        if(len(visited_core_number) > top_k):
+        if(len(visited_core_number) >= top_k):
             break
 
         visited_core_number.append(core_number[0])

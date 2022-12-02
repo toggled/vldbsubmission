@@ -8,7 +8,9 @@ import networkx as nx
 # from hgDecompose.newhgDecompose import HGDecompose
 from hgDecompose.optimizedhgDecompose import HGDecompose
 from hgDecompose.utils import get_hg,check_connectivity,writeHypergraphHg
-from hgDecompose.influence_propagation import propagate_for_all_vertices, propagate_for_random_seeds, run_intervention_exp2,run_intervention_exp2_explain,run_intervention_exp2_explain_splen, propagate_for_all_vertices_for_kd
+# from hgDecompose.influence_propagation import propagate_for_all_vertices, propagate_for_random_seeds, run_intervention_exp2,run_intervention_exp2_explain,run_intervention_exp2_explain_splen, propagate_for_all_vertices_for_kd
+from hgDecompose.influence_propagation_new import propagate_for_all_vertices, propagate_for_all_vertices_for_kd
+
 import argparse
 import pandas as pd
 import pickle
@@ -36,10 +38,11 @@ args = parser.parse_args()
 # Pandemic propagation
 if(args.sir or args.sir_kd or args.sir_exp2 or args.sir_exp3 or args.sir_exp3_explanation or args.sir_exp3_explanation_splen):
 
-    input_H = get_hg(args.dataset)
+    if(False):
+        input_H = get_hg(args.dataset)
 
-    H = deepcopy(input_H)
-    assert H is not None
+        H = deepcopy(input_H)
+        assert H is not None
 
     # Loading/saving to file
     os.system("mkdir -p tests/tmp")
@@ -78,9 +81,12 @@ if(args.sir or args.sir_kd or args.sir_exp2 or args.sir_exp3 or args.sir_exp3_ex
             hgDecompose = pickle.load(handle)
             core_base = hgDecompose.core
             
+            # revise core_base
+            core_base_new = {}
+            for v in core_base:
+                core_base_new[int(v)] = int(core_base[v])
+            core_base = core_base_new
     
-    #quit()
-    # print(core_base)
     entry = {}
     entry['dataset'] = args.dataset
     entry['p'] = float(args.prob)
@@ -106,13 +112,28 @@ if(args.sir or args.sir_kd or args.sir_exp2 or args.sir_exp3 or args.sir_exp3_ex
     entry['intervention_results'] = None
     entry['max propagation time'] = None
 
-    
+    dic_neighborhood = {
+        "enron" : "../data/neighborhood_files/log_enron_Nv.csv",
+        "dblp" : "../data/neighborhood_files/log_dblp_Nv.csv",
+    }
+
+    # get neighborhood information
+    neighbor = {}
+    with open(dic_neighborhood[args.dataset]) as file:
+        for line in file:
+            vs = line.strip().split(",")
+            assert vs[0] not in neighbor
+            neighbor[int(vs[0])] = list(map(int, vs[1:]))
+            for u in neighbor[int(vs[0])]:
+                assert type(u) == int
+            assert int(vs[0]) in core_base
     
     if(args.sir):
-        entry['result'] = propagate_for_all_vertices(H, core_base, num_iterations=args.max_propagation_time, p = float(args.prob), verbose=args.verbose)
+        entry['result'] = propagate_for_all_vertices(neighbor, core_base, num_iterations=args.max_propagation_time, p = float(args.prob), verbose=args.verbose)
         entry['max propagation time'] = args.max_propagation_time
-        # import pprint
-        # pprint.pprint(entry['result'])
+        
+
+
         result = pd.DataFrame()
         result = result.append(entry, ignore_index=True)
         result.to_csv('../output/propagation_result.csv', header=False,
@@ -145,15 +166,24 @@ if(args.sir or args.sir_kd or args.sir_exp2 or args.sir_exp3 or args.sir_exp3_ex
         import pandas as pd
         kd_result = pd.read_csv("../data/kdcore_" + args.dataset + ".csv", header=None)
         kd_result.columns = ['vertex', 'k', 'd']
+        
+        
         # kd_result.sort_values(by=['k', 'd'], ascending=False, inplace=True)
-
         kd = {} # a dictionary, where key = (k, d) and value is a list of vertex belonging to that (k, d) core
         for key, item in kd_result.groupby(['k', 'd'], as_index=False):
             # print(item[''])
             assert len(item['vertex'].unique()) == item.shape[0]
-            kd[key] = list(item['vertex'].unique())
-       
-        entry['result'] = propagate_for_all_vertices_for_kd(H, kd, num_iterations=args.max_propagation_time, p = float(args.prob), verbose=args.verbose)
+            kd[(int(key[0]), int(key[1]))] = list(map(int, item['vertex'].unique()))
+            # print(kd[(int(key[0]), int(key[1]))])
+            for v in kd[(int(key[0]), int(key[1]))]:
+                assert type(v) == int
+                assert v in neighbor
+            # quit()
+        
+        # import pprint
+        # pprint.pprint(kd)
+
+        entry['result'] = propagate_for_all_vertices_for_kd(neighbor, kd, num_iterations=args.max_propagation_time, p = float(args.prob), verbose=args.verbose)
         entry['max propagation time'] = args.max_propagation_time
         result = pd.DataFrame()
         result = result.append(entry, ignore_index=True)
