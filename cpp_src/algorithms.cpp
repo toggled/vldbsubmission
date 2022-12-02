@@ -6,6 +6,7 @@
 #include <set>
 #include <algorithm>
 #include <unordered_set>
+#include <unordered_map>
 #include "hypergraph.h"
 #include "algorithms.h"
 #include "utils.h"
@@ -133,7 +134,7 @@ Algorithm::~Algorithm(){}
 
 // ------------------------------------------------------------------------ Peel ------------------------------------------------------------------------------------
 
-void iterate_nbrs(size_t v, intvec & nbrs, uintsetvec & inc_dict, intintvec e_id_to_edge){
+void iterate_nbrs(size_t v, intvec & nbrs, uintsetvec & inc_dict, intintvec& e_id_to_edge){
     /* Returns the set of neighbours of v.
         implements a traversal from vertex v to each of its neighbours in contrast to set in neighbors(). 
         It also returns an iterator. So it avoids creating the neighborhood list explicitely.
@@ -184,6 +185,106 @@ size_t get_number_of_nbrs(size_t v, uintsetvec & inc_dict, intintvec &e_id_to_ed
         }
     }
     return nbrs.size();
+}
+void Peel( std::string dataset, intintvec e_id_to_edge, intvec init_nodes, intIntMap& node_index, Algorithm& a, bool log){
+    a.output["algo"] = "Peel";
+    clock_t start, end;
+    start = clock();
+    size_t N = init_nodes.size();
+    intuSetintMap bucket;
+    intvec core(N);
+    intvec inverse_bucket(N);
+    uintsetvec inc_dict(N, uintSet{});
+    uintsetvec init_nbr(N, uintSet{});  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
+    intintvec edges( e_id_to_edge.size() ,intvec{});
+    for(size_t eid = 0; eid < e_id_to_edge.size(); eid++){
+        auto elem = e_id_to_edge[eid];
+        auto edge_sz = elem.size();
+        for(auto v_id: elem){
+            // initialise number of neighbours and set of neighbours
+            auto j = node_index[v_id];  
+            // std::cout<<j<<" ";
+            inc_dict[j].insert(eid);
+            edges[eid].push_back(j);
+            auto _tmp = &init_nbr[j];
+            for (auto u: elem){
+                if (u!=v_id){
+                    _tmp->insert(node_index[u]);
+                }
+            }
+            // if ( init_nbr.find(v_id) == init_nbr.end() ) { // first insertion of v_id to init_nbr map
+            //     auto _tmp = strset();
+            //     int _tmp_sz = 0;
+            //     for (auto u: elem.second){
+            //         if (u!=v_id){
+            //             _tmp.insert(u);
+            //             _tmp_sz+=1;
+            //         }
+            //     }
+            //     init_nbr[v_id] = std::move(_tmp);
+            //     init_nbrsize[v_id] = _tmp_sz;
+            // }
+            // else{  // v_id exists in init_nbr map
+            //     auto _tmp = &init_nbr[v_id];
+            //     for (auto u: elem.second){
+            //         if (u!=v_id){
+            //             _tmp->insert(u);
+            //         }
+            //     }
+            //     init_nbrsize[v_id] = init_nbr[v_id].size();
+            // }
+        }
+    }
+    clock_t e_tm = clock();
+    a.output["init_time"] = std::to_string(double(e_tm - start) / double(CLOCKS_PER_SEC));
+    start = clock();
+    // # Initialise buckets
+    for (auto node : init_nodes){
+        auto i = node_index[node];
+        auto len_neighbors = init_nbr[i].size();
+        inverse_bucket[i] = len_neighbors;
+        if (bucket.find(len_neighbors) == bucket.end()){
+            bucket[len_neighbors] = uintSet();
+        }
+        bucket[len_neighbors].insert(i);
+    }
+    for (size_t k=1; k<= N; k++){
+        while (true){
+            if (bucket[k].size()==0)    break;
+            auto set_it = bucket[k].begin();  //# get first element in the bucket
+            auto v = *set_it;
+            bucket[k].erase(set_it);
+
+            core[v] = k;
+            intvec nbr_v;
+            iterate_nbrs(v, nbr_v, inc_dict, edges);
+            removeV_transform(v,inc_dict, edges);
+            // # enumerating over all neighbors of v
+            for (auto u : nbr_v){
+                auto len_neighbors_u = get_number_of_nbrs(u, inc_dict, edges);
+                if (log)    a.num_nbr_queries += 1;
+                // if (nbrquery_stat.find(u) == nbrquery_stat.end()) nbrquery_stat[u] = 0;
+                // else    nbrquery_stat[u]+=1;
+                auto max_value = std::max(len_neighbors_u, k);
+
+                // # Move u to new location in bucket
+                bucket[inverse_bucket[u]].erase(u); // erase u from previous bucket index
+                if (bucket.find(max_value) == bucket.end())
+                    bucket[max_value] = uintSet();
+                bucket[max_value].insert(u); // insert u to new bucket index
+                inverse_bucket[u] = max_value; // update bucket index
+            }
+        }
+    }
+    end = clock();
+    a.exec_time = double(end - start) / double(CLOCKS_PER_SEC);
+    a.output["execution time"]= std::to_string(a.exec_time);
+    for(auto node : init_nodes)
+    {
+        auto i = node_index[node];
+        a.core[node] = core[i];
+        // std::cout<<a.core[node]<<"-"<<pcore[i]<<"-"<<node<<"-"<<i<<"\n";
+    }
 }
 
 // --------------------------------------------------------------- Local-Core (Base algorithm) -----------------------------------------------------------------------

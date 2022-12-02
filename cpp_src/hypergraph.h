@@ -12,7 +12,7 @@
 #include <unordered_set>
 
 typedef std::unordered_map<std::string, size_t> strInthashMap;
-typedef  std::map<size_t, size_t> intIntMap;
+typedef  std::unordered_map<size_t, size_t> intIntMap;
 typedef  std::map<std::string, size_t> strIntMap;
 typedef  std::map<std::string, std::vector<size_t>> strvIntMap;
 typedef  std::map<std::string, std::vector<std::string>> strvStrMap;

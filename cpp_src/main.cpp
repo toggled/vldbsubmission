@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
                     local_core_OPTI(h.dataset, h.hyperedges, h.init_nodes, h.node_index, a, log);
                     a.output["num_threads"] = std::to_string(num_threads);
                     std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
-			a.write_results();
+                    a.write_results();
                    if(i==iterations && log){
                         a.writecore();
                         a.writelog();
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
                     local_core_OPTII(h.dataset, h.hyperedges, h.init_nodes, h.node_index, a, log);
                     a.output["num_threads"] = std::to_string(num_threads);
                     std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
-			a.write_results();
+                    a.write_results();
                     if(i==iterations && log){
                         a.writecore();
                         a.writelog();
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
                     local_core_OPTIII(h.dataset, h.hyperedges, h.init_nodes, h.node_index, a, log);
                     a.output["num_threads"] = std::to_string(num_threads);
                     std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
-			a.write_results();
+                    a.write_results();
                     if(i==iterations && log){
                         a.writecore();
                         a.writelog();
@@ -102,26 +102,27 @@ int main(int argc, char *argv[])
                     local_core_OPTIV(h.dataset, h.hyperedges, h.init_nodes, h.node_index, a, log);
                     a.output["num_threads"] = std::to_string(num_threads);
                     std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
-			a.write_results();
+                    a.write_results();
                     if(i==iterations && log){
                         std::cout<<"Sum(Nu - cu) "<<a.nu_cu<<"\n";
                         a.writecore();
                         a.writelog();
                     }
                 }
-                // if (alg == "Peel"){    
-                //     std::cout <<"Peel\n";
-                //     Algorithm a(h);
-                //     Peel(h.dataset, h.e_id_to_edge, h.inc_dict, h.init_nodes, a,log);
-                //     a.output["num_threads"] = std::to_string(num_threads);
-                //     a.output["total iteration"] = std::to_string(0);
-                //     a.write_results();
-                //     if(i==iterations && log){
-                //         std::cout<<"Execution time "<< a.exec_time<<"\n";
-                //         a.writecore();
-                //         a.writeNbrQ();
-                //     }
-                // }
+                if (alg == "Peel"){    
+                    std::cout <<"Peel\n";
+                    Algorithm a(h);
+                    Peel(h.dataset, h.hyperedges, h.init_nodes, h.node_index, a, log);
+                    a.output["num_threads"] = std::to_string(num_threads);
+                    a.output["total iteration"] = std::to_string(0);
+                    std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
+                    a.write_results();
+                    if(i==iterations && log){
+                        std::cout<<"Execution time "<< a.exec_time<<"\n";
+                        a.writecore();
+                        a.writeNbrQ();
+                    }
+                }
                 // if (alg == "E-Peel"){    
                 //     std::cout <<"E-Peel\n";
                 //     Algorithm a(h);
