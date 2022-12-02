@@ -13,14 +13,14 @@
 //--------------------------------------------------------------------- Utility functions ------------------------------------------------------------------------------
 
 void Algorithm::printcore(){
-    std::cout << "core: \n";
+    //std::cout << "core: \n";
     for(const auto& elem : core)
     {
     std::cout << elem.first << "->"<<elem.second<<"\n";
     }
 }
 void Algorithm::writecore(){
-    std::cout << "core: \n";
+    //std::cout << "core: \n";
     std::string file = "../output/core_"+output["algo"]+"_"+hg.dataset+".csv";
     std::cout<<"writing to: "<<file<<"\n";
     std::stringstream ss;
