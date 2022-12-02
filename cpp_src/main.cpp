@@ -52,11 +52,10 @@ int main(int argc, char *argv[])
                     local_core(h.dataset, h.hyperedges, h.init_nodes, h.node_index, a, log);
                     a.output["num_threads"] = std::to_string(num_threads);
                     // a.printcore();
-                    // a.write_results();
+                    a.write_results();
                     // a.writecore();
                     std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
                     if(i==iterations && log){
-                        std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
                         a.writecore();
                         a.writelog();
                     }
@@ -66,12 +65,9 @@ int main(int argc, char *argv[])
                     Algorithm a(h);
                     local_core_OPTI(h.dataset, h.hyperedges, h.init_nodes, h.node_index, a, log);
                     a.output["num_threads"] = std::to_string(num_threads);
-                    // a.write_results();
-                    // a.writecore();
                     std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
-
+			a.write_results();
                    if(i==iterations && log){
-                        std::cout<<"Execution time "<< a.exec_time<<"\n";
                         a.writecore();
                         a.writelog();
                     }
@@ -81,12 +77,9 @@ int main(int argc, char *argv[])
                     Algorithm a(h);
                     local_core_OPTII(h.dataset, h.hyperedges, h.init_nodes, h.node_index, a, log);
                     a.output["num_threads"] = std::to_string(num_threads);
-                    // a.write_results();
                     std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
-                    a.writecore();
-
+			a.write_results();
                     if(i==iterations && log){
-                        std::cout<<"Execution time "<< a.exec_time<<"\n";
                         a.writecore();
                         a.writelog();
                     }
@@ -96,12 +89,9 @@ int main(int argc, char *argv[])
                     Algorithm a(h);
                     local_core_OPTIII(h.dataset, h.hyperedges, h.init_nodes, h.node_index, a, log);
                     a.output["num_threads"] = std::to_string(num_threads);
-                    // a.write_results();
                     std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
-                    a.writecore();
-
+			a.write_results();
                     if(i==iterations && log){
-                        std::cout<<"Execution time "<< a.exec_time<<"\n";
                         a.writecore();
                         a.writelog();
                     }
@@ -112,10 +102,8 @@ int main(int argc, char *argv[])
                     local_core_OPTIV(h.dataset, h.hyperedges, h.init_nodes, h.node_index, a, log);
                     a.output["num_threads"] = std::to_string(num_threads);
                     std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
-                    a.writecore();
-                    // a.write_results();
+			a.write_results();
                     if(i==iterations && log){
-                        std::cout<<"Execution time "<< a.exec_time<<"\n";
                         std::cout<<"Sum(Nu - cu) "<<a.nu_cu<<"\n";
                         a.writecore();
                         a.writelog();
