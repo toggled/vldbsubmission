@@ -1,3 +1,5 @@
+#ifndef READHG_H
+#define READHG_H
 #include <fstream>
 #include <sstream>
 #include <map>
@@ -8,7 +10,7 @@
 #include "hypergraph.h"
 
 std::map <std::string,std::string> dataset_to_filename = {
-            
+            {"default" , "../data/datasets/synthetic/default.hyp"},
             {"enron" , "../data/datasets/real/Enron.hyp"},
             {"congress" , "../data/datasets/real/congress-bills.hyp"},
             {"contact" , "../data/datasets/real/contact-primary-school.hyp"},
@@ -53,3 +55,4 @@ void getHg(std::string dataname, Hypergraph & hg){
     }
     // hg.print();
 }
+#endif
