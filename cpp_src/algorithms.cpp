@@ -212,27 +212,6 @@ void Peel( std::string dataset, intintvec e_id_to_edge, intvec init_nodes, intIn
                     _tmp->insert(node_index[u]);
                 }
             }
-            // if ( init_nbr.find(v_id) == init_nbr.end() ) { // first insertion of v_id to init_nbr map
-            //     auto _tmp = strset();
-            //     int _tmp_sz = 0;
-            //     for (auto u: elem.second){
-            //         if (u!=v_id){
-            //             _tmp.insert(u);
-            //             _tmp_sz+=1;
-            //         }
-            //     }
-            //     init_nbr[v_id] = std::move(_tmp);
-            //     init_nbrsize[v_id] = _tmp_sz;
-            // }
-            // else{  // v_id exists in init_nbr map
-            //     auto _tmp = &init_nbr[v_id];
-            //     for (auto u: elem.second){
-            //         if (u!=v_id){
-            //             _tmp->insert(u);
-            //         }
-            //     }
-            //     init_nbrsize[v_id] = init_nbr[v_id].size();
-            // }
         }
     }
     clock_t e_tm = clock();
@@ -276,6 +255,121 @@ void Peel( std::string dataset, intintvec e_id_to_edge, intvec init_nodes, intIn
             }
         }
     }
+    end = clock();
+    a.exec_time = double(end - start) / double(CLOCKS_PER_SEC);
+    a.output["execution time"]= std::to_string(a.exec_time);
+    for(auto node : init_nodes)
+    {
+        auto i = node_index[node];
+        a.core[node] = core[i];
+        // std::cout<<a.core[node]<<"-"<<pcore[i]<<"-"<<node<<"-"<<i<<"\n";
+    }
+}
+
+// ----------------------------------------------------------------------- E-Peel ------------------------------------------------------------------------------------
+void EPeel( std::string dataset, intintvec e_id_to_edge, intvec init_nodes, intIntMap& node_index, Algorithm& a, bool log){
+    a.output["algo"] = "E-Peel";
+    clock_t start, end;
+    start = clock();
+    size_t N = init_nodes.size();
+    intuSetintMap bucket;
+    intvec core(N);
+    std::vector<bool> setlb(N);
+    intvec inverse_bucket(N);
+    uintsetvec inc_dict(N, uintSet{});
+    uintsetvec init_nbr(N, uintSet{});  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
+    intintvec edges( e_id_to_edge.size() ,intvec{});
+    for(size_t eid = 0; eid < e_id_to_edge.size(); eid++){
+        auto elem = e_id_to_edge[eid];
+        auto edge_sz = elem.size();
+        for(auto v_id: elem){
+            // initialise number of neighbours and set of neighbours
+            auto j = node_index[v_id];  
+            // std::cout<<j<<" ";
+            inc_dict[j].insert(eid);
+            edges[eid].push_back(j);
+            auto _tmp = &init_nbr[j];
+            for (auto u: elem){
+                if (u!=v_id){
+                    _tmp->insert(node_index[u]);
+                }
+            }
+        }
+    }
+    clock_t e_tm = clock();
+    a.output["init_time"] = std::to_string(double(e_tm - start) / double(CLOCKS_PER_SEC));
+    start = clock();
+    
+    size_t glb, gub;
+    intvec llb(N);
+    glb = std::numeric_limits<size_t>::max();
+    gub = std::numeric_limits<size_t>::min();
+    // # Computing global lower bounds & bucket initialization
+    for (size_t i = 0; i<N; i++){
+        auto len_neighbors_i = init_nbr[i].size();
+        glb = std::min(glb,len_neighbors_i);
+        gub = std::max(gub, len_neighbors_i);
+        inverse_bucket[i] = len_neighbors_i;
+        if (bucket.find(len_neighbors_i) == bucket.end()){
+            bucket[len_neighbors_i] = uintSet();
+        }
+        bucket[len_neighbors_i].insert(i);
+    }
+        // Computing Local lower bound 
+    for (size_t i=0; i<N; i++){
+        auto _maxv = std::numeric_limits<size_t>::min();
+        for (auto e_id : inc_dict[i]){
+            size_t vec_sz = edges[e_id].size();
+            _maxv = std::max(_maxv, vec_sz - 1);
+        }
+        llb[i] = std::max(_maxv, glb);
+    }
+    for (size_t k = glb; k <= gub; k++){
+        while (true){
+            if (bucket[k].size()==0)    break;
+            auto set_it = bucket[k].begin();  //# get first element in the bucket
+            auto v = *set_it;
+            bucket[k].erase(set_it);
+            if (setlb[v]){
+                size_t len_nbr_v = get_number_of_nbrs(v,inc_dict, edges);
+                if (log)    a.num_nbr_queries += 1;
+                // if (nbrquery_stat.find(v) == nbrquery_stat.end()) nbrquery_stat[v] = 0;
+                // else    nbrquery_stat[v]+=1;
+                len_nbr_v = std::max(len_nbr_v,k);
+                if (bucket.find(len_nbr_v) == bucket.end())
+                    bucket[len_nbr_v] = uintSet();
+                bucket[len_nbr_v].insert(v);
+                
+                // # update new location of u
+                inverse_bucket[v] = len_nbr_v;
+                setlb[v] = false;
+            }
+            else{
+                core[v] = k;
+                intvec nbr_v;
+                iterate_nbrs(v, nbr_v, inc_dict, edges);
+                removeV_transform(v, inc_dict, edges);  //# Store.... + executation time..
+    
+                for (auto u : nbr_v)
+                    if (!setlb[u]){
+                        auto len_neighbors_u = get_number_of_nbrs(u, inc_dict, edges);
+                        if (log)    a.num_nbr_queries += 1;
+                        // if (nbrquery_stat.find(u) == nbrquery_stat.end()) nbrquery_stat[u] = 0;
+                        // else    nbrquery_stat[u]+=1;
+                        auto  max_value = std::max(len_neighbors_u, k);
+                        bucket[inverse_bucket[u]].erase(u);
+                        if (bucket.find(max_value) == bucket.end())
+                            bucket[max_value] = uintSet();
+                        bucket[max_value].insert(u);
+            
+    //                     # update new location of u
+                        inverse_bucket[u] = max_value;
+
+                    }
+            }
+        }
+    }
+
     end = clock();
     a.exec_time = double(end - start) / double(CLOCKS_PER_SEC);
     a.output["execution time"]= std::to_string(a.exec_time);
