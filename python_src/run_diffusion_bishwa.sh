@@ -55,8 +55,22 @@
 # # python run.py --sir_kd 1 --dataset dblp --max_propagation_time 2 --algo naive_nbr
 # # python run.py --sir_kd 1 --dataset dblp --max_propagation_time 2 --algo naive_degree
 
-rm ../output/propagation_result.csv
-time python run.py --sir 1 --dataset dblp --max_propagation_time 100 --algo naive_nbr
-time python run.py --sir 1 --dataset dblp --max_propagation_time 100 --algo naive_degree
-time python run.py --sir 1 --dataset dblp --max_propagation_time 100 --algo graph_core
+
+# =====================================================================
+# 9(a) experiment
+# =====================================================================
+
+# rm ../output/propagation_result.csv
+# time python run.py --sir 1 --dataset dblp --max_propagation_time 100 --algo naive_nbr
+# time python run.py --sir 1 --dataset dblp --max_propagation_time 100 --algo naive_degree
+# time python run.py --sir 1 --dataset dblp --max_propagation_time 100 --algo graph_core
 # time python run.py --sir_kd 1 --dataset enron --max_propagation_time 100 --algo naive_nbr
+
+
+
+python SirApplication3data.py --level 2 -a naive_nbr -d enron --num_delete -1
+python run.py -sir_exp3 1 -a naive_nbr -d enron --num_delete -1
+python SirApplication3data.py --level 2 -a naive_degree -d enron --num_delete -1
+python run.py -sir_exp3 1 -a naive_degree -d enron --num_delete -1
+python SirApplication3data.py --level 2 -a graph_core -d enron --num_delete -1
+python run.py -sir_exp3 1 -a graph_core -d enron --num_delete -1

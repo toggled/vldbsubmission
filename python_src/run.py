@@ -9,7 +9,7 @@ import networkx as nx
 from hgDecompose.optimizedhgDecompose import HGDecompose
 from hgDecompose.utils import get_hg,check_connectivity,writeHypergraphHg
 # from hgDecompose.influence_propagation import propagate_for_all_vertices, propagate_for_random_seeds, run_intervention_exp2,run_intervention_exp2_explain,run_intervention_exp2_explain_splen, propagate_for_all_vertices_for_kd
-from hgDecompose.influence_propagation_new import propagate_for_all_vertices, propagate_for_all_vertices_for_kd
+from hgDecompose.influence_propagation_new import propagate_for_all_vertices, propagate_for_all_vertices_for_kd, run_intervention_exp2
 
 import argparse
 import pandas as pd
@@ -149,8 +149,8 @@ if(args.sir or args.sir_kd or args.sir_exp2 or args.sir_exp3 or args.sir_exp3_ex
         # entry['intervention_results'] = run_intervention_exp(H, core_base, p = float(args.prob),verbose = args.verbose)
         # entry['intervention_results'] = run_intervention_exp2(args.dataset+"_"+args.algo, original_n = len(H.nodes()), p = float(args.prob),verbose = args.verbose)
         entry['intervention_results'] = run_intervention_exp2(args.dataset+"_"+args.algo + "_" + str(args.num_delete), original_n = None, p = float(args.prob),verbose = args.verbose)
-        import pprint
-        pprint.pprint(entry['intervention_results'])
+        # import pprint
+        # pprint.pprint(entry['intervention_results'])
         entry['num delete'] = args.num_delete
         result = pd.DataFrame()
         result = result.append(entry, ignore_index=True)
