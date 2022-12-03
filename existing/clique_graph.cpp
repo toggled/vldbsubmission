@@ -4,9 +4,80 @@
 #include "readhg.h"
 #include "hypergraph.h"
 #include "algorithms.h"
+#include <set>
 // #include "utils.h"
 
 typedef std::map<std::string, std::string> strstrMap;
+template <typename T>
+bool isSubsetOrEqual(std::set<T> const& a, std::set<T> const& b) {
+   for(auto const& av:a){
+      if(std::find(b.begin(),b.end(),av)==b.end())
+          return false;
+   }
+   return true;
+}
+int check_condition(Hypergraph& h, strIntMap& core){
+    /*
+    Checks that the sub-hypergraph induced by all nodes v with c(v)>=k has at least k neighhbors
+    in that sub-hypergraph \forall k \in [min_v c(v), max_v c(v) ]. (Coreness condition)
+    */
+    // std::set<std::pair<size_t,size_t>> core_pairs;
+    std::set<size_t> core_values;
+    int incorrect = 0;
+    for (auto node : h.init_nodes){
+        // std::cout<<node<<"\n";
+        // std::pair<size_t,size_t> x = std::make_pair(core[node],secondcore[node]);
+        core_values.insert(core[node]);
+    }
+    bool condition_true = true;
+    for(auto p: core_values){
+        // auto p = x.second;
+        // std::cout<<p<<" - "<<s<<"\n";
+        std::set<std::string> subnodes;
+        for(auto node: h.init_nodes){
+            // if (core[node]>= p){
+            if (core[node]>= p){
+                subnodes.insert(node);
+            }
+        }
+        // for(auto u: subnodes)   std::cout<<u<<" ";
+        // std::cout<<"\n";
+        Hypergraph subH;
+        size_t count = 0;
+        for(auto y: h.e_id_to_edge){
+            // auto id = y.first;
+            auto strvecE = std::set<std::string>(y.second.begin(),y.second.end());
+            if (isSubsetOrEqual(strvecE,subnodes)){
+                subH.addEdge(count++,y.second);
+            }
+        }
+        subH.initialise();
+        subH.init_nbrs();
+        condition_true = true;
+        std::string violoating_node;
+        for(auto node: subH.init_nodes){
+            // if (subH.init_nbrsize[node]< p){
+            if (subH.init_nbrsize[node]< p){
+                condition_true = false;
+                violoating_node = node;
+            }
+        }
+        if (!condition_true){
+            std::cout<< "violating core: ("<<p<<")\n";
+            std::cout << "violating node: "<<violoating_node<<"\n";
+            incorrect+=1;
+            // std::cout<<"sub-hyp.\n";
+            // subH.printHypergraph();
+            // std::cout<<"violating node nbr: ";
+            // for (auto u: subH.init_nbr[violoating_node]) std::cout<< u<<" ";
+            // std::cout<<"\n";
+        }
+    }
+    if (condition_true){
+        std::cout<< "No violation\n";
+    }
+    return incorrect;
+}
 
 size_t hIndex_CSR(size_t l, size_t r, size_t nbrs_f[], intvec & pcore) {
     if(l==r)
@@ -30,7 +101,7 @@ size_t hIndex_CSR(size_t l, size_t r, size_t nbrs_f[], intvec & pcore) {
 }
 
 void local_core_clique( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, std::map<std::string, std::set<size_t> > &inc_dict, strvec &init_nodes, Algorithm& a){   
-    std::cout<<"local-core(clique)\n";
+    std::cout<<"local-coreclique\n";
     clock_t start, end;
     clock_t start1,end1,start2,end2,start3,end3;
     /* Recording the starting clock tick.*/
@@ -127,7 +198,7 @@ void local_core_clique( std::string dataset, std::map<size_t, strvec > &e_id_to_
     for (size_t i = 0; i < N; i++){
         // printf("%d processing: %d\n",omp_get_thread_num(),i);
         pcore[i] = nbrsizes[i]; // initialize pcore
-        // llb[i] = std::max(llb[i],glb);
+        llb[i] = std::max(llb[i],glb);
     }
     
     if (log){
@@ -144,33 +215,33 @@ void local_core_clique( std::string dataset, std::map<size_t, strvec > &e_id_to_
     size_t correction_number=0, check=0;
     time_t start_main, end_main,start_h,end_h, start_minh, end_minh;
     double hindext = 0, minht = 0;
-    // start_main = clock();
+    start_main = clock();
     while (1){
         iterations+=1;
         bool flag = true;
         // compute h-index and update core
         for(size_t i = 0; i<N; i++){
-            // if (pcore[i] == llb[i]) continue;
+            if (pcore[i] == llb[i]) continue;
             size_t H_value = hIndex_CSR(nbrs_N[i],nbrs_N[i+1],nbrs_F,pcore);
             if(H_value!=pcore[i])
             flag = false;
             pcore[i] = H_value;     //pcore[i] is same as hvn here
         }
        
-        // end1 = clock();
-        // a.core_exec_time += double(end1 - start1) / double(CLOCKS_PER_SEC);
+        end1 = clock();
+        a.core_exec_time += double(end1 - start1) / double(CLOCKS_PER_SEC);
         if (flag)
             break;
 
     }
-    // end_main = clock();
+    end_main = clock();
 
     end = clock();
     for(size_t i=0; i<N; i++)
     {
         auto node = init_nodes[i];
         a.core[node] = pcore[i];
-        // a.nu_cu += nbrsizes[i] - pcore[i];
+        a.nu_cu += nbrsizes[i] - pcore[i];
     }
     a.exec_time = double(end - start) / double(CLOCKS_PER_SEC);
     a.output["execution time"]= std::to_string(a.exec_time);
@@ -214,7 +285,7 @@ int main(int argc, char *argv[])
             // std::cout<<argv[2]<<" "<<argv[3]<<"\n";
             std::cout<<"Clique graph\n";
             std::string init_type = "nbr"; // or "lub" (local upper bound)
-            // h.initialise();
+            h.initialise();
             clock_t ck_start = clock();
             getClique(h);
             h.initialise();
@@ -229,6 +300,7 @@ int main(int argc, char *argv[])
             // EPeel(h.dataset, h.e_id_to_edge, h.inc_dict, h.init_nodes, a);
             // else if(alg == "Local-core")
             local_core_clique(h.dataset, h.e_id_to_edge, h.inc_dict, h.init_nodes, a);
+            check_condition( h, a.core); 
             a.output["algo"] = alg;
             a.output["num_threads"] = std::to_string(num_threads);
             a.output["total iteration"] = std::to_string(1);

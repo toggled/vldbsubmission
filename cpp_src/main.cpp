@@ -123,19 +123,21 @@ int main(int argc, char *argv[])
                         a.writeNbrQ();
                     }
                 }
-                // if (alg == "E-Peel"){    
-                //     std::cout <<"E-Peel\n";
-                //     Algorithm a(h);
-                //     EPeel(h.dataset, h.e_id_to_edge, h.inc_dict, h.init_nodes, a,log);
-                //     a.output["num_threads"] = std::to_string(num_threads);
-                //     a.output["total iteration"] = std::to_string(0);
-                //     a.write_results();
-                //     if(i==iterations && log){
-                //         std::cout<<"Execution time "<< a.exec_time<<"\n";
-                //         a.writecore();
-                //         a.writeNbrQ();
-                //     }
-                // }
+                if (alg == "E-Peel"){    
+                    std::cout <<"E-Peel\n";
+                    Algorithm a(h);
+                    EPeel(h.dataset, h.hyperedges, h.init_nodes, h.node_index, a, log);
+                    a.output["num_threads"] = std::to_string(num_threads);
+                    a.output["total iteration"] = std::to_string(0);
+                    std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
+                    a.write_results();
+                    // a.writecore();
+                    if(i==iterations && log){
+                        std::cout<<"Execution time "<< a.exec_time<<"\n";
+                        a.writecore();
+                        a.writeNbrQ();
+                    }
+                }
 
             }
         }
