@@ -8,11 +8,8 @@ g++ -std=c++11 -fopenmp -o optIlocalp parallel_localcoreinitOpt.cpp    #ubuntu_c
 
 declare -a dset=("enron" "bin_2" "bin_5" "congress" "contact" "dblp" "pref" "aminer")
 
-# declare -a threads=("1" "2" "4" "8" "16" "32" "64")
-#declare -a dset=("dblp")
 declare -a threads=("1" "2" "4" "8" "16" "32" "64" "128")
 
-#declare -a threads=("128")
 lb=1 # Apply Load balancing
 for data in "${dset[@]}"
     do
@@ -21,13 +18,3 @@ for data in "${dset[@]}"
             ./optIlocalp $data $t $lb
         done
     done 
-
-#lb=0 # No load-balancing
-#for data in "${dset[@]}"
-#    do
-    # declare -a threads=("1" "2" "4" "8")
-#    for t in "${threads[@]}"
-#        do
-#            ./optIlocalp  $data $t $lb
-#        done
-#    done 

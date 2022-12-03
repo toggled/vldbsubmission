@@ -5,6 +5,8 @@
 #include <iostream>
 #include <set>
 #include <algorithm>
+#include <unordered_set>
+#include <unordered_map>
 #include "hypergraph.h"
 #include "algorithms.h"
 #include "utils.h"
@@ -12,19 +14,21 @@
 //--------------------------------------------------------------------- Utility functions ------------------------------------------------------------------------------
 
 void Algorithm::printcore(){
-    std::cout << "core: \n";
+    //std::cout << "core: \n";
     for(const auto& elem : core)
     {
     std::cout << elem.first << "->"<<elem.second<<"\n";
     }
 }
 void Algorithm::writecore(){
-    // std::cout << "core: \n";
+    //std::cout << "core: \n";
     std::string file = "../output/core_"+output["algo"]+"_"+hg.dataset+".csv";
+    std::cout<<"writing to: "<<file<<"\n";
     std::stringstream ss;
     for(auto elem: core)
     {
-        ss << elem.first << "," << elem.second << "\n";
+        // std::cout<<elem.first<<","<<elem.second<<"\n";
+        ss << std::to_string(elem.first) << "," << std::to_string(elem.second) << "\n";
     }
     std::ofstream out(file.c_str());
     if(out.fail())
@@ -106,9 +110,9 @@ void  Algorithm::writelog(){
             else
                 ss<<key.second;
             j++;
-         }
-         ss<<"\n";
-         i++;
+        }
+        ss<<"\n";
+        i++;
     }
 
     std::ofstream out(file.c_str());
@@ -130,7 +134,7 @@ Algorithm::~Algorithm(){}
 
 // ------------------------------------------------------------------------ Peel ------------------------------------------------------------------------------------
 
-void iterate_nbrs(std::string v, strvec & nbrs, std::map<std::string, std::set<size_t> > & inc_dict, std::map<size_t, strvec > &e_id_to_edge){
+void iterate_nbrs(size_t v, intvec & nbrs, uintsetvec & inc_dict, intintvec& e_id_to_edge){
     /* Returns the set of neighbours of v.
         implements a traversal from vertex v to each of its neighbours in contrast to set in neighbors(). 
         It also returns an iterator. So it avoids creating the neighborhood list explicitely.
@@ -138,7 +142,7 @@ void iterate_nbrs(std::string v, strvec & nbrs, std::map<std::string, std::set<s
     */
     auto incident_edges = inc_dict[v];  //# {O(1)}
     if (incident_edges.size()){
-        strboolMap visited_dict;
+        intboolMap visited_dict;
         for (auto e_id : incident_edges){  //# { O(d(v)) }
             for (auto u : e_id_to_edge[e_id]){  //# { O(|e|)}
                 if (u != v){
@@ -156,7 +160,7 @@ void iterate_nbrs(std::string v, strvec & nbrs, std::map<std::string, std::set<s
     }
 }
 
-void removeV_transform(std::string v, std::map<std::string, std::set<size_t> > & inc_dict, std::map<size_t, strvec > &e_id_to_edge){
+void removeV_transform(size_t v, uintsetvec & inc_dict, intintvec &e_id_to_edge){
     // For every edge e_id incident on v, remove e_id from every vertex u in edge[e_id] distinct from v
     for (auto e_id : inc_dict[v]){
         for(auto u: e_id_to_edge[e_id]){
@@ -164,103 +168,100 @@ void removeV_transform(std::string v, std::map<std::string, std::set<size_t> > &
             inc_dict[u].erase(e_id);
         }
     }
-    inc_dict[v] = std::set<size_t>();
+    inc_dict[v] = uintSet();
 }
 
-size_t get_number_of_nbrs(std::string v, std::map<std::string, std::set<size_t> > & inc_dict, std::map<size_t, strvec > &e_id_to_edge){
-    std::set<std::string> nbrs;
+size_t get_number_of_nbrs(size_t v, uintsetvec & inc_dict, intintvec &e_id_to_edge){
+    std::unordered_set<int> nbrs;
     auto incident_edges = inc_dict[v];  //# {O(1)}
     if (incident_edges.size()){
-        strboolMap visited_dict;
+        intboolMap visited_dict;
         for (auto e_id : incident_edges){  //# { O(d(v)) }
             for (auto u : e_id_to_edge[e_id]){  //# { O(|e|)}
                 if (u != v){
-                    if (visited_dict.find(u) == visited_dict.end()){ // u does not exists
-                        visited_dict[u] = true;
-                        nbrs.insert(u);
-                    }
-                    if (!visited_dict[u]){
-                        visited_dict[u] = true;
-                        nbrs.insert(u);
-                    }
+                    nbrs.insert(u);
                 }
             }
         }
     }
     return nbrs.size();
 }
-
-void Peel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map<std::string, std::set<size_t> > inc_dict, strvec init_nodes, Algorithm& a, bool log){
+void Peel( std::string dataset, intintvec e_id_to_edge, intvec init_nodes, intIntMap& node_index, Algorithm& a, bool log){
     a.output["algo"] = "Peel";
     clock_t start, end;
-    // strIntMap nbrquery_stat;
     start = clock();
-    intsStrMap bucket;
-    strIntMap inverse_bucket;
-
-    // clock_t s_tm; 
-    // s_tm = clock();
-
-    // initialise neighbours
-    size_t num_nodes = init_nodes.size(); // initialise number of nodes
-    strIntMap init_nbrsize; //
-    std::unordered_map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
-    for(auto elem: e_id_to_edge){
-        auto edge_sz = elem.second.size();
-        for(auto v_id: elem.second){
-        // initialise number of neighbours and set of neighbours
-            if ( init_nbr.find(v_id) == init_nbr.end() ) { // first insertion of v_id to init_nbr map
-                auto _tmp = strset();
-                int _tmp_sz = 0;
-                for (auto u: elem.second){
-                    if (u!=v_id){
-                        _tmp.insert(u);
-                        _tmp_sz+=1;
-                    }
+    size_t N = init_nodes.size();
+    intuSetintMap bucket;
+    intvec core(N);
+    intvec inverse_bucket(N);
+    uintsetvec inc_dict(N, uintSet{});
+    uintsetvec init_nbr(N, uintSet{});  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
+    intintvec edges( e_id_to_edge.size() ,intvec{});
+    for(size_t eid = 0; eid < e_id_to_edge.size(); eid++){
+        auto elem = e_id_to_edge[eid];
+        auto edge_sz = elem.size();
+        for(auto v_id: elem){
+            // initialise number of neighbours and set of neighbours
+            auto j = node_index[v_id];  
+            // std::cout<<j<<" ";
+            inc_dict[j].insert(eid);
+            edges[eid].push_back(j);
+            auto _tmp = &init_nbr[j];
+            for (auto u: elem){
+                if (u!=v_id){
+                    _tmp->insert(node_index[u]);
                 }
-                init_nbr[v_id] = std::move(_tmp);
-                init_nbrsize[v_id] = _tmp_sz;
             }
-            else{  // v_id exists in init_nbr map
-                auto _tmp = &init_nbr[v_id];
-                for (auto u: elem.second){
-                    if (u!=v_id){
-                        _tmp->insert(u);
-                    }
-                }
-                init_nbrsize[v_id] = init_nbr[v_id].size();
-            }
+            // if ( init_nbr.find(v_id) == init_nbr.end() ) { // first insertion of v_id to init_nbr map
+            //     auto _tmp = strset();
+            //     int _tmp_sz = 0;
+            //     for (auto u: elem.second){
+            //         if (u!=v_id){
+            //             _tmp.insert(u);
+            //             _tmp_sz+=1;
+            //         }
+            //     }
+            //     init_nbr[v_id] = std::move(_tmp);
+            //     init_nbrsize[v_id] = _tmp_sz;
+            // }
+            // else{  // v_id exists in init_nbr map
+            //     auto _tmp = &init_nbr[v_id];
+            //     for (auto u: elem.second){
+            //         if (u!=v_id){
+            //             _tmp->insert(u);
+            //         }
+            //     }
+            //     init_nbrsize[v_id] = init_nbr[v_id].size();
+            // }
         }
-    }
-
-    // # Initialise buckets
-    for (auto node : init_nodes){
-        auto len_neighbors = init_nbrsize[node];
-        inverse_bucket[node] = len_neighbors;
-        if (bucket.find(len_neighbors) == bucket.end()){
-            bucket[len_neighbors] = strset();
-        }
-        bucket[len_neighbors].insert(node);
     }
     clock_t e_tm = clock();
     a.output["init_time"] = std::to_string(double(e_tm - start) / double(CLOCKS_PER_SEC));
     start = clock();
-    for (size_t k=1; k<= num_nodes; k++){
+    // # Initialise buckets
+    for (auto node : init_nodes){
+        auto i = node_index[node];
+        auto len_neighbors = init_nbr[i].size();
+        inverse_bucket[i] = len_neighbors;
+        if (bucket.find(len_neighbors) == bucket.end()){
+            bucket[len_neighbors] = uintSet();
+        }
+        bucket[len_neighbors].insert(i);
+    }
+    for (size_t k=1; k<= N; k++){
         while (true){
             if (bucket[k].size()==0)    break;
             auto set_it = bucket[k].begin();  //# get first element in the bucket
             auto v = *set_it;
             bucket[k].erase(set_it);
 
-            a.core[v] = k;
-            strvec nbr_v;
-            iterate_nbrs(v, nbr_v, inc_dict, e_id_to_edge);
-            removeV_transform(v,inc_dict, e_id_to_edge);
-
+            core[v] = k;
+            intvec nbr_v;
+            iterate_nbrs(v, nbr_v, inc_dict, edges);
+            removeV_transform(v,inc_dict, edges);
             // # enumerating over all neighbors of v
             for (auto u : nbr_v){
-
-                auto len_neighbors_u = get_number_of_nbrs(u, inc_dict, e_id_to_edge);
+                auto len_neighbors_u = get_number_of_nbrs(u, inc_dict, edges);
                 if (log)    a.num_nbr_queries += 1;
                 // if (nbrquery_stat.find(u) == nbrquery_stat.end()) nbrquery_stat[u] = 0;
                 // else    nbrquery_stat[u]+=1;
@@ -269,7 +270,7 @@ void Peel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map<
                 // # Move u to new location in bucket
                 bucket[inverse_bucket[u]].erase(u); // erase u from previous bucket index
                 if (bucket.find(max_value) == bucket.end())
-                    bucket[max_value] = strset();
+                    bucket[max_value] = uintSet();
                 bucket[max_value].insert(u); // insert u to new bucket index
                 inverse_bucket[u] = max_value; // update bucket index
             }
@@ -278,224 +279,13 @@ void Peel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map<
     end = clock();
     a.exec_time = double(end - start) / double(CLOCKS_PER_SEC);
     a.output["execution time"]= std::to_string(a.exec_time);
-
-    // if (log){
-    //     std::string file = "../output/"+dataset+"_peelnodeQ.csv";
-    //     std::stringstream ss2;
-    //     std::ofstream out2(file.c_str());
-    //     if(out2.fail())
-    //     {
-    //         out2.close();
-    //     }
-    //     for(std::string v: init_nodes)
-    //     {
-    //         ss2<<v<<","<<nbrquery_stat[v]<<"\n";
-    //     }
-    //     out2 << ss2.str();
-    //     out2.close();
-    // }
+    for(auto node : init_nodes)
+    {
+        auto i = node_index[node];
+        a.core[node] = core[i];
+        // std::cout<<a.core[node]<<"-"<<pcore[i]<<"-"<<node<<"-"<<i<<"\n";
+    }
 }
-
-
-// ---------------------------------------------------------------------- Peel ends ---------------------------------------------------------------------------------
-
-
-// ----------------------------------------------------------------------- E-Peel ------------------------------------------------------------------------------------
-
-void EPeel(std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map<std::string, std::set<size_t> > inc_dict, strvec init_nodes, Algorithm& a, bool log){
-    a.output["algo"] = "E-Peel";
-    clock_t start, end;
-    // strIntMap nbrquery_stat;
-    start = clock();        
-    intsStrMap bucket;
-    strIntMap inverse_bucket;
-    strboolMap setlb;
-
-    // clock_t s_tm; 
-    // s_tm = clock();
-    size_t num_nodes = init_nodes.size(); // initialise number of nodes
-    strIntMap init_nbrsize; //
-    std::unordered_map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
-    for(auto elem: e_id_to_edge){
-        auto edge_sz = elem.second.size();
-        for(auto v_id: elem.second){
-        // initialise number of neighbours and set of neighbours
-            if ( init_nbr.find(v_id) == init_nbr.end() ) { // first insertion of v_id to init_nbr map
-                auto _tmp = strset();
-                int _tmp_sz = 0;
-                for (auto u: elem.second){
-                    if (u!=v_id){
-                        _tmp.insert(u);
-                        _tmp_sz+=1;
-                    }
-                }
-                init_nbr[v_id] = std::move(_tmp);
-                init_nbrsize[v_id] = _tmp_sz;
-            }
-            else{  // v_id exists in init_nbr map
-                auto _tmp = &init_nbr[v_id];
-                for (auto u: elem.second){
-                    if (u!=v_id){
-                        _tmp->insert(u);
-                    }
-                }
-                init_nbrsize[v_id] = init_nbr[v_id].size();
-            }
-        }
-    }
-    size_t glb, gub;
-    strIntMap lub;
-    strIntMap llb;
-    glb = std::numeric_limits<size_t>::max();
-    gub = std::numeric_limits<size_t>::min();
-    // # Computing global lower bounds
-    for (auto v :init_nodes){
-        auto len_neighbors_v = init_nbrsize[v];
-        glb = std::min(glb,len_neighbors_v);
-        gub = std::max(gub, len_neighbors_v);
-    }
-    // Computing Local lower bound 
-    for (auto v :init_nodes){
-        auto _maxv = std::numeric_limits<size_t>::min();
-        for (auto e_id : inc_dict[v]){
-            size_t vec_sz = e_id_to_edge[e_id].size();
-            _maxv = std::max(_maxv, vec_sz - 1);
-        }
-        llb[v] = std::max(_maxv, glb);
-    }
-    auto lb1 = glb;
-    auto ub1 = gub;
-
-    // # Initial bucket fill-up
-    for (auto node : init_nodes){
-        auto lb = llb[node];
-        inverse_bucket[node] = lb;
-        if (bucket.find(lb) == bucket.end()){
-            bucket[lb] = strset();
-        }
-        bucket[lb].insert(node);
-        setlb[node] = true;
-    }
-    clock_t e_tm = clock();
-    a.output["init_time"] = std::to_string(double(e_tm - start) / double(CLOCKS_PER_SEC));
-    start = clock();
-    
-    for (size_t k = lb1; k <= ub1; k++){
-        while (true){
-            if (bucket[k].size()==0)    break;
-            auto set_it = bucket[k].begin();  //# get first element in the bucket
-            auto v = *set_it;
-            bucket[k].erase(set_it);
-            if (setlb[v]){
-                size_t len_nbr_v = get_number_of_nbrs(v,inc_dict, e_id_to_edge);
-                if (log)    a.num_nbr_queries += 1;
-                // if (nbrquery_stat.find(v) == nbrquery_stat.end()) nbrquery_stat[v] = 0;
-                // else    nbrquery_stat[v]+=1;
-                len_nbr_v = std::max(len_nbr_v,k);
-                if (bucket.find(len_nbr_v) == bucket.end())
-                    bucket[len_nbr_v] = strset();
-                bucket[len_nbr_v].insert(v);
-                
-                // # update new location of u
-                inverse_bucket[v] = len_nbr_v;
-                setlb[v] = false;
-            }
-            else{
-                a.core[v] = k;
-                strvec nbr_v;
-                iterate_nbrs(v, nbr_v, inc_dict, e_id_to_edge);
-                removeV_transform(v, inc_dict, e_id_to_edge);  //# Store.... + executation time..
-    
-                for (auto u : nbr_v)
-                    if (!setlb[u]){
-                        auto len_neighbors_u = get_number_of_nbrs(u, inc_dict, e_id_to_edge);
-                        if (log)    a.num_nbr_queries += 1;
-                        // if (nbrquery_stat.find(u) == nbrquery_stat.end()) nbrquery_stat[u] = 0;
-                        // else    nbrquery_stat[u]+=1;
-                        auto  max_value = std::max(len_neighbors_u, k);
-                        bucket[inverse_bucket[u]].erase(u);
-                        if (bucket.find(max_value) == bucket.end())
-                            bucket[max_value] = strset();
-                        bucket[max_value].insert(u);
-            
-    //                     # update new location of u
-                        inverse_bucket[u] = max_value;
-
-                    }
-            }
-        }
-    }
-
-    end = clock();
-    a.exec_time = double(end - start) / double(CLOCKS_PER_SEC);
-    a.output["execution time"]= std::to_string(a.exec_time);
-    
-    // if (log){
-    //     std::string file = "../output/"+dataset+"_epeellb.csv";
-    //     std::stringstream ss;
-    //     std::ofstream out(file.c_str());
-    //     if(out.fail())
-    //     {
-    //         std::cout<<"writing failed!\n";
-    //         out.close();
-    //     }
-    //     else{
-    //         for(std::string v: init_nodes)
-    //         {
-    //             size_t max_nbr_Nu = 0;
-    //             size_t max_nbr_cu = 0;
-
-    //             size_t num_nbrNu_greater_Nv = 0;
-    //             size_t num_nbrNu_greater_cv = 0;
-    //             size_t num_nbrNu_greater_lbv = 0;
-
-    //             size_t num_nbrlbu_greater_lbv = 0;
-
-    //             size_t num_nbrcu_greater_cv = 0;
-    //             size_t num_nbrcu_noteq_Nv = 0;
-    //             size_t num_nbrcu_greater_lbv = 0;
-                
-    //             for (std::string nbr_v: init_nbr[v]){
-    //                     max_nbr_Nu = std::max(init_nbrsize[nbr_v],max_nbr_Nu);
-    //                     max_nbr_cu = std::max(a.core[nbr_v],max_nbr_cu);
-    //                     if (init_nbrsize[nbr_v] > init_nbrsize[v])  num_nbrNu_greater_Nv += 1;
-    //                     if (init_nbrsize[nbr_v] > a.core[v])  num_nbrNu_greater_cv += 1;
-    //                     if (init_nbrsize[nbr_v] > llb[v])  num_nbrNu_greater_lbv += 1;
-
-    //                     if (llb[nbr_v] > llb[v])  num_nbrlbu_greater_lbv += 1;
-
-    //                     if (a.core[nbr_v] > a.core[v])  num_nbrcu_greater_cv += 1;
-    //                     if (a.core[nbr_v] > llb[v])  num_nbrcu_greater_lbv += 1;
-    //                     if (a.core[nbr_v] != init_nbrsize[v])   num_nbrcu_noteq_Nv += 1;
-                        
-    //             }
-    //             // v, lb[v],c[v],|N(v)|, max_{u \in N(v)} |N(u)|, max_{u \in N(v)} c[u]
-    //             ss << v << "," << llb[v]<<","<<a.core[v]<<","<<init_nbrsize[v]<<","<<max_nbr_Nu<<","<<max_nbr_cu 
-    //             <<","<< num_nbrNu_greater_Nv<<","<< num_nbrNu_greater_cv<<","<< num_nbrNu_greater_lbv
-    //             <<","<< num_nbrlbu_greater_lbv<<","<< num_nbrcu_greater_cv <<","<<num_nbrcu_greater_lbv<<","<<num_nbrcu_noteq_Nv<<"\n"; 
-    //             // std::cout <<it->first << "," << it->second<<"\n";
-    //         }
-    //         out << ss.str();
-    //         out.close();
-    //     }
-
-    //     file = "../output/"+dataset+"_epeelnodeQ.csv";
-    //     std::stringstream ss2;
-    //     std::ofstream out2(file.c_str());
-    //     if(out2.fail())
-    //     {
-    //         out2.close();
-    //     }
-    //     for(std::string v: init_nodes)
-    //     {
-    //         ss2<<v<<","<<nbrquery_stat[v]<<"\n";
-    //     }
-    //     out2 << ss2.str();
-    //     out2.close();
-    // }
-}
-
-// --------------------------------------------------------------------- E-Peel ends ---------------------------------------------------------------------------------
 
 // --------------------------------------------------------------- Local-Core (Base algorithm) -----------------------------------------------------------------------
 
@@ -537,95 +327,58 @@ size_t core_correct(intvec& inc_edges_u, std::vector<intvec>&edges, size_t u_id,
         return core_u;
 }
 
-void local_core( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, std::map<std::string, std::set<size_t> > &inc_dict, strvec &init_nodes, Algorithm& a, bool log){   
+void local_core( std::string dataset, intintvec &e_id_to_edge, intvec& init_nodes, intIntMap& node_index, Algorithm& a, bool log){   
     a.output["algo"] = "Local-core";
     clock_t start, end;
     clock_t start1,end1,start2,end2,start3,end3;
     /* Recording the starting clock tick.*/
-    start = clock();
     size_t N = init_nodes.size();
     intvec pcore(N); //
     // strIntMap node_index; //key = node id (string), value = array index of node (integer)
-    strInthashMap node_index; // (use hashtable instead of dictionary => Faster on large |V| datasets.)
-    for(size_t i = 0; i<N; i++) node_index[init_nodes[i]] = i; // initialize node_index
-    intvec nbrsizes(N); //
+
+    start = clock();
+    // intvec nbrsizes(N); 
+    intintvec edges( e_id_to_edge.size() ,intvec{}); // i = edge_id, value = vector of vertices in e[edge_id]
+    std::vector<intvec> inc_edges(N, intvec{}); // i=node_id, value = vector of edge ids incident on node_id
+
     // std::map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours.
-    std::unordered_map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
-    std::vector<intvec> nbrs(N);
+    // std::unordered_map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
+    uintsetvec nbrs(N, std::unordered_set<size_t>{});
+    // std::vector<intvec> nbrs(N);
     // compute initial neighbors and number of neighbors
     start3 = clock();
-    for(auto elem: e_id_to_edge){
-        auto edge_sz = elem.second.size();
-        for(auto v_id: elem.second){
-            auto j = node_index[v_id];  // j is of type int
-        // initialise number of neighbours and set of neighbours
-            if ( init_nbr.find(v_id) == init_nbr.end() ) { // first insertion of v_id to init_nbr map
-                auto _tmp = strset();
-                int _tmp_sz = 0;
-                for (auto u: elem.second){
-                    if (u!=v_id){
-                        _tmp.insert(u);
-                        _tmp_sz+=1;
-                    }
+    // std::cout<<"sz: "<<e_id_to_edge.size()<<"\n";
+    for(size_t eid= 0; eid<e_id_to_edge.size(); eid++){
+        // std::cout<<eid<<":\n";
+        auto elem = e_id_to_edge[eid];
+        // std::cout<<"e: "<<elem.size()<<"\n";
+        // auto edge_sz = elem.size();
+        for(auto v_id: elem){
+            // std::cout<<"vid: "<<v_id<<"-";
+            auto j = node_index[v_id];  
+            // std::cout<<j<<" ";
+            inc_edges[j].push_back(eid);
+            edges[eid].push_back(j);
+            auto _tmp = &nbrs[j];
+            for (auto u: elem){
+                if (u!=v_id){
+                    _tmp->insert(node_index[u]);
                 }
-                init_nbr[v_id] = std::move(_tmp);
-                // init_nbrsize[v_id] =  _tmp.size();
-                nbrsizes[j] = _tmp_sz;
-            }
-            else{  // v_id exists in init_nbr map
-                auto _tmp = &init_nbr[v_id];
-                for (auto u: elem.second){
-                    if (u!=v_id){
-                        _tmp->insert(u);
-                    }
-                }
-                // init_nbrsize[v_id] = init_nbr[v_id].size();
-                nbrsizes[j] = init_nbr[v_id].size();
             }
         }
     }
-    
-    end3 = clock();
-    time_t start4,end4;
-    start4 = clock();
-    for (auto node : init_nodes){
-        auto _tmp = intvec();
-        size_t sz = 0;
-        for (auto u: init_nbr[node]){
-            _tmp.push_back(node_index[u]);
-            sz+=1;
-        }
-        nbrs[node_index[node]] = std::move(_tmp);
-    }
-    end4 = clock();
-     /* Auxiliary variables for Parallelisation */
-    // edge_id is always in [0,M]
-    size_t M = 0;
-    std::vector< intvec > edges( e_id_to_edge.size() ); // i = edge_id, value = vector of vertices in e[edge_id]
-    std::vector<intvec> inc_edges(N); // i=node_id, value = vector of edge ids incident on node_id
-    for (auto elem: e_id_to_edge){
-        // construct edge
-        auto e_id = elem.first;
-        auto _tmp = intvec();
 
-        for(auto u: elem.second)  {
-            auto i = node_index[u];
-            _tmp.push_back(i); 
-            inc_edges[i].push_back(e_id);
-        }
-        edges[M] = std::move(_tmp);
-        M+=1;
-    }
     a.output["init_time"] = std::to_string(double(clock() - start) / double(CLOCKS_PER_SEC));
     start = clock();
     // initialise core to a upper bound
     for (size_t i = 0; i < N; i++){
-        pcore[i] = nbrsizes[i]; // initialize pcore
+        pcore[i] = nbrs[i].size(); // initialize pcore
+        // std::cout<<i<<":"<<init_nodes[i]<<" "<<pcore[i]<<"\n";
     }
     if (log){
         strstrMap h0;
-        for(int i=0;i<N;i++){
-            h0[init_nodes[i]] = std::to_string(pcore[i]);
+        for(size_t i=0;i<N;i++){
+            h0[std::to_string(init_nodes[i])] = std::to_string(pcore[i]);
         }
         h0["Time"] = "0";
         // strIntMap h0(pcore);
@@ -640,24 +393,27 @@ void local_core( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, s
     start_main = clock();
     while (1){
         iterations+=1;
-        // std::cout<<"iteration: "<<iteration<<"\n";
+        // std::cout<<"iteration: "<<iterations<<"\n";
         // for(size_t i=0; i<N; i++)
         // {
-        //     auto node = hg.init_nodes[i];
+        //     auto node = init_nodes[i];
         //     std::cout << i<< ": "<< node << "->"<< pcore[i] <<"\n";
         // }
         
         bool flag = true;
         // compute h-index and update core
         for(size_t i = 0; i<N; i++){
-            intvec vals(nbrsizes[i]);
+            intvec vals(nbrs[i].size());
             size_t ii=0;
             for (auto u_id : nbrs[i]){
                 vals[ii++] = pcore[u_id];
             }
             size_t H_value = hIndex(vals);
-            if (H_value < pcore[i]) 
-            hn[i] = H_value;
+            if (H_value < pcore[i]){
+                // if (iterations<=2)
+                // std::cout<<"updated "<<i<<": "<<pcore[i]<<"=>"<<H_value<<"\n";
+                hn[i] = H_value;
+            }
             else hn[i] = pcore[i];
         }
         
@@ -677,8 +433,8 @@ void local_core( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, s
         end1 = clock();
         if (log){
             strstrMap h0;
-            for(int i=0;i<N;i++){
-                h0[init_nodes[i]] = std::to_string(pcore[i]);
+            for(size_t i=0;i<N;i++){
+                h0[std::to_string(init_nodes[i])] = std::to_string(pcore[i]);
             }
             h0["Time"] = std::to_string(double(end1 - start_main) / double(CLOCKS_PER_SEC));
             a.hnlog.push_back(h0);
@@ -694,16 +450,15 @@ void local_core( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, s
     {
         auto node = init_nodes[i];
         a.core[node] = pcore[i];
-        // std::cout << i<< ": "<< node << "->"<< core[node] <<"\n";
+        // std::cout<<a.core[node]<<"-"<<pcore[i]<<"-"<<node<<"-"<<i<<"\n";
     }
-    
+    // std:: cout<<" IT: "<<iterations<<"\n";
     a.exec_time = double(end - start) / double(CLOCKS_PER_SEC);
     a.output["execution time"]= std::to_string(a.exec_time);
     a.output["total iteration"] = std::to_string(iterations);
 }
 
 // ------------------------------------------------------------- Local-Core (Base algorithm) ends ---------------------------------------------------------------------
-
 // ----------------------------------------------------------------- Local-Core-OPTI (CSR) ----------------------------------------------------------------------------
 
 bool LCCSAT_check_OPTI(size_t inc_edges_F[], size_t inc_edges_N[], std::vector<intvec>&edges, size_t u_id, size_t core_u, intvec & hn){
@@ -746,139 +501,90 @@ size_t core_correct_OPTI(size_t inc_edges_F[], size_t inc_edges_N[], std::vector
         return core_u;
 }
 
-void local_core_OPTI( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, std::map<std::string, std::set<size_t> > &inc_dict, strvec &init_nodes, Algorithm& a, bool log){   
-    a.output["algo"] = "Local-core-OPTI";
-    clock_t start, end;
-    clock_t start1,end1,start2,end2,start3,end3;
+void local_core_OPTI( std::string dataset, intintvec &e_id_to_edge, intvec& init_nodes, intIntMap& node_index, Algorithm& a, bool log){   
+    a.output["algo"] = "Local-core-OPTI";    
+    clock_t start, end, end1;
+    // clock_t start1,end1,start2,end2,start3,end3;
     /* Recording the starting clock tick.*/
     start = clock();
-    size_t N = init_nodes.size();
-    intvec pcore(N); 
-    intvec hn(N);
-
-    // strIntMap node_index; //key = node id (string), value = array index of node (integer)
-    strInthashMap node_index; // (use hashtable instead of dictionary => Faster on large |V| datasets.)
-
-    for(size_t i = 0; i<N; i++) node_index[init_nodes[i]] = i; // initialize node_index
-    intvec nbrsizes(N);
-
-    // std::map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours.
-    std::unordered_map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
-    std::vector<intvec> nbrs(N);
-    
     size_t sz_init_nbrs = 0;    // stores the number of initial neighbours for all vertices
     size_t sz_inc_edge = 0;     // stores the number of incident edges for all vertices
+
+    size_t N = init_nodes.size();
+    intvec pcore(N); //
+    intvec hn(N);
+    // strIntMap node_index; //key = node id (string), value = array index of node (integer)
+    intintvec edges( e_id_to_edge.size() ,intvec{}); // i = edge_id, value = vector of vertices in e[edge_id]
+    intintvec inc_edges(N, intvec{}); // i=node_id, value = vector of edge ids incident on node_id
+
+    // std::map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours.
+    // std::unordered_map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
+    uintsetvec nbrs(N, std::unordered_set<size_t>{});
     // compute initial neighbors and number of neighbors
-    start3 = clock();
-    for(auto elem: e_id_to_edge){
-        auto edge_sz = elem.second.size();
-        sz_inc_edge += edge_sz;
-        for(auto v_id: elem.second){
-            auto j = node_index[v_id];  
-    
-        // initialise number of neighbours and set of neighbours
-            if ( init_nbr.find(v_id) == init_nbr.end() ) { // first insertion of v_id to init_nbr map
-                auto _tmp = strset();
-                int _tmp_sz = 0;
-                for (auto u: elem.second){
-                    if (u!=v_id){
-                        _tmp.insert(u);
-                        _tmp_sz+=1;
-                    }
+    for(size_t eid= 0; eid<e_id_to_edge.size(); eid++){
+        auto elem = e_id_to_edge[eid];
+        sz_inc_edge += elem.size();
+        for(auto v_id: elem){
+            auto j = node_index[v_id];
+            inc_edges[j].push_back(eid);
+            edges[eid].push_back(j);
+            auto _tmp = &nbrs[j];
+            for (auto u: elem){
+                if (u!=v_id){
+                    _tmp->insert(node_index[u]);
                 }
-                init_nbr[v_id] = std::move(_tmp);
-                nbrsizes[j] = _tmp_sz;
-                
-            }
-            else{  // v_id exists in init_nbr map
-                auto _tmp = &init_nbr[v_id];
-                for (auto u: elem.second){
-                    if (u!=v_id){
-                        _tmp->insert(u);
-                    }
-                }
-                nbrsizes[j] = init_nbr[v_id].size();
             }
         }
+        // std::cout<<"\n";
     }
-    for(auto i : init_nodes){
-        sz_init_nbrs += init_nbr[i].size();
+    for(size_t _i = 0; _i< N; _i ++){
+        sz_init_nbrs += nbrs[_i].size();
+        // std::cout<<init_nodes[_i]<<" nbrs: ";
+        // for(auto u:nbrs[_i])    std::cout<<init_nodes[u]<<",";
+        // std::cout<<"\n";
     }
-    end3 = clock();
-    time_t start4,end4;
-    start4 = clock();
-   
+    size_t* inc_edges_F = (size_t*)malloc(sz_inc_edge*sizeof(size_t));
+    size_t *inc_edges_N = (size_t*)malloc((N+1)*sizeof(size_t));
     size_t* nbrs_N = (size_t*)malloc((N+1)*sizeof(size_t));
-    nbrs_N[0] = 0;
     size_t* nbrs_F = (size_t*)malloc(sz_init_nbrs*sizeof(size_t));
-
-    int _i = 1, _index=0;
-    for (auto node : init_nodes){
-        nbrs_N[_i] = nbrs_N[_i-1] + init_nbr[node].size();
-        _i++;
-        size_t sz = 0;
-        for (auto u: init_nbr[node]){
-            nbrs_F[_index++] = node_index[u];
-            sz+=1;
-        }
-    }
-    end4 = clock();
-
-    size_t M = 0;
-    std::vector< intvec > edges( e_id_to_edge.size() ); // i = edge_id, value = vector of vertices in e[edge_id].
-    std::vector<intvec> inc_edges(N); // i=node_id, value = vector of edge ids incident on node_id
-
-    for (auto elem: e_id_to_edge){
-        // construct edge
-        auto e_id = elem.first;
-        auto _tmp = intvec();
-
-        for(auto u: elem.second)  {
-            auto i = node_index[u];
-            _tmp.push_back(i); 
-            inc_edges[i].push_back(e_id);
-        }
-        edges[M] = std::move(_tmp);
-        M+=1;
+    inc_edges_N[0] = 0;
+    nbrs_N[0] = 0;
+    for (int _i = 1; _i<= N; _i ++){
+        nbrs_N[_i] = nbrs_N[_i-1] + nbrs[_i-1].size();
+		inc_edges_N[_i] = inc_edges_N[_i-1] + inc_edges[_i-1].size();
     }
     
     // Calculate csr representation for incident edges
-    
-    size_t* inc_edges_N = (size_t*)malloc((N+1)*sizeof(size_t));
-    inc_edges_N[0] = 0;
-    size_t* inc_edges_F = (size_t*)malloc(sz_inc_edge*sizeof(size_t));
-    _i = 1, _index=0;
-    for(auto node : init_nodes){
-        auto j = node_index[node];
-        inc_edges_N[_i] = inc_edges_N[_i-1] + inc_edges[j].size();
-        _i++;
-        for(size_t i : inc_edges[j]){
-            inc_edges_F[_index++] = i;
-        }
-    }
+    for (int _i = 1; _i<= N; _i ++){
+		auto _index = nbrs_N[_i-1];
+		for(auto u: nbrs[_i-1]){
+			nbrs_F[_index++] = u;
+		}
+		_index = inc_edges_N[_i-1];
+		for(auto eid : inc_edges[_i-1])
+			inc_edges_F[_index++] = eid;
+	}
     a.output["init_time"] = std::to_string(double(clock() - start) / double(CLOCKS_PER_SEC));
     start = clock();
     // initialise core to a upper bound
     for (size_t i = 0; i < N; i++){
-        pcore[i] = nbrsizes[i]; // initialize pcore
+        pcore[i] = nbrs[i].size(); // initialize pcore
     }
-    
     
     if (log){
         strstrMap h0;
         for(int i=0;i<N;i++){
-            h0[init_nodes[i]] = std::to_string(pcore[i]);
+            h0[std::to_string(init_nodes[i])] = std::to_string(pcore[i]);
         }
         h0["Time"] = "0";
         a.hnlog.push_back(h0);
     }
 
-    // std::vector<size_t> hn(N);
     size_t iterations = 0;
     size_t correction_number=0;
     time_t start_main, end_main,start_h,end_h, start_minh, end_minh;
     double hindext = 0, minht = 0;
-    start_main = clock();
+    // start_main = clock();
     while (1){
         iterations+=1;
         
@@ -899,7 +605,6 @@ void local_core_OPTI( std::string dataset, std::map<size_t, strvec > &e_id_to_ed
                 flag = false;   //Why this step
                 auto hhatn = core_correct_OPTI(inc_edges_F,inc_edges_N,edges,i,hn[i],hn);
                 pcore[i]  = hhatn;
-                // hg.update_min_hindex(node, core[node]);
             }else{
                 pcore[i] = hn[i];
             }
@@ -908,7 +613,7 @@ void local_core_OPTI( std::string dataset, std::map<size_t, strvec > &e_id_to_ed
         if (log){
             strstrMap h0;
             for(int i=0;i<N;i++){
-                h0[init_nodes[i]] = std::to_string(pcore[i]);
+                h0[std::to_string(init_nodes[i])] = std::to_string(pcore[i]);
             }
             h0["Time"] = std::to_string(double(end1 - start_main) / double(CLOCKS_PER_SEC));
             a.hnlog.push_back(h0);
@@ -916,16 +621,6 @@ void local_core_OPTI( std::string dataset, std::map<size_t, strvec > &e_id_to_ed
         if (flag)
             break;
     }
-    end_main = clock();
-    // std::cout<<"Extra time for calculating N in lccsat_binary "<<t2<<"\n";
-    // std::cout<<"Time for h operator "<<hindext<<"\n";
-    // std::cout<<"Time for minhindex calculation "<<minht<<"\n";
-    // std::cout<<"Extra time for storing hyperedges on the basis of min_hindex "<<t<<"\n";
-    // std::cout<<"correction_number "<<correction_number<<"\n";
-    // std::cout<<"par_lccsat_count for checking if correction necessary "<<lccsat_count<<"\n";
-    // std::cout<<"lccsat_opt_csr_count for core correction "<<lccsat_count2<<"\n";
-    // std::cout<<"Time for main loop "<<double(end_main - start_main) / double(CLOCKS_PER_SEC)<<"\n";
-
     end = clock();
     for(size_t i=0; i<N; i++)
     {
@@ -939,6 +634,7 @@ void local_core_OPTI( std::string dataset, std::map<size_t, strvec > &e_id_to_ed
 }
 
 // ----------------------------------------------------------------- Local-Core-OPTI (CSR) ends ----------------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------- Local-Core-OPTII --------------------------------------------------------------------------------
 
@@ -982,138 +678,89 @@ size_t core_correct_OPTII(size_t inc_edges_F[], size_t inc_edges_N[], std::vecto
         return core_u;
 }
 
-void local_core_OPTII( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, std::map<std::string, std::set<size_t> > &inc_dict, strvec &init_nodes, Algorithm& a, bool log){   
+void local_core_OPTII(std::string dataset, intintvec &e_id_to_edge, intvec& init_nodes, intIntMap& node_index, Algorithm& a, bool log){   
     a.output["algo"] = "Local-core-OPTII";
-    clock_t start, end;
-    clock_t start1,end1,start2,end2,start3,end3;
+    clock_t start, end, end1;
+    // clock_t start1,end1,start2,end2,start3,end3;
     /* Recording the starting clock tick.*/
     start = clock();
-    size_t N = init_nodes.size();
-    intvec pcore(N); 
-    // intvec hn(N);
-
-    // strIntMap node_index; //key = node id (string), value = array index of node (integer)
-    strInthashMap node_index; // (use hashtable instead of dictionary => Faster on large |V| datasets.)
-
-    for(size_t i = 0; i<N; i++) node_index[init_nodes[i]] = i; // initialize node_index
-    intvec nbrsizes(N);
-
-    // std::map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours.
-    std::unordered_map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
-    std::vector<intvec> nbrs(N);
-    
     size_t sz_init_nbrs = 0;    // stores the number of initial neighbours for all vertices
     size_t sz_inc_edge = 0;     // stores the number of incident edges for all vertices
+
+    size_t N = init_nodes.size();
+    intvec pcore(N); //
+    // strIntMap node_index; //key = node id (string), value = array index of node (integer)
+    intintvec edges( e_id_to_edge.size() ,intvec{}); // i = edge_id, value = vector of vertices in e[edge_id]
+    intintvec inc_edges(N, intvec{}); // i=node_id, value = vector of edge ids incident on node_id
+
+    // std::map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours.
+    // std::unordered_map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
+    uintsetvec nbrs(N, std::unordered_set<size_t>{});
     // compute initial neighbors and number of neighbors
-    start3 = clock();
-    for(auto elem: e_id_to_edge){
-        auto edge_sz = elem.second.size();
-        sz_inc_edge += edge_sz;
-        for(auto v_id: elem.second){
-            auto j = node_index[v_id];  
-    
-        // initialise number of neighbours and set of neighbours
-            if ( init_nbr.find(v_id) == init_nbr.end() ) { // first insertion of v_id to init_nbr map
-                auto _tmp = strset();
-                int _tmp_sz = 0;
-                for (auto u: elem.second){
-                    if (u!=v_id){
-                        _tmp.insert(u);
-                        _tmp_sz+=1;
-                    }
+    for(size_t eid= 0; eid<e_id_to_edge.size(); eid++){
+        auto elem = e_id_to_edge[eid];
+        sz_inc_edge += elem.size();
+        for(auto v_id: elem){
+            auto j = node_index[v_id];
+            inc_edges[j].push_back(eid);
+            edges[eid].push_back(j);
+            auto _tmp = &nbrs[j];
+            for (auto u: elem){
+                if (u!=v_id){
+                    _tmp->insert(node_index[u]);
                 }
-                init_nbr[v_id] = std::move(_tmp);
-                nbrsizes[j] = _tmp_sz;
-                
-            }
-            else{  // v_id exists in init_nbr map
-                auto _tmp = &init_nbr[v_id];
-                for (auto u: elem.second){
-                    if (u!=v_id){
-                        _tmp->insert(u);
-                    }
-                }
-                nbrsizes[j] = init_nbr[v_id].size();
             }
         }
+        // std::cout<<"\n";
     }
-    for(auto i : init_nodes){
-        sz_init_nbrs += init_nbr[i].size();
+    for(size_t _i = 0; _i< N; _i ++){
+        sz_init_nbrs += nbrs[_i].size();
+        // std::cout<<init_nodes[_i]<<" nbrs: ";
+        // for(auto u:nbrs[_i])    std::cout<<init_nodes[u]<<",";
+        // std::cout<<"\n";
     }
-    end3 = clock();
-    time_t start4,end4;
-    start4 = clock();
-   
+    size_t* inc_edges_F = (size_t*)malloc(sz_inc_edge*sizeof(size_t));
+    size_t *inc_edges_N = (size_t*)malloc((N+1)*sizeof(size_t));
     size_t* nbrs_N = (size_t*)malloc((N+1)*sizeof(size_t));
-    nbrs_N[0] = 0;
     size_t* nbrs_F = (size_t*)malloc(sz_init_nbrs*sizeof(size_t));
-
-    int _i = 1, _index=0;
-    for (auto node : init_nodes){
-        nbrs_N[_i] = nbrs_N[_i-1] + init_nbr[node].size();
-        _i++;
-        size_t sz = 0;
-        for (auto u: init_nbr[node]){
-            nbrs_F[_index++] = node_index[u];
-            sz+=1;
-        }
-    }
-    end4 = clock();
-
-    size_t M = 0;
-    std::vector< intvec > edges( e_id_to_edge.size() ); // i = edge_id, value = vector of vertices in e[edge_id].
-    std::vector<intvec> inc_edges(N); // i=node_id, value = vector of edge ids incident on node_id
-
-    for (auto elem: e_id_to_edge){
-        // construct edge
-        auto e_id = elem.first;
-        auto _tmp = intvec();
-
-        for(auto u: elem.second)  {
-            auto i = node_index[u];
-            _tmp.push_back(i); 
-            inc_edges[i].push_back(e_id);
-        }
-        edges[M] = std::move(_tmp);
-        M+=1;
+    inc_edges_N[0] = 0;
+    nbrs_N[0] = 0;
+    for (int _i = 1; _i<= N; _i ++){
+        nbrs_N[_i] = nbrs_N[_i-1] + nbrs[_i-1].size();
+		inc_edges_N[_i] = inc_edges_N[_i-1] + inc_edges[_i-1].size();
     }
     
     // Calculate csr representation for incident edges
-    
-    size_t* inc_edges_N = (size_t*)malloc((N+1)*sizeof(size_t));
-    inc_edges_N[0] = 0;
-    size_t* inc_edges_F = (size_t*)malloc(sz_inc_edge*sizeof(size_t));
-    _i = 1, _index=0;
-    for(auto node : init_nodes){
-        auto j = node_index[node];
-        inc_edges_N[_i] = inc_edges_N[_i-1] + inc_edges[j].size();
-        _i++;
-        for(size_t i : inc_edges[j]){
-            inc_edges_F[_index++] = i;
-        }
-    }
+    for (int _i = 1; _i<= N; _i ++){
+		auto _index = nbrs_N[_i-1];
+		for(auto u: nbrs[_i-1]){
+			nbrs_F[_index++] = u;
+		}
+		_index = inc_edges_N[_i-1];
+		for(auto eid : inc_edges[_i-1])
+			inc_edges_F[_index++] = eid;
+	}
     a.output["init_time"] = std::to_string(double(clock() - start) / double(CLOCKS_PER_SEC));
     start = clock();
     // initialise core to a upper bound
     for (size_t i = 0; i < N; i++){
-        pcore[i] = nbrsizes[i]; // initialize pcore
+        pcore[i] = nbrs[i].size(); // initialize pcore
     }
     
     if (log){
         strstrMap h0;
         for(int i=0;i<N;i++){
-            h0[init_nodes[i]] = std::to_string(pcore[i]);
+            h0[std::to_string(init_nodes[i])] = std::to_string(pcore[i]);
         }
         h0["Time"] = "0";
         a.hnlog.push_back(h0);
     }
 
-    // std::vector<size_t> hn(N);
     size_t iterations = 0;
-    size_t correction_number=0, check = 0;
+    size_t correction_number=0;
     time_t start_main, end_main,start_h,end_h, start_minh, end_minh;
     double hindext = 0, minht = 0;
-    start_main = clock();
+    // start_main = clock();
     while (1){
         iterations+=1;
         
@@ -1126,22 +773,18 @@ void local_core_OPTII( std::string dataset, std::map<size_t, strvec > &e_id_to_e
         }
 
         for (size_t i = 0; i<N; i++){
-            
-            check++;
             bool lccsat = LCCSAT_check_OPTII(inc_edges_F,inc_edges_N,edges,i,pcore[i],pcore);
             if (lccsat == false){ 
-                correction_number++;
                 flag = false;   //Why this step
                 auto hhatn = core_correct_OPTII(inc_edges_F,inc_edges_N,edges,i,pcore[i],pcore);
                 pcore[i]  = hhatn;
-                // hg.update_min_hindex(node, core[node]);
             }
         }
         end1 = clock();
         if (log){
             strstrMap h0;
-            for(size_t i=0;i<N;i++){
-                h0[init_nodes[i]] = std::to_string(pcore[i]);
+            for(int i=0;i<N;i++){
+                h0[std::to_string(init_nodes[i])] = std::to_string(pcore[i]);
             }
             h0["Time"] = std::to_string(double(end1 - start_main) / double(CLOCKS_PER_SEC));
             a.hnlog.push_back(h0);
@@ -1149,18 +792,6 @@ void local_core_OPTII( std::string dataset, std::map<size_t, strvec > &e_id_to_e
         if (flag)
             break;
     }
-    end_main = clock();
-    // std::cout<<"Correction number "<<correction_number<<"\n";
-    // std::cout<<"Check "<<check<<"\n";
-    // std::cout<<"Extra time for calculating N in lccsat_binary "<<t2<<"\n";
-    // std::cout<<"Time for h operator "<<hindext<<"\n";
-    // std::cout<<"Time for minhindex calculation "<<minht<<"\n";
-    // std::cout<<"Extra time for storing hyperedges on the basis of min_hindex "<<t<<"\n";
-    // std::cout<<"correction_number "<<correction_number<<"\n";
-    // std::cout<<"par_lccsat_count for checking if correction necessary "<<lccsat_count<<"\n";
-    // std::cout<<"lccsat_opt_csr_count for core correction "<<lccsat_count2<<"\n";
-    // std::cout<<"Time for main loop "<<double(end_main - start_main) / double(CLOCKS_PER_SEC)<<"\n";
-
     end = clock();
     for(size_t i=0; i<N; i++)
     {
@@ -1217,143 +848,94 @@ size_t core_correct_OPTIII(size_t inc_edges_F[], size_t inc_edges_N[], std::vect
         return core_u;
 }
 
-void local_core_OPTIII( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, std::map<std::string, std::set<size_t> > &inc_dict, strvec &init_nodes, Algorithm& a, bool log){   
+void local_core_OPTIII( std::string dataset, intintvec &e_id_to_edge, intvec& init_nodes, intIntMap& node_index, Algorithm& a, bool log){   
     a.output["algo"] = "Local-core-OPTIII";
-    clock_t start, end;
-    clock_t start1,end1,start2,end2,start3,end3;
+    clock_t start, end, end1;
+    // clock_t start1,end1,start2,end2,start3,end3;
     /* Recording the starting clock tick.*/
     start = clock();
-    size_t N = init_nodes.size();
-    intvec pcore(N); 
-    // intvec hn(N);
-
-    // strIntMap node_index; //key = node id (string), value = array index of node (integer)
-    strInthashMap node_index; // (use hashtable instead of dictionary => Faster on large |V| datasets.)
-
-    for(size_t i = 0; i<N; i++) node_index[init_nodes[i]] = i; // initialize node_index
-    intvec nbrsizes(N);
-
-    // std::map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours.
-    std::unordered_map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
-    std::vector<intvec> nbrs(N);
-    intvec llb(N,0); // key => node id (v), value => max(|em|-1) for all edge em incident on v 
-    
     size_t sz_init_nbrs = 0;    // stores the number of initial neighbours for all vertices
     size_t sz_inc_edge = 0;     // stores the number of incident edges for all vertices
-    // compute initial neighbors and number of neighbors
-    start3 = clock();
-    for(auto elem: e_id_to_edge){
-        auto edge_sz = elem.second.size();
-        sz_inc_edge += edge_sz;
-        for(auto v_id: elem.second){
-            auto j = node_index[v_id];  
-            llb[j] = std::max(edge_sz - 1,llb[j]);
-        // initialise number of neighbours and set of neighbours
-            if ( init_nbr.find(v_id) == init_nbr.end() ) { // first insertion of v_id to init_nbr map
-                auto _tmp = strset();
-                int _tmp_sz = 0;
-                for (auto u: elem.second){
-                    if (u!=v_id){
-                        _tmp.insert(u);
-                        _tmp_sz+=1;
-                    }
-                }
-                init_nbr[v_id] = std::move(_tmp);
-                nbrsizes[j] = _tmp_sz;
-                
-            }
-            else{  // v_id exists in init_nbr map
-                auto _tmp = &init_nbr[v_id];
-                for (auto u: elem.second){
-                    if (u!=v_id){
-                        _tmp->insert(u);
-                    }
-                }
-                nbrsizes[j] = init_nbr[v_id].size();
-            }
-        }
-    }
-    for(auto i : init_nodes){
-        sz_init_nbrs += init_nbr[i].size();
-    }
-    end3 = clock();
-    time_t start4,end4;
-    start4 = clock();
-   
-    size_t* nbrs_N = (size_t*)malloc((N+1)*sizeof(size_t));
-    nbrs_N[0] = 0;
-    size_t* nbrs_F = (size_t*)malloc(sz_init_nbrs*sizeof(size_t));
-
+    size_t N = init_nodes.size();
+    intvec pcore(N); //
+    intvec llb(N,0); // key => node id (v), value => max(|em|-1) for all edge em incident on v 
     size_t glb = std::numeric_limits<size_t>::max();
 
-    int _i = 1, _index=0;
-    for (auto node : init_nodes){
-        nbrs_N[_i] = nbrs_N[_i-1] + init_nbr[node].size();
-        _i++;
-        size_t sz = 0;
-        for (auto u: init_nbr[node]){
-            nbrs_F[_index++] = node_index[u];
-            sz+=1;
+    // strIntMap node_index; //key = node id (string), value = array index of node (integer)
+    intintvec edges( e_id_to_edge.size() ,intvec{}); // i = edge_id, value = vector of vertices in e[edge_id]
+    intintvec inc_edges(N, intvec{}); // i=node_id, value = vector of edge ids incident on node_id
+
+    // std::map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours.
+    // std::unordered_map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
+    uintsetvec nbrs(N, std::unordered_set<size_t>{});
+    // compute initial neighbors and number of neighbors
+    for(size_t eid= 0; eid<e_id_to_edge.size(); eid++){
+        auto elem = e_id_to_edge[eid];
+        sz_inc_edge += elem.size();
+        for(auto v_id: elem){
+            auto j = node_index[v_id];
+            inc_edges[j].push_back(eid);
+            edges[eid].push_back(j);
+            auto _tmp = &nbrs[j];
+            for (auto u: elem){
+                if (u!=v_id){
+                    _tmp->insert(node_index[u]);
+                }
+            }
         }
-        glb = std::min(glb, sz);
+        // std::cout<<"\n";
     }
-    end4 = clock();
-
-    size_t M = 0;
-    std::vector< intvec > edges( e_id_to_edge.size() ); // i = edge_id, value = vector of vertices in e[edge_id].
-    std::vector<intvec> inc_edges(N); // i=node_id, value = vector of edge ids incident on node_id
-
-    for (auto elem: e_id_to_edge){
-        // construct edge
-        auto e_id = elem.first;
-        auto _tmp = intvec();
-
-        for(auto u: elem.second)  {
-            auto i = node_index[u];
-            _tmp.push_back(i); 
-            inc_edges[i].push_back(e_id);
-        }
-        edges[M] = std::move(_tmp);
-        M+=1;
+    for(size_t _i = 0; _i< N; _i ++){
+        sz_init_nbrs += nbrs[_i].size();
+        // std::cout<<init_nodes[_i]<<" nbrs: ";
+        // for(auto u:nbrs[_i])    std::cout<<init_nodes[u]<<",";
+        // std::cout<<"\n";
+    }
+    size_t* inc_edges_F = (size_t*)malloc(sz_inc_edge*sizeof(size_t));
+    size_t *inc_edges_N = (size_t*)malloc((N+1)*sizeof(size_t));
+    size_t* nbrs_N = (size_t*)malloc((N+1)*sizeof(size_t));
+    size_t* nbrs_F = (size_t*)malloc(sz_init_nbrs*sizeof(size_t));
+    inc_edges_N[0] = 0;
+    nbrs_N[0] = 0;
+    for (int _i = 1; _i<= N; _i ++){
+        auto nbr_i = nbrs[_i-1].size();
+        nbrs_N[_i] = nbrs_N[_i-1] + nbr_i;
+        glb = std::min(glb, nbr_i);
+		inc_edges_N[_i] = inc_edges_N[_i-1] + inc_edges[_i-1].size();
     }
     
     // Calculate csr representation for incident edges
-    
-    size_t* inc_edges_N = (size_t*)malloc((N+1)*sizeof(size_t));
-    inc_edges_N[0] = 0;
-    size_t* inc_edges_F = (size_t*)malloc(sz_inc_edge*sizeof(size_t));
-    _i = 1, _index=0;
-    for(auto node : init_nodes){
-        auto j = node_index[node];
-        inc_edges_N[_i] = inc_edges_N[_i-1] + inc_edges[j].size();
-        _i++;
-        for(size_t i : inc_edges[j]){
-            inc_edges_F[_index++] = i;
-        }
-    }
+    for (int _i = 1; _i<= N; _i ++){
+		auto _index = nbrs_N[_i-1];
+		for(auto u: nbrs[_i-1]){
+			nbrs_F[_index++] = u;
+		}
+		_index = inc_edges_N[_i-1];
+		for(auto eid : inc_edges[_i-1])
+			inc_edges_F[_index++] = eid;
+	}
     a.output["init_time"] = std::to_string(double(clock() - start) / double(CLOCKS_PER_SEC));
     start = clock();
     // initialise core to a upper bound
     for (size_t i = 0; i < N; i++){
-        pcore[i] = nbrsizes[i]; // initialize pcore
+        pcore[i] = nbrs[i].size(); // initialize pcore
         llb[i] = std::max(llb[i],glb);
     }
     
     if (log){
         strstrMap h0;
-        for(size_t i=0;i<N;i++){
-            h0[init_nodes[i]] = std::to_string(pcore[i]);
+        for(int i=0;i<N;i++){
+            h0[std::to_string(init_nodes[i])] = std::to_string(pcore[i]);
         }
         h0["Time"] = "0";
         a.hnlog.push_back(h0);
     }
 
-    // std::vector<size_t> hn(N);
     size_t iterations = 0;
-    size_t correction_number=0, check = 0;
+    size_t correction_number=0;
     time_t start_main, end_main,start_h,end_h, start_minh, end_minh;
     double hindext = 0, minht = 0;
-    start_main = clock();
+    // start_main = clock();
     while (1){
         iterations+=1;
         
@@ -1366,27 +948,20 @@ void local_core_OPTIII( std::string dataset, std::map<size_t, strvec > &e_id_to_
                 pcore[i] = H_value;     
         }
 
-        start1 = clock();
         for (size_t i = 0; i<N; i++){
             if (pcore[i] == llb[i]) continue;
             bool lccsat = LCCSAT_check_OPTIII(inc_edges_F,inc_edges_N,edges,i,pcore[i],pcore);
             if (lccsat == false){ 
-                start2 = clock();
-                correction_number++;
                 flag = false;   //Why this step
                 auto hhatn = core_correct_OPTIII(inc_edges_F,inc_edges_N,edges,i,pcore[i],pcore);
                 pcore[i]  = hhatn;
-                end2 = clock();
-                a.correction_time+= double(end2-start2)/ double(CLOCKS_PER_SEC);
-                // hg.update_min_hindex(node, core[node]);
             }
         }
         end1 = clock();
-        a.core_exec_time+= double(end1-start1)/ double(CLOCKS_PER_SEC);
         if (log){
             strstrMap h0;
-            for(size_t i=0;i<N;i++){
-                h0[init_nodes[i]] = std::to_string(pcore[i]);
+            for(int i=0;i<N;i++){
+                h0[std::to_string(init_nodes[i])] = std::to_string(pcore[i]);
             }
             h0["Time"] = std::to_string(double(end1 - start_main) / double(CLOCKS_PER_SEC));
             a.hnlog.push_back(h0);
@@ -1394,19 +969,6 @@ void local_core_OPTIII( std::string dataset, std::map<size_t, strvec > &e_id_to_
         if (flag)
             break;
     }
-    end_main = clock();
-    // std::cout<<"Correction number "<<correction_number<<"\n";
-    // std::cout<<"Check "<<check<<"\n";
-    // std::cout<<"Iterations "<<iterations<<"\n";
-    // std::cout<<"Extra time for calculating N in lccsat_binary "<<t2<<"\n";
-    // std::cout<<"Time for h operator "<<hindext<<"\n";
-    // std::cout<<"Time for minhindex calculation "<<minht<<"\n";
-    // std::cout<<"Extra time for storing hyperedges on the basis of min_hindex "<<t<<"\n";
-    // std::cout<<"correction_number "<<correction_number<<"\n";
-    // std::cout<<"par_lccsat_count for checking if correction necessary "<<lccsat_count<<"\n";
-    // std::cout<<"lccsat_opt_csr_count for core correction "<<lccsat_count2<<"\n";
-    // std::cout<<"Time for main loop "<<double(end_main - start_main) / double(CLOCKS_PER_SEC)<<"\n";
-
     end = clock();
     for(size_t i=0; i<N; i++)
     {
@@ -1420,7 +982,6 @@ void local_core_OPTIII( std::string dataset, std::map<size_t, strvec > &e_id_to_
 }
 
 // ------------------------------------------------------------------- Local-Core-OPTIII ends ---------------------------------------------------------------------------------
-
 // ---------------------------------------------------------------------- Local-Core-OPTIV ------------------------------------------------------------------------------------
 
 bool LCCSAT_check_OPTIV(size_t inc_edges_F[], size_t inc_edges_N[],intvec& min_hindices, std::vector<intvec>&edges, size_t u_id, size_t core_u){
@@ -1492,152 +1053,89 @@ size_t core_correct_OPTIV(size_t inc_edges_F[], size_t inc_edges_N[],intvec& min
         return core_u;
 }
 
-void local_core_OPTIV( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, std::map<std::string, std::set<size_t> > &inc_dict, strvec &init_nodes, Algorithm& a, bool log){   
+void local_core_OPTIV( std::string dataset, intintvec &e_id_to_edge, intvec& init_nodes, intIntMap& node_index, Algorithm& a, bool log){
     a.output["algo"] = "Local-core-OPTIV";
     clock_t start, end;
     clock_t start1,end1,start2,end2,start3,end3;
     /* Recording the starting clock tick.*/
     start = clock();
-    size_t N = init_nodes.size();
-    intvec pcore(N); //
-    // strIntMap node_index; //key = node id (string), value = array index of node (integer)
-    strInthashMap node_index; // (use hashtable instead of dictionary => Faster on large |V| datasets.)
-    for(size_t i = 0; i<N; i++) node_index[init_nodes[i]] = i; // initialize node_index
-    intvec nbrsizes(N); //
-    // std::map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours.
-    std::unordered_map<std::string, strset > init_nbr;  //# key => node id, value => List of Neighbours. (use hashtable instead of dictionary => Faster on large |V| datasets. )
-    std::vector<intvec> nbrs(N);
-    intvec llb(N,0); // key => node id (v), value => max(|em|-1) for all edge em incident on v 
     size_t sz_init_nbrs = 0;    // stores the number of initial neighbours for all vertices
     size_t sz_inc_edge = 0;     // stores the number of incident edges for all vertices
+    size_t N = init_nodes.size();
+    size_t M = e_id_to_edge.size();
+    intvec pcore(N); //
+    // strIntMap node_index; //key = node id (string), value = array index of node (integer)
+    intvec llb(N,0); // key => node id (v), value => max(|em|-1) for all edge em incident on v 
+    size_t glb = std::numeric_limits<size_t>::max();
+    intintvec edges( M ,intvec{}); // i = edge_id, value = vector of vertices in e[edge_id]
+    intvec min_e_hindex(M);
+    intintvec inc_edges(N, intvec{}); // i=node_id, value = vector of edge ids incident on node_id
+    uintsetvec nbrs(N, std::unordered_set<size_t>{});
+
     // compute initial neighbors and number of neighbors
     start3 = clock();
-    for(auto elem: e_id_to_edge){
-        auto edge_sz = elem.second.size();
-        sz_inc_edge += edge_sz;
-        for(auto v_id: elem.second){
-            auto j = node_index[v_id];  // j is of type int
-            llb[j] = std::max(edge_sz - 1,llb[j]);
-        // initialise number of neighbours and set of neighbours
-            if ( init_nbr.find(v_id) == init_nbr.end() ) { // first insertion of v_id to init_nbr map
-                auto _tmp = strset();
-                int _tmp_sz = 0;
-                for (auto u: elem.second){
-                    if (u!=v_id){
-                        _tmp.insert(u);
-                        _tmp_sz+=1;
-                    }
+    for(size_t eid= 0; eid<M; eid++){
+        auto elem = e_id_to_edge[eid];
+        sz_inc_edge += elem.size();
+        for(auto v_id: elem){
+            auto j = node_index[v_id];
+            inc_edges[j].push_back(eid);
+            edges[eid].push_back(j);
+            auto _tmp = &nbrs[j];
+            for (auto u: elem){
+                if (u!=v_id){
+                    _tmp->insert(node_index[u]);
                 }
-                init_nbr[v_id] = std::move(_tmp);
-                // init_nbrsize[v_id] =  _tmp.size();
-                nbrsizes[j] = _tmp_sz;
-                // sz_init_nbrs = _tmp_sz;
-            }
-            else{  // v_id exists in init_nbr map
-                auto _tmp = &init_nbr[v_id];
-                for (auto u: elem.second){
-                    if (u!=v_id){
-                        _tmp->insert(u);
-                    }
-                }
-                // init_nbrsize[v_id] = init_nbr[v_id].size();
-                // sz_init_nbrs -= nbrsizes[j];
-                nbrsizes[j] = init_nbr[v_id].size();
-                // sz_init_nbrs += nbrsizes[j];
             }
         }
+        // std::cout<<"\n";
     }
-    for(auto i : init_nodes){
-        sz_init_nbrs += init_nbr[i].size();
+    for(size_t _i = 0; _i< N; _i ++){
+        sz_init_nbrs += nbrs[_i].size();
     }
+
     // std::cout<<"Init nbrs "<<sz_init_nbrs<<" Inc_edges "<<sz_inc_edge<<"\n"; 
     end3 = clock();
     // std::cout<<"Time for init_nbr calculation "<<double(end3 - start3) / double(CLOCKS_PER_SEC)<<"\n";
     time_t start4,end4;
     start4 = clock();
 
-    // size_t nbrs_N[N+1];
-    // nbrs_N[0] = 0;
-    // size_t nbrs_F[sz_init_nbrs];
-   
+    size_t* inc_edges_F = (size_t*)malloc(sz_inc_edge*sizeof(size_t));
+    size_t *inc_edges_N = (size_t*)malloc((N+1)*sizeof(size_t));
     size_t* nbrs_N = (size_t*)malloc((N+1)*sizeof(size_t));
-    nbrs_N[0] = 0;
     size_t* nbrs_F = (size_t*)malloc(sz_init_nbrs*sizeof(size_t));
-
-    size_t glb = std::numeric_limits<size_t>::max();
-    // #pragma omp parallel for default(none) shared(init_nodes,node_index,init_nbr,nbrs)
-    int _i = 1, _index=0;
-    for (auto node : init_nodes){
-        nbrs_N[_i] = nbrs_N[_i-1] + init_nbr[node].size();
-        _i++;
-        size_t sz = 0;
-        for (auto u: init_nbr[node]){
-            // _tmp.push_back(node_index[u]);
-            nbrs_F[_index++] = node_index[u];
-            sz+=1;
-        }
-        // nbrs[node_index[node]] = std::move(_tmp);
-        glb = std::min(glb, sz);
-    }
-    // nbrs_N[N]++;
-    end4 = clock();
-
-    // std::cout<<"Time for nbrs_F (csr-representation) calculation "<<double(end4 - start4) / double(CLOCKS_PER_SEC)<<"\n";
-    // std::cout<<"Time for nbrs and init_nbr calculation "<<double(end4 - start3) / double(CLOCKS_PER_SEC)<<"\n";
-     /* Auxiliary variables for Parallelisation */
-    // edge_id is always in [0,M]
-    size_t M = 0;
-    std::vector< intvec > edges( e_id_to_edge.size() ); // i = edge_id, value = vector of vertices in e[edge_id]. Try converting this to csr as well
-    intvec min_e_hindex( e_id_to_edge.size() ); // i = edge_id, value = minimum of h-index of vertices in e[edge_id]
-    std::vector<intvec> inc_edges(N); // i=node_id, value = vector of edge ids incident on node_id
-
-    for (auto elem: e_id_to_edge){
-        // construct edge
-        auto e_id = elem.first;
-        auto _tmp = intvec();
-        size_t _min = std::numeric_limits<size_t>::max();
-
-        for(auto u: elem.second)  {
-            auto i = node_index[u];
-            _tmp.push_back(i); 
-            inc_edges[i].push_back(e_id);
-            _min = std::min(_min,nbrsizes[i]);
-        }
-        edges[M] = std::move(_tmp);
-        min_e_hindex[M] = _min; // initialize edge h_indices,
-        M+=1;
+    inc_edges_N[0] = 0;
+    nbrs_N[0] = 0;
+    for (int _i = 1; _i<= N; _i ++){
+        auto nbr_i = nbrs[_i-1].size();
+        nbrs_N[_i] = nbrs_N[_i-1] + nbr_i;
+        glb = std::min(glb, nbr_i);
+		inc_edges_N[_i] = inc_edges_N[_i-1] + inc_edges[_i-1].size();
     }
     
     // Calculate csr representation for incident edges
-    
-    size_t* inc_edges_N = (size_t*)malloc((N+1)*sizeof(size_t));
-    inc_edges_N[0] = 0;
-    size_t* inc_edges_F = (size_t*)malloc(sz_inc_edge*sizeof(size_t));
-    _i = 1, _index=0;
-    for(auto node : init_nodes){
-        // std::cout<<_i<<" "<<_index<<"\n";
-        auto j = node_index[node];
-        inc_edges_N[_i] = inc_edges_N[_i-1] + inc_edges[j].size();
-        _i++;
-        for(size_t i : inc_edges[j]){
-            inc_edges_F[_index++] = i;
-        }
-    }
+    for (int _i = 1; _i<= N; _i ++){
+		auto _index = nbrs_N[_i-1];
+		for(auto u: nbrs[_i-1]){
+			nbrs_F[_index++] = u;
+		}
+		_index = inc_edges_N[_i-1];
+		for(auto eid : inc_edges[_i-1])
+			inc_edges_F[_index++] = eid;
+	}
     a.output["init_time"] = std::to_string(double(clock() - start) / double(CLOCKS_PER_SEC));
     start = clock();
 
     // initialise core to a upper bound
-    // #pragma omp parallel for default(none) shared(nbrsizes,pcore,N,glb,llb)
     for (size_t i = 0; i < N; i++){
-        // printf("%d processing: %d\n",omp_get_thread_num(),i);
-        pcore[i] = nbrsizes[i]; // initialize pcore
+        pcore[i] = nbrs[i].size(); // initialize pcore
         llb[i] = std::max(llb[i],glb);
     }
     
     if (log){
         strstrMap h0;
-        for(size_t i=0;i<N;i++){
-            h0[init_nodes[i]] = std::to_string(pcore[i]);
+        for(int i=0;i<N;i++){
+            h0[std::to_string(init_nodes[i])] = std::to_string(pcore[i]);
         }
         h0["Time"] = "0";
         a.hnlog.push_back(h0);
@@ -1697,7 +1195,7 @@ void local_core_OPTIV( std::string dataset, std::map<size_t, strvec > &e_id_to_e
         if (log){
             strstrMap h0;
             for(size_t i=0;i<N;i++){
-                h0[init_nodes[i]] = std::to_string(pcore[i]);
+                h0[std::to_string(init_nodes[i])] = std::to_string(pcore[i]);
             }
             h0["Time"] = std::to_string(double(end1 - start_main) / double(CLOCKS_PER_SEC));
             a.hnlog.push_back(h0);
@@ -1724,11 +1222,12 @@ void local_core_OPTIV( std::string dataset, std::map<size_t, strvec > &e_id_to_e
     {
         auto node = init_nodes[i];
         a.core[node] = pcore[i];
-        a.nu_cu += nbrsizes[i] - pcore[i];
+        a.nu_cu += nbrs[i].size() - pcore[i];
     }
     a.exec_time = double(end - start) / double(CLOCKS_PER_SEC);
     a.output["execution time"]= std::to_string(a.exec_time);
     a.output["total iteration"] = std::to_string(iterations);
+
 }
 
 // ---------------------------------------------------------------------- Local-Core-OPTIV ends --------------------------------------------------------------------------------
