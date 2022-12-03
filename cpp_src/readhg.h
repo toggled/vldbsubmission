@@ -55,4 +55,29 @@ void getHg(std::string dataname, Hypergraph & hg){
     }
     // hg.print();
 }
+
+void getClique(Hypergraph &hg){
+    std::set<std::pair<std::string,std::string>> edges;
+    for(auto e_id:hg.hyperedges){
+        for(int i=0;i<e_id.size();i++){
+            for(int j=i+1;j<e_id.size();j++){
+                std::pair<size_t,size_t> edge = std::make_pair(std::min(e_id[i],e_id[j]),std::max(e_id[i],e_id[j]));
+                std::pair<std::string,std::string> s_edge = std::make_pair(std::to_string(edge.first),std::to_string(edge.second));
+                if(edges.find(s_edge)==edges.end()){
+                    edges.insert(s_edge);
+                }
+            }
+        }
+    }
+    hg.hyperedges.clear();
+    hg.init_nodes.clear();
+    hg.node_index.clear();
+    size_t i = 0;
+    for(auto edge : edges){
+        std::vector<std::string> x = {edge.first,edge.second};
+        // std::cout<<edge.first<<","<<edge.second<<"\n";
+        hg.addEdge(i,x);
+        i++;
+    }
+}
 #endif
