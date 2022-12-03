@@ -130,8 +130,8 @@ int main(int argc, char *argv[])
                     a.output["num_threads"] = std::to_string(num_threads);
                     a.output["total iteration"] = std::to_string(0);
                     std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
-                    // a.write_results();
-                    a.writecore();
+                    a.write_results();
+                    // a.writecore();
                     if(i==iterations && log){
                         std::cout<<"Execution time "<< a.exec_time<<"\n";
                         a.writecore();
