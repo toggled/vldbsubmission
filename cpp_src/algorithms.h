@@ -57,7 +57,7 @@ class Algorithm{
     // size_t iterative_core_correct_opt(Hypergraph& H, std::string u, size_t core_u);
     void printcore();
     bool write_results();
-    void writecore();
+    void writecore(std::string folder="../output/");
     void writelog();
     void writeNbrQ();
 };

@@ -20,9 +20,9 @@ void Algorithm::printcore(){
     std::cout << elem.first << "->"<<elem.second<<"\n";
     }
 }
-void Algorithm::writecore(){
+void Algorithm::writecore(std::string folder){
     //std::cout << "core: \n";
-    std::string file = "../output/core_"+output["algo"]+"_"+hg.dataset+".csv";
+    std::string file = folder + "core_"+output["algo"]+"_"+hg.dataset+".csv";
     std::cout<<"writing to: "<<file<<"\n";
     std::stringstream ss;
     for(auto elem: core)
