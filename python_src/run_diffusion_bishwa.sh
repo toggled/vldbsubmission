@@ -56,6 +56,7 @@
 # # python run.py --sir_kd 1 --dataset dblp --max_propagation_time 2 --algo naive_degree
 
 rm ../output/propagation_result.csv
-time python run.py --sir 1 --dataset enron --max_propagation_time 100 --algo naive_nbr
-time python run.py --sir 1 --dataset enron --max_propagation_time 100 --algo naive_degree
+time python run.py --sir 1 --dataset dblp --max_propagation_time 100 --algo naive_nbr
+time python run.py --sir 1 --dataset dblp --max_propagation_time 100 --algo naive_degree
+time python run.py --sir 1 --dataset dblp --max_propagation_time 100 --algo graph_core
 # time python run.py --sir_kd 1 --dataset enron --max_propagation_time 100 --algo naive_nbr
