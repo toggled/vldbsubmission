@@ -445,7 +445,7 @@ int main(int argc, char *argv[])
                     a.write_results();
                     if(i==iterations && log){
                         a.writecore();
-                        check_conditiondeg( h, a.core);
+                        // check_conditiondeg( h, a.core);
                     }
                 }
                 if (alg == "clique"){
@@ -464,15 +464,21 @@ int main(int argc, char *argv[])
                     a.write_results();
                     if(i==iterations && log){
                         a.writecore();
-                        check_conditionnbr( h, a.core);
+                        // check_conditionnbr( h, a.core);
                     }
                 }
                 if (alg=="kdcore"){
-                    std::cout<< "Hybrid variant of k,d-core\n";
+                    std::cout<< "Hybrid k,d-core\n";
                     Algorithm a(h);
+                    log = false;
                     kdCorehybrid(h.dataset, h.hyperedges, h.init_nodes, h.node_index, a, log);
-                    a.writekdcore();
-                    check_conditionkd(h,a.core,a.secondcore);
+                    a.output["num_threads"] = std::to_string(num_threads);
+                    std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
+                    a.write_results();
+                    if(i==iterations){
+                        a.writekdcore();
+                        // check_conditionkd(h,a.core,a.secondcore);
+                    }
                 }
             }
         }
