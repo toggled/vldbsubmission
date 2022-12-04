@@ -144,7 +144,6 @@ void bipartitedist2core_local(Hypergraph &h, Algorithm &a){
     a.output["algo"] = "bipartite";
     // v is string
     time_t start, end;
-    start = clock();
     std::map<std::string,int> core;
     int num_edge = h.e_id_to_edge.size();
     strInthashMap node_index;
@@ -153,6 +152,7 @@ void bipartitedist2core_local(Hypergraph &h, Algorithm &a){
         node_index[h.init_nodes[i]] = index;
         index++;
     }
+    start = clock();
     strvIntMap v_to_eid;
     intsStrMap eid_to_v;
     getBipartite(h,v_to_eid,eid_to_v);
