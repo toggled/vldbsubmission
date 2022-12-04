@@ -1408,7 +1408,7 @@ void local_core_clique( std::string dataset, intintvec e_id_to_edge, intvec init
     /* Recording the starting clock tick.*/
     start = clock();
     size_t sz_init_nbrs = 0;    // stores the number of initial neighbours for all vertices
-    size_t sz_inc_edge = 0;     // stores the number of incident edges for all vertices
+    // size_t sz_inc_edge = 0;     // stores the number of incident edges for all vertices
     size_t N = init_nodes.size();
     size_t M = e_id_to_edge.size();
     intvec pcore(N); //
@@ -1416,18 +1416,18 @@ void local_core_clique( std::string dataset, intintvec e_id_to_edge, intvec init
     intvec llb(N,0); // key => node id (v), value => max(|em|-1) for all edge em incident on v 
     size_t glb = std::numeric_limits<size_t>::max();
     // intintvec edges( M ,intvec{}); // i = edge_id, value = vector of vertices in e[edge_id]
-    intvec min_e_hindex(M);
-    intintvec inc_edges(N, intvec{}); // i=node_id, value = vector of edge ids incident on node_id
+    // intvec min_e_hindex(M);
+    // intintvec inc_edges(N, intvec{}); // i=node_id, value = vector of edge ids incident on node_id
     uintsetvec nbrs(N, std::unordered_set<size_t>{});
 
     // compute initial neighbors and number of neighbors
     start3 = clock();
     for(size_t eid= 0; eid<M; eid++){
         auto elem = e_id_to_edge[eid];
-        sz_inc_edge += elem.size();
+        // sz_inc_edge += elem.size();
         for(auto v_id: elem){
             auto j = node_index[v_id];
-            inc_edges[j].push_back(eid);
+            // inc_edges[j].push_back(eid);
             // edges[eid].push_back(j);
             auto _tmp = &nbrs[j];
             for (auto u: elem){
