@@ -311,12 +311,13 @@ int main(int argc, char *argv[])
                     Algorithm a(h);
                     local_core_clique(h.dataset, h.hyperedges, h.init_nodes, h.node_index, a, log);
                     a.output["num_threads"] = std::to_string(1);
-                    a.output["init_time"] += ck_time;
+                    double totalinit_tm = atof(a.output["init_time"].c_str()) + ck_time;
+                    a.output["init_time"] = std::to_string(totalinit_tm);
                     std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
                     a.write_results();
                     if(i==iterations && log){
                         a.writecore();
-                        // check_condition2( h, a.core);
+                        check_condition2( h, a.core);
                     }
                 }
             }

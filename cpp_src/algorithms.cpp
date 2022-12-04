@@ -1415,7 +1415,7 @@ void local_core_clique( std::string dataset, intintvec e_id_to_edge, intvec init
     // strIntMap node_index; //key = node id (string), value = array index of node (integer)
     intvec llb(N,0); // key => node id (v), value => max(|em|-1) for all edge em incident on v 
     size_t glb = std::numeric_limits<size_t>::max();
-    intintvec edges( M ,intvec{}); // i = edge_id, value = vector of vertices in e[edge_id]
+    // intintvec edges( M ,intvec{}); // i = edge_id, value = vector of vertices in e[edge_id]
     intvec min_e_hindex(M);
     intintvec inc_edges(N, intvec{}); // i=node_id, value = vector of edge ids incident on node_id
     uintsetvec nbrs(N, std::unordered_set<size_t>{});
@@ -1428,7 +1428,7 @@ void local_core_clique( std::string dataset, intintvec e_id_to_edge, intvec init
         for(auto v_id: elem){
             auto j = node_index[v_id];
             inc_edges[j].push_back(eid);
-            edges[eid].push_back(j);
+            // edges[eid].push_back(j);
             auto _tmp = &nbrs[j];
             for (auto u: elem){
                 if (u!=v_id){
@@ -1448,17 +1448,17 @@ void local_core_clique( std::string dataset, intintvec e_id_to_edge, intvec init
     time_t start4,end4;
     start4 = clock();
 
-    size_t* inc_edges_F = (size_t*)malloc(sz_inc_edge*sizeof(size_t));
-    size_t *inc_edges_N = (size_t*)malloc((N+1)*sizeof(size_t));
+    // size_t* inc_edges_F = (size_t*)malloc(sz_inc_edge*sizeof(size_t));
+    // size_t *inc_edges_N = (size_t*)malloc((N+1)*sizeof(size_t));
     size_t* nbrs_N = (size_t*)malloc((N+1)*sizeof(size_t));
     size_t* nbrs_F = (size_t*)malloc(sz_init_nbrs*sizeof(size_t));
-    inc_edges_N[0] = 0;
+    // inc_edges_N[0] = 0;
     nbrs_N[0] = 0;
     for (int _i = 1; _i<= N; _i ++){
         auto nbr_i = nbrs[_i-1].size();
         nbrs_N[_i] = nbrs_N[_i-1] + nbr_i;
         glb = std::min(glb, nbr_i);
-		inc_edges_N[_i] = inc_edges_N[_i-1] + inc_edges[_i-1].size();
+		// inc_edges_N[_i] = inc_edges_N[_i-1] + inc_edges[_i-1].size();
     }
     
     // Calculate csr representation for incident edges
@@ -1467,11 +1467,12 @@ void local_core_clique( std::string dataset, intintvec e_id_to_edge, intvec init
 		for(auto u: nbrs[_i-1]){
 			nbrs_F[_index++] = u;
 		}
-		_index = inc_edges_N[_i-1];
-		for(auto eid : inc_edges[_i-1])
-			inc_edges_F[_index++] = eid;
+		// _index = inc_edges_N[_i-1];
+		// for(auto eid : inc_edges[_i-1])
+		// 	inc_edges_F[_index++] = eid;
 	}
-    a.output["init_time"] = std::to_string(double(clock() - start) / double(CLOCKS_PER_SEC));
+    end = clock();
+    a.output["init_time"] = std::to_string((double(end - start) / double(CLOCKS_PER_SEC)));
     start = clock();
 
     // initialise core to a upper bound
