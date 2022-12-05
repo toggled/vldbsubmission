@@ -413,6 +413,7 @@ int main(int argc, char *argv[])
                     a.output["total iteration"] = std::to_string(0);
                     std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
                     a.write_results();
+                    // a.printcore();
                     if(i==iterations && log){
                         std::cout<<"Execution time "<< a.exec_time<<"\n";
                         a.writecore();
@@ -443,6 +444,7 @@ int main(int argc, char *argv[])
                     a.output["total iteration"] = std::to_string(0);
                     std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
                     a.write_results();
+                    // a.printcore();
                     if(i==iterations && log){
                         a.writecore();
                         // check_conditiondeg( h, a.core);
@@ -462,9 +464,22 @@ int main(int argc, char *argv[])
                     a.output["init_time"] = std::to_string(totalinit_tm);
                     std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
                     a.write_results();
+                    // a.printcore();
                     if(i==iterations && log){
                         a.writecore();
                         // check_conditionnbr( h, a.core);
+                    }
+                }
+                if (alg == "bipartite"){
+                    // if (i>1) continue;
+                    std::cout <<"dist2 bipartite core\n";
+                    Algorithm a(h);
+                    local_core_bipartite(h.dataset, h.hyperedges, h.init_nodes, h.node_index, a, log);
+                    a.output["num_threads"] = std::to_string(1);
+                    std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
+                    a.write_results();
+                    if(i==iterations && log){
+                        a.writecore();
                     }
                 }
                 if (alg=="kdcore"){

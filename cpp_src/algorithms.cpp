@@ -1785,3 +1785,161 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
         // std::cout << i<< ": "<< node << "->"<< pcore[i] <<" , "<<score[i]<<"\n";
     }
 }
+
+// ------------------------------------------------------- Local-core dist2 Bipartite graph -------------------------
+
+void getBipartite(intintvec &e_id_to_edge, std::unordered_map<size_t,intvec> &v_to_eid, std::unordered_map<size_t,intvec> &eid_to_v){
+
+    size_t index = 0;
+    for(auto edge:e_id_to_edge){
+        
+        for(auto v:edge){
+            v_to_eid[v].push_back(index);
+            eid_to_v[index].push_back(v);
+        }
+        index++;
+    }
+
+}
+
+std::set<size_t> getDist2nbr(std::unordered_map<size_t,intvec> &v_to_eid, std::unordered_map<size_t,intvec> &eid_to_v, size_t u){
+
+    std::set<size_t> s;
+    for(auto eid:v_to_eid[u]){
+        for(auto v:eid_to_v[eid]){
+            if(v!=u)
+            s.insert(v);
+        }
+    }
+    return s;
+
+}
+
+std::set<int> getDist2nbredge(std::unordered_map<size_t,intvec> &v_to_eid, std::unordered_map<size_t,intvec> &eid_to_v, size_t u){
+
+    std::set<int> s;
+    for(auto v:eid_to_v[u]){
+        for(auto e:v_to_eid[v]){
+            if(e!=u)
+            s.insert(e);
+        }
+    }
+    return s;
+
+}
+
+void local_core_bipartite(std::string dataset, intintvec e_id_to_edge, intvec init_nodes, intIntMap& node_index, Algorithm& a, bool log){
+    a.output["algo"] = "bipartite";
+    time_t start = clock();
+    std::unordered_map<size_t,size_t> core;
+    int num_edge = e_id_to_edge.size();
+    for(auto i:node_index){
+        node_index[i.first] += num_edge;
+    }
+    std::unordered_map<size_t,intvec> v_to_eid;
+    std::unordered_map<size_t,intvec> eid_to_v;
+    getBipartite(e_id_to_edge,v_to_eid,eid_to_v);
+    intvec pcore(eid_to_v.size()+v_to_eid.size());
+
+    //Initialise pcore
+    for(size_t v:init_nodes){
+        pcore[node_index[v]] = getDist2nbr(v_to_eid,eid_to_v,v).size() + v_to_eid[v].size();
+        // std::cout<<v<<" "<<pcore[node_index[v]]<<"\n";
+    }
+    // std::cout<<"edges\n";
+    for(int e_id=0;e_id<e_id_to_edge.size();e_id++){
+        pcore[e_id] = getDist2nbredge(v_to_eid,eid_to_v,e_id).size() + eid_to_v[e_id].size();
+        // std::cout<<e.first<<" "<<pcore[e.first]<<"\n";
+    }
+    // end = clock();
+    a.output["init_time"] = std::to_string(double(clock() - start) / double(CLOCKS_PER_SEC));
+    start = clock();
+    int iterations = 0;
+    while(1){
+        // std::cout<<iterations<<"\n";
+        iterations++;
+        // for(int i=0;i<pcore.size();i++)
+        // std::cout<<pcore[i]<<" ";
+        // std::cout<<"\n";
+        // assert(eid_to_v.size()==e_id_to_edge.size());
+        // assert(v_to_eid.size()==init_nodes.size());
+        intvec H(eid_to_v.size()+v_to_eid.size());
+        for(auto v:init_nodes){
+
+            //Given H(n-1), calculate A(n-1). 
+            // attainability is per start node and end node with distance <= 2 from start node. 
+
+            std::unordered_map<size_t,size_t> attainability;
+            for(auto e:v_to_eid[v]){
+                attainability[e] = pcore[e];
+                for(auto u:eid_to_v[e]){
+                    if(u!=v){
+                        if(attainability.find(node_index[u])==attainability.end()){
+                            attainability[node_index[u]] = std::min(pcore[e],pcore[node_index[u]]);
+                        }else{
+                            size_t curr_attain = std::min(pcore[e],pcore[node_index[u]]);
+                            attainability[node_index[u]] = std::max(attainability[node_index[u]],curr_attain);
+                        }
+                    }
+                }
+            }
+
+            // Use A(n-1) to calculate H(n).
+            intvec vals;
+            for(auto val : attainability)
+            vals.push_back(val.second);
+            H[node_index[v]] = hIndex(vals);
+
+        }
+
+        for(size_t e=0;e<e_id_to_edge.size();e++){
+
+            //Given H(n-1), calculate A(n-1). 
+            // attainability is per start node and end node with distance <= 2 from start node. 
+
+            std::unordered_map<size_t,size_t> attainability;
+            for(auto v:eid_to_v[e]){
+                attainability[node_index[v]] = pcore[node_index[v]];
+                for(auto eid : v_to_eid[v]){
+                    if(e!=eid){
+                        if(attainability.find(eid)==attainability.end()){
+                            attainability[eid] = std::min(pcore[eid],pcore[node_index[v]]);
+                        }else{
+                            size_t curr_attain = std::min(pcore[eid],pcore[node_index[v]]);
+                            attainability[eid] = std::max(attainability[eid],curr_attain);
+                        }
+                    }
+                }
+            }
+
+            // Use A(n-1) to calculate H(n).
+            intvec vals;
+            for(auto val : attainability)
+            vals.push_back(val.second);
+            H[e] = hIndex(vals);
+
+        }
+
+        bool stop = true;
+        int count = 0;
+        for(int i=0;i<H.size();i++){
+            if(pcore[i]!=H[i]){
+                count++;
+                stop = false;
+            }
+            pcore[i] = H[i];
+        }
+        // std::cout<<count<<"\n";
+
+        if(stop)
+        break;
+
+    }
+    a.exec_time = double(clock() - start) / double(CLOCKS_PER_SEC);
+    a.output["execution time"]= std::to_string(a.exec_time);
+    a.output["total iteration"] = std::to_string(iterations);
+
+    for(int i:init_nodes){
+        a.core[i] = pcore[node_index[i]];
+    }
+}
