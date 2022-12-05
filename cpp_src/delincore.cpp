@@ -141,7 +141,6 @@ int main(int argc, char *argv[])
             if (argc>=3){
                 getHg(argv[2],h);
                 name = argv[2];
-                h.dataset = name+"_h0";
             }
             std::string init_type = "nbr"; // or "lub" (local upper bound)
             h.initialise();
@@ -153,6 +152,7 @@ int main(int argc, char *argv[])
             intvec nodesto_del;
             if(argc>=5){
                 to_del = atoi(argv[4]);
+                h.dataset = name+"_h0"+"_"+std::to_string(to_del);
             }
             else{
                 to_del = -1; // -1 means delete the whole innermost core.
@@ -161,20 +161,22 @@ int main(int argc, char *argv[])
             std::cout << argv[2]<<" "<<argv[3]<<" "<<argv[4]<<" "<<argv[5]<<"\n";
             if (argc>=6){
                 // std::cout<<"Writing before-delete nbr: \n";
-                if (atoi(argv[5])!=0)   h.writeneighborhood("../python_src/sirdata/log_"+h.dataset+"_"+std::to_string(to_del)+".csv");
+                if (atoi(argv[5])!=0)   h.writeneighborhood("../python_src/sirdata/log_"+h.dataset+".csv");
             }
             if (alg == "Local-core-OPTIV" || alg == "naive_nbr"){    
                 std::cout <<"Local-core-OPTIV (CSR + Modify core number at each step + bound + core correct) \n";
                 Algorithm a(h);
                 local_core_OPTIV(h.dataset, h.hyperedges, h.init_nodes, h.node_index, a, log);
+		a.output["algo"] = "naive_nbr";
                 a.writecore("../python_src/sirdata/");
                 extract_nodes_to_delete(h,a.core,to_del, nodesto_del);
-                h1.dataset = name + "_h1";
+                h1.dataset = name + "_h1"+"_"+std::to_string(to_del);
                 // std::cout<<"hypergraph before del\n";
                 // h.printHypergraph();
                 residualhypergraph(nodesto_del, h, h1);
                 Algorithm a1(h1);
                 local_core_OPTIV(h1.dataset, h1.hyperedges, h1.init_nodes, h1.node_index, a1, log);
+		a1.output["algo"] = "naive_nbr";
                 a1.writecore("../python_src/sirdata/");
                 // std::cout<<"residual hypergraph: \n";
                 // h1.printHypergraph();
@@ -186,14 +188,16 @@ int main(int argc, char *argv[])
                 // a.output["num_threads"] = std::to_string(num_threads);
                 // a.output["total iteration"] = std::to_string(0);
                 // std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
+		a.output["algo"] = "naive_degree";
                 a.writecore("../python_src/sirdata/");
                 extract_nodes_to_delete(h,a.core,to_del, nodesto_del);
-                h1.dataset = name + "_h1";
+                h1.dataset = name + "_h1"+"_"+std::to_string(to_del);
                 // std::cout<<"hypergraph before del\n";
                 // h.printHypergraph();
                 residualhypergraph(nodesto_del, h, h1);
                 Algorithm a1(h1);
                 degreePeel(h1.dataset, h1.hyperedges, h1.init_nodes, h1.node_index, a1, log);
+		a1.output["algo"] = "naive_degree";
                 a1.writecore("../python_src/sirdata/");
                 // std::cout<<"residual hypergraph: \n";
                 // h1.printHypergraph();
@@ -206,14 +210,16 @@ int main(int argc, char *argv[])
                 // auto ck_time = double(clock()-ck_start)/double(CLOCKS_PER_SEC);
                 Algorithm a(h);
                 local_core_clique(h.dataset, h.hyperedges, h.init_nodes, h.node_index, a, log);
+		a.output["algo"]="graph_core";
                 a.writecore("../python_src/sirdata/");
                 extract_nodes_to_delete(h,a.core,to_del,nodesto_del);
-                h1.dataset = name + "_h1";
+                h1.dataset = name + "_h1"+"_"+std::to_string(to_del);
                 // std::cout<<"hypergraph before del\n";
                 // h.printHypergraph();
                 residualhypergraph(nodesto_del, h, h1);
                 Algorithm a1(h1);
                 local_core_clique(h1.dataset, h1.hyperedges, h1.init_nodes, h1.node_index, a1, log);
+		a1.output["algo"] = "graph_core";
                 a1.writecore("../python_src/sirdata/");
                 // std::cout<<"residual hypergraph: \n";
                 // h1.printHypergraph();
@@ -228,7 +234,7 @@ int main(int argc, char *argv[])
 
             if (argc>=6){
                 // std::cout<<"Writing before-delete nbr: \n";
-                if (atoi(argv[5])!=0)   h1.writeneighborhood("../python_src/sirdata/log_"+h1.dataset+"_"+std::to_string(to_del)+".csv");
+                if (atoi(argv[5])!=0)   h1.writeneighborhood("../python_src/sirdata/log_"+h1.dataset+".csv");
             }
         }
     }

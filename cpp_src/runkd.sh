@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # g++-11 -Wall -g  -o main main.cpp hypergraph.cpp  algorithms.cpp readhg.h utils.h #  run on clang
-g++ -std=c++11 -o main main.cpp hypergraph.cpp  algorithms.cpp utils.h readhg.h #  run on gnu c++ compiler
+g++ -std=c++11 -o kdmain main.cpp hypergraph.cpp  algorithms.cpp utils.h readhg.h #  run on gnu c++ compiler
 
 
 declare -a dset=("congress" "enron" "dblp" "pref" "aminer")
@@ -13,7 +13,7 @@ for dataset in "${dset[@]}"
 do
     for algo in "${algorithms[@]}"
     do
-        ./main 1 $dataset $algo $it $log
+        ./kdmain 1 $dataset $algo $it $log
         echo "------------" 
     done 
 done
