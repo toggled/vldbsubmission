@@ -26,9 +26,9 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="pt"
      showgrid="false"
-     inkscape:zoom="1.3086849"
-     inkscape:cx="348.05934"
-     inkscape:cy="135.25028"
+     inkscape:zoom="0.92537997"
+     inkscape:cx="362.55377"
+     inkscape:cy="262.59484"
      inkscape:window-width="1366"
      inkscape:window-height="705"
      inkscape:window-x="-8"
@@ -635,12 +635,12 @@
         </g>
       </g>
       <ellipse
-         style="fill:#e9e9e9;fill-opacity:0.0466321;stroke:#000000;stroke-width:2.14458;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:2.14458, 12.8674;stroke-dashoffset:0"
+         style="fill:none;fill-opacity:0.0466321;stroke:#0000ff;stroke-width:4.02168;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:4.02168, 8.04337;stroke-dashoffset:0;stroke-opacity:1"
          id="path47287"
-         cx="257.06378"
+         cx="255.0374"
          cy="165.04868"
-         rx="184.15164"
-         ry="149.16283" />
+         rx="186.16708"
+         ry="149.15208" />
       <g
          id="g133725">
         <path
@@ -653,41 +653,41 @@
            id="path133721" />
       </g>
       <ellipse
-         style="fill:#e9e9e9;fill-opacity:0.0466321;stroke:#000000;stroke-width:2.0509;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:2.0509, 6.15271;stroke-dashoffset:0"
+         style="fill:#e9e9e9;fill-opacity:0.0466321;stroke:#0000ff;stroke-width:4;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:4,8;stroke-dashoffset:0;stroke-opacity:1"
          id="ellipse133875"
          cx="268.53699"
          cy="137.57359"
          rx="151.29501"
          ry="70.037704" />
       <ellipse
-         style="fill:#e9e9e9;fill-opacity:0.0466321;stroke:#000000;stroke-width:1.94348;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:1.94348, 5.83044;stroke-dashoffset:0"
+         style="fill:#e9e9e9;fill-opacity:0.0466321;stroke:#0000ff;stroke-width:4;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:4, 8;stroke-dashoffset:0;stroke-opacity:1"
          id="ellipse135329"
-         cx="254.48505"
+         cx="257.41794"
          cy="169.68846"
-         rx="181.73238"
-         ry="109.1951" />
+         rx="180.30334"
+         ry="109.19886" />
       <text
          xml:space="preserve"
          style="font-style:normal;font-weight:normal;font-size:30px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75;stroke-linecap:butt;stroke-linejoin:round"
-         x="162.55594"
-         y="311.76025"
+         x="171.55594"
+         y="302.76025"
          id="text5566"><tspan
            sodipodi:role="line"
            id="tspan5564"
            style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:22px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.75"
-           x="162.55594"
-           y="311.76025">2-core</tspan></text>
+           x="171.55594"
+           y="302.76025">2-core</tspan></text>
       <text
          xml:space="preserve"
          style="font-style:normal;font-weight:normal;font-size:30px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75;stroke-linecap:butt;stroke-linejoin:round"
          x="232.4142"
-         y="278.28876"
+         y="275.28876"
          id="text138264"><tspan
            sodipodi:role="line"
            id="tspan138262"
            style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:22px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.75"
            x="232.4142"
-           y="278.28876">3-core</tspan></text>
+           y="275.28876">3-core</tspan></text>
       <text
          xml:space="preserve"
          style="font-style:normal;font-weight:normal;font-size:30px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75;stroke-linecap:butt;stroke-linejoin:round"

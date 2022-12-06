@@ -39,12 +39,12 @@ void Algorithm::writecore(std::string folder){
     out.close();
 }
 void Algorithm::writekdcore(std::string folder){
-        std::string file = folder + "core_"+output["algo"]+"_"+hg.dataset+".csv";
+    std::string file = folder + "core_"+output["algo"]+"_"+hg.dataset+".csv";
     std::cout<<"writing to: "<<file<<"\n";
     std::stringstream ss;
     for(auto elem: core)
     {
-        std::cout<<elem.first<<","<<elem.second<<secondcore[elem.first]<<"\n";
+        // std::cout<<elem.first<<": "<<elem.second<<","<<secondcore[elem.first]<<"\n";
         ss << std::to_string(elem.first) << "," << std::to_string(elem.second)<<","<<std::to_string(secondcore[elem.first]) << "\n";
     }
     std::ofstream out(file.c_str());
@@ -1648,32 +1648,35 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
 
     }
     // Peeling iteration to find secondary core.
-    intuSetintMap nbrbucket;
+    // intuSetintMap nbrbucket;
     intvec inverse_bucket(N);
 	// initialize every nodes initial bucket to the primary core-number.
 	size_t min_cv = N+1;
     size_t max_cv = 0;
     for (size_t i = 0; i<N; i++){
         auto cv = pcore[i];
-        auto v = i;
-		if (nbrbucket.find(cv) == nbrbucket.end())
-			nbrbucket[cv] = uintSet({v});
-		else
-			nbrbucket[cv].insert(v);
+        // auto v = i;
+		// if (nbrbucket.find(cv) == nbrbucket.end())
+		// 	nbrbucket[cv] = uintSet({v});
+		// else
+		// 	nbrbucket[cv].insert(v);
         max_cv = std::max(max_cv, cv);
         min_cv = std::min(min_cv, cv);
     }
+    // std::cout<<min_cv<<":"<<max_cv<<"\n";
 	for (size_t pk = min_cv; pk<= max_cv; pk++){
         if(log) std::cout<<"pcore="<<pk<<"\n";
 		// deg bucket init 
 		intuSetintMap degbucket;
 		size_t max_deg = 0;
-		for (auto u : nbrbucket[pk]){
-			auto d = inc_edges[u].size();
-            if (degbucket.find(d) == degbucket.end()) degbucket[d] = uintSet();
-			degbucket[d].insert(u);
-            inverse_bucket[u] = d;
-			max_deg = std::max(d,max_deg);
+		for (size_t u = 0; u<N; u++){
+            if(pcore[u]>=pk){
+                auto d = inc_edges[u].size();
+                if (degbucket.find(d) == degbucket.end()) degbucket[d] = uintSet();
+                degbucket[d].insert(u);
+                inverse_bucket[u] = d;
+                max_deg = std::max(d,max_deg);
+            }
 		}
         if(log) {
             std::cout<<"max_deg: "<<max_deg<<"\n";
@@ -1688,12 +1691,10 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
         }
 		bool stop = false;
 		// size_t maximal_dk = 1;
-		for(size_t dk = 1; dk<= max_deg; dk++){
+		for(size_t dk = 1; dk<= max_deg && !stop; dk++){
             if(log) std::cout<<"dk = "<<dk<<"\n";
-            if(stop) break;
             if(degbucket.find(dk)==degbucket.end()) continue;
-			while (degbucket[dk].size()!=0){
-                if (stop) break;
+			while (degbucket[dk].size()!=0 && !stop){
 				// Pop v from degbucket[dk];
                 auto set_it = degbucket[dk].begin();  //# get first element in the bucket
                 auto v = *set_it;
@@ -1748,7 +1749,8 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
                                     auto u = *set_it;
                                     if (log) std::cout<<init_nodes[u]<<",";
                                     degbucket[ddk].erase(set_it);
-                                    removeV_transform(u,inc_edges, edges);
+                                    if(pcore[u]==pk)
+                                        removeV_transform(u,inc_edges, edges);
                                     score[u] = dk;
                                 }
                             }
@@ -1759,7 +1761,7 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
 					else{ // else, update index in degree bucket for u \in N(v) 
                         // only update bucket position of nodes in nbr pk-core.
                         // pk+1, and higher core-nodes will be processed in later time.
-                        if (nbrbucket[pk].find(u) != nbrbucket[pk].end()){
+                        // if (nbrbucket[pk].find(u) != nbrbucket[pk].end()){
                             auto d = inc_edges[u].size();
                             d = std::max(d,dk);
                             degbucket[inverse_bucket[u]].erase(u); // erase u from previous bucket index
@@ -1767,7 +1769,7 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
                             degbucket[d].insert(u);
                             if (log){std::cout<< "bucket update: \n";    print_bucket(degbucket,init_nodes);}
                             inverse_bucket[u] = d;
-                        }
+                        // }
 					}
 				}
                 if (log) std::cout<<"done traversing nbrs\n";
