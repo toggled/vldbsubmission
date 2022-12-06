@@ -1,6 +1,43 @@
 import random
 from tqdm import tqdm
 
+def exp_9a(neighbor, core, num_vertex_per_core=100, top_k=5,  p=0.5, num_iterations=100, original_n=None, verbose=True):
+
+    result = {}  # Entry is a core number. value is a list of percentages of the infected population for all vertices with the same core number
+
+    core_to_vertex_map = {}
+    distinct_core_numbers = []
+    for v in core:
+        if(core[v] not in core_to_vertex_map):
+            core_to_vertex_map[core[v]] = [v]
+            distinct_core_numbers.append(core[v])
+        else:
+            core_to_vertex_map[core[v]].append(v)
+
+    distinct_core_numbers.sort(reverse=True)
+
+    # repeat
+    for i in range(3):
+
+        # sort nodes according to core number
+        sorted_nodes = []
+        for c in distinct_core_numbers:
+            # apply shuffling
+            shuffled_nodes = core_to_vertex_map[c].copy()
+            random.shuffle(shuffled_nodes)
+            sorted_nodes += shuffled_nodes
+
+        # propagate
+        for v in tqdm(sorted_nodes[:num_vertex_per_core]):
+            if(i not in result):
+                result[i] = [bfs_bounded(
+                    neighbor, starting_vertex=v, p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose)]
+            else:
+                result[i].append(bfs_bounded(
+                    neighbor, starting_vertex=v, p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose))
+
+    return result
+
 
 def propagate_for_all_vertices(neighbor, core, num_vertex_per_core=100, top_k=5,  p=0.5, num_iterations=100, original_n=None, verbose=True):
 
@@ -35,6 +72,8 @@ def propagate_for_all_vertices(neighbor, core, num_vertex_per_core=100, top_k=5,
                     neighbor, starting_vertex=v, p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose))
 
     return result
+
+
 
 
 def propagate_for_all_vertices_for_kd(neighbor, kd_core, num_vertex_per_core=100, top_k=5,  p=0.5, num_iterations=10, original_n=None, verbose=True):
@@ -112,40 +151,69 @@ def run_intervention_exp2(name, original_n, p=0.5, top_k=5, verbose=False):
         data = pickle.load(handle)
         print("loaded ", path)
     result = {}
-    for k in data:
-        print('Core deletion#: ', k)
-        result[k] = {}
-        temp_core = data[k]['core']
-        neighbor = data[k]['neighbor']
-        # check_connectivity(H)
-        # result[k] = propagate_for_all_vertices(H, temp_core, p = p, original_n = original_n, verbose=verbose)
-        core_to_vertex_map = {}
-        distinct_core_numbers = []
-        for v in temp_core:
-            if(temp_core[v] not in core_to_vertex_map):
-                core_to_vertex_map[temp_core[v]] = [v]
-                distinct_core_numbers.append(temp_core[v])
-            else:
-                core_to_vertex_map[temp_core[v]].append(v)
+    if(False):
+        for k in tqdm(data):
+            print('Core deletion#: ', k)
+            result[k] = {}
+            temp_core = data[k]['core']
+            neighbor = data[k]['neighbor']
+            # check_connectivity(H)
+            # result[k] = propagate_for_all_vertices(H, temp_core, p = p, original_n = original_n, verbose=verbose)
+            core_to_vertex_map = {}
+            distinct_core_numbers = []
+            for v in temp_core:
+                if(temp_core[v] not in core_to_vertex_map):
+                    core_to_vertex_map[temp_core[v]] = [v]
+                    distinct_core_numbers.append(temp_core[v])
+                else:
+                    core_to_vertex_map[temp_core[v]].append(v)
 
-        distinct_core_numbers.sort(reverse=True)
-        for core_number in distinct_core_numbers[:top_k]:
-            print('core: ', core_number)
-            # result[k][core_number] = {}
-            if(len(core_to_vertex_map[core_number]) < 100):
-                v_sampled = core_to_vertex_map[core_number]
-            else:
-                v_sampled = random.choices(
-                    core_to_vertex_map[core_number], k=100)
+            distinct_core_numbers.sort(reverse=True)
+            for core_number in tqdm(distinct_core_numbers[:top_k]):
+                # print('core: ', core_number)
+                # result[k][core_number] = {}
+                if(len(core_to_vertex_map[core_number]) < 100):
+                    v_sampled = core_to_vertex_map[core_number]
+                else:
+                    v_sampled = random.choices(
+                        core_to_vertex_map[core_number], k=100)
 
+                num_iterations = 100
+                result_all_run = []
+                for _ in range(5):
+                    result_single_run = []
+                    for v in tqdm(v_sampled):
+                        result_single_run.append(bfs_bounded(
+                            neighbor, starting_vertex=v, p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose)[0])
+                    result_all_run.append(result_single_run)
+                result[k][core_number] = list(
+                    np.array(result_all_run).mean(axis=0))
+    else:
+        filename = pkl_path + "potential_seeds_" + name.split("_")[0] + ".pkl"
+        potential_seeds = None
+        with open(filename, "rb") as handle:
+            potential_seeds = pickle.load(handle)
+        # print(len(potential_seeds))
+        # print(filename)
+
+        for k in tqdm(data):
+            print('Core deletion#: ', k)
+            result[k] = {}
+            temp_core = data[k]['core']
+            neighbor = data[k]['neighbor']
+            for v in potential_seeds:
+                assert v in neighbor, v
+
+            
             num_iterations = 100
             result_all_run = []
-            for _ in range(5):
+            for _ in range(1):
                 result_single_run = []
-                for v in v_sampled:
-                    result_single_run.append(bfs_bounded(
-                        neighbor, starting_vertex=v, p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose)[0])
+                for v in tqdm(random.choices(potential_seeds, k=100)):
+                    assert v in neighbor, v
+                #     result_single_run.append(bfs_bounded(
+                #         neighbor, starting_vertex=v, p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose)[0])
                 result_all_run.append(result_single_run)
-            result[k][core_number] = list(
+            result[k][0] = list(
                 np.array(result_all_run).mean(axis=0))
     return result
