@@ -300,7 +300,7 @@ int main(int argc, char *argv[])
             // EPeel(h.dataset, h.e_id_to_edge, h.inc_dict, h.init_nodes, a);
             // else if(alg == "Local-core")
             local_core_clique(h.dataset, h.e_id_to_edge, h.inc_dict, h.init_nodes, a);
-            check_condition( h, a.core); 
+            // check_condition( h, a.core);
             a.output["algo"] = alg;
             a.output["num_threads"] = std::to_string(num_threads);
             a.output["total iteration"] = std::to_string(1);

@@ -38,6 +38,7 @@ class Algorithm{
     Hypergraph hg;
     public:
     intIntMap core;
+    intIntMap secondcore;
     double exec_time = 0;
     double core_exec_time = 0;
     double correction_time = 0;
@@ -57,12 +58,13 @@ class Algorithm{
     // size_t iterative_core_correct_opt(Hypergraph& H, std::string u, size_t core_u);
     void printcore();
     bool write_results();
-    void writecore();
+    void writecore(std::string folder="../output/");
     void writelog();
     void writeNbrQ();
+    void writekdcore(std::string folder="../output/");
 };
 // void local_core( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, std::map<std::string, std::set<size_t> > &inc_dict, strvec &init_nodes, Algorithm& a, bool log); 
-
+void print_bucket( intuSetintMap&, intvec&);
 void local_core( std::string dataset, intintvec &e_id_to_edge, intvec& init_nodes, intIntMap& node_index, Algorithm& a, bool log); 
 void local_core_OPTI( std::string dataset, intintvec &e_id_to_edge, intvec& init_nodes, intIntMap& node_index, Algorithm& a, bool log);
 void local_core_OPTII( std::string dataset, intintvec &e_id_to_edge, intvec& init_nodes, intIntMap& node_index, Algorithm& a, bool log);
@@ -70,14 +72,8 @@ void local_core_OPTIII( std::string dataset, intintvec &e_id_to_edge, intvec& in
 void local_core_OPTIV( std::string dataset, intintvec &e_id_to_edge, intvec& init_nodes, intIntMap& node_index, Algorithm& a, bool log);
 void Peel( std::string dataset, intintvec e_id_to_edge, intvec init_nodes, intIntMap& node_index, Algorithm& a, bool log);
 void EPeel( std::string dataset, intintvec e_id_to_edge, intvec init_nodes, intIntMap& node_index, Algorithm& a, bool log);
-
-// void local_core_OPTI( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, std::map<std::string, std::set<size_t> > &inc_dict, strvec &init_nodes, Algorithm& a, bool log);
-// void local_core_OPTII( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, std::map<std::string, std::set<size_t> > &inc_dict, strvec &init_nodes, Algorithm& a, bool log);
-// void local_core_OPTIII( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, std::map<std::string, std::set<size_t> > &inc_dict, strvec &init_nodes, Algorithm& a, bool log);
-// void local_core_OPTIV( std::string dataset, std::map<size_t, strvec > &e_id_to_edge, std::map<std::string, std::set<size_t> > &inc_dict, strvec &init_nodes, Algorithm& a, bool log);
-// void Peel( std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map<std::string, std::set<size_t> > inc_dict, strvec init_nodes, Algorithm& a, bool log);
-// void EPeel( std::string dataset, std::map<size_t, strvec > e_id_to_edge, std::map<std::string, std::set<size_t> > inc_dict, strvec init_nodes, Algorithm& a, bool log);
-
-
-
+void degreePeel( std::string dataset, intintvec e_id_to_edge, intvec init_nodes, intIntMap& node_index, Algorithm& a, bool log);
+void local_core_clique( std::string dataset, intintvec e_id_to_edge, intvec init_nodes, intIntMap& node_index, Algorithm& a, bool log);
+void local_core_bipartite( std::string dataset, intintvec e_id_to_edge, intvec init_nodes, intIntMap& node_index, Algorithm& a, bool log);
+void kdCorehybrid( std::string dataset, intintvec e_id_to_edge, intvec init_nodes, intIntMap& node_index, Algorithm& a, bool log);
 #endif

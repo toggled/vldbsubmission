@@ -35,7 +35,7 @@ void Algorithm::writecore(){
     out.close();
 }
 bool Algorithm::write_results(){
-    std::string file = "../output/exresults.csv";
+    std::string file = "../output/results.csv";
     std::stringstream ss;
     
     // // print the order in which the output keys are saved in the csv file.

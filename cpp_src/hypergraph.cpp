@@ -329,4 +329,49 @@
         //     std::cout<<'\n';
         // }
     }
+    void Hypergraph:: writeneighborhood(std::string file){
+        if(file=="") file = "../output/log_"+dataset+"Nv.csv";
+        std::cout <<"writing neighborhood dictionary: "<< file<<"\n";
+        std::stringstream ss;
+        std::unordered_map< size_t, std::unordered_set<size_t>> init_nbr;
+        /* Compute neighbors first */
+        for(auto elem: hyperedges){
+            for(auto v_id: elem){
+            // initialise number of neighbours and set of neighbours
+                if ( init_nbr.find(v_id) == init_nbr.end() ) { // first insertion of v_id to init_nbr map
+                    init_nbr[v_id] = std::unordered_set<size_t>();
+                    for (auto u: elem){
+                        if (u!=v_id){
+                            init_nbr[v_id].insert(u);
+                        }
+                    }
+                }
+                else{  // v_id exists in init_nbr map
+                    for (auto u: elem){
+                        if (u!=v_id){
+                            init_nbr[v_id].insert(u);
+                        }
+                    }
+                }
+            }
+        }  
+        for(auto pair: init_nbr){
+            auto node = pair.first;
+            ss<<node<<",";
+            int _count = 0;
+            int N = pair.second.size();
+            for (auto nbr_v: pair.second){
+                _count++;
+                if(_count<N) ss<<nbr_v<<",";
+                else    ss<<nbr_v<<"\n";
+            }
+        }
+        std::ofstream out(file.c_str());
+        if(out.fail())
+        {
+            out.close();
+        }
+        out << ss.str();
+        out.close();
+    }
 // };
