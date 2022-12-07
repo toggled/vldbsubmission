@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
             std::cout << argv[2]<<" "<<argv[3]<<" "<<argv[4]<<" "<<argv[5]<<"\n";
             if (argc>=6){
                 // std::cout<<"Writing before-delete nbr: \n";
-                if (atoi(argv[5])!=0)   h.writeneighborhood("../python_src/sirdata/log_"+h.dataset+".csv");
+                if (atoi(argv[5])!=0)   h.writeneighborhood("../python_src/sirdata/h0_"+h.dataset+".csv");
             }
             if (alg == "Local-core-OPTIV" || alg == "naive_nbr"){    
                 std::cout <<"Local-core-OPTIV (CSR + Modify core number at each step + bound + core correct) \n";
@@ -234,7 +234,7 @@ int main(int argc, char *argv[])
 
             if (argc>=6){
                 // std::cout<<"Writing before-delete nbr: \n";
-                if (atoi(argv[5])!=0)   h1.writeneighborhood("../python_src/sirdata/log_"+h1.dataset+".csv");
+                if (atoi(argv[5])!=0)   h1.writeneighborhood("../python_src/sirdata/h1_"+h1.dataset+".csv");
             }
         }
     }
