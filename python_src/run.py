@@ -35,7 +35,7 @@ parser.add_argument("-sir_exp2", "--sir_exp2", default=0, type=int)
 parser.add_argument("-sir_exp3", "--sir_exp3",
                     default=0, type=int)  # intervention
 parser.add_argument("-n", "--num_delete", type=int,
-                    default=20, help="how many vertices are deleted")
+                    default=-1, help="how many vertices are deleted")
 parser.add_argument("-sir_exp3_explanation",
                     "--sir_exp3_explanation", default=0, type=int)
 parser.add_argument("-sir_exp3_explanation_splen",
@@ -58,49 +58,6 @@ if(False):
 os.system("mkdir -p tests/tmp")
 os.system("mkdir -p ../output/")
 fname = "tests/tmp/" + args.dataset + "_" + args.algo + ".pkl"
-if(not os.path.isfile(fname)):
-    hgDecompose = HGDecompose()
-    if(args.algo == "naive_nbr"):
-        hgDecompose.naiveNBR(input_H, verbose=args.verbose)
-    elif(args.algo == "naive_degree"):
-        hgDecompose.naiveDeg(input_H, verbose=args.verbose)
-    elif(args.algo == "graph_core"):
-        G = H.get_clique_graph()
-        nx_G = nx.Graph()
-        # print("N: ",G.get_N())
-        # print("M: ",G.get_M())
-        # hgDecompose.naiveDeg(G, verbose=args.verbose)
-        for e in G.edge_iterator():
-            nx_G.add_edge(e[0], e[1])
-        hgDecompose.core = nx.core_number(nx_G)
-    else:
-
-        raise RuntimeError(args.algo + " is not defined or implemented yet")
-
-    core_base = hgDecompose.core
-    # print(core_base)
-
-    # dump file
-    with open(fname, 'wb') as handle:
-        print('dump: ', fname)
-        pickle.dump(hgDecompose, handle, protocol=4)
-
-else:
-    print("Retrieving saved file")
-    try:
-        with open(fname, 'rb') as handle:
-            hgDecompose = pickle.load(handle)
-            core_base = hgDecompose.core
-    except:
-        # for dblp dataset
-        with open(fname, 'rb') as handle:
-            core_base = pickle.load(handle)
-
-    # revise core_base
-    core_base_new = {}
-    for v in core_base:
-        core_base_new[int(v)] = int(core_base[v])
-    core_base = core_base_new
 
 entry = {}
 entry['dataset'] = args.dataset
@@ -134,18 +91,66 @@ dic_neighborhood = {
     "dblp": "../data/neighborhood_files/log_dblp_Nv.csv",
 }
 
-# get neighborhood information
-neighbor = {}
-with open(dic_neighborhood[args.dataset]) as file:
-    for line in file:
-        vs = line.strip().split(",")
-        assert vs[0] not in neighbor
-        neighbor[int(vs[0])] = list(map(int, vs[1:]))
-        for u in neighbor[int(vs[0])]:
-            assert type(u) == int
-        assert int(vs[0]) in core_base
+
        
 if(args.sir_9a):
+
+    if(not os.path.isfile(fname)):
+        hgDecompose = HGDecompose()
+        if(args.algo == "naive_nbr"):
+            hgDecompose.naiveNBR(input_H, verbose=args.verbose)
+        elif(args.algo == "naive_degree"):
+            hgDecompose.naiveDeg(input_H, verbose=args.verbose)
+        elif(args.algo == "graph_core"):
+            G = H.get_clique_graph()
+            nx_G = nx.Graph()
+            # print("N: ",G.get_N())
+            # print("M: ",G.get_M())
+            # hgDecompose.naiveDeg(G, verbose=args.verbose)
+            for e in G.edge_iterator():
+                nx_G.add_edge(e[0], e[1])
+            hgDecompose.core = nx.core_number(nx_G)
+        else:
+
+            raise RuntimeError(args.algo + " is not defined or implemented yet")
+
+        core_base = hgDecompose.core
+        # print(core_base)
+
+        # dump file
+        with open(fname, 'wb') as handle:
+            print('dump: ', fname)
+            pickle.dump(hgDecompose, handle, protocol=4)
+
+    else:
+        print("Retrieving saved file")
+        try:
+            with open(fname, 'rb') as handle:
+                hgDecompose = pickle.load(handle)
+                core_base = hgDecompose.core
+        except:
+            # for dblp dataset
+            with open(fname, 'rb') as handle:
+                core_base = pickle.load(handle)
+
+        # revise core_base
+        core_base_new = {}
+        for v in core_base:
+            core_base_new[int(v)] = int(core_base[v])
+        core_base = core_base_new
+
+
+    # get neighborhood information
+    neighbor = {}
+    with open(dic_neighborhood[args.dataset]) as file:
+        for line in file:
+            vs = line.strip().split(",")
+            assert vs[0] not in neighbor
+            neighbor[int(vs[0])] = list(map(int, vs[1:]))
+            for u in neighbor[int(vs[0])]:
+                assert type(u) == int
+            assert int(vs[0]) in core_base
+
     entry['result'] = exp_9a(neighbor, core_base, num_vertex_per_core=args.seed_size,
                              num_iterations=args.max_propagation_time, p=float(args.prob), verbose=args.verbose)
     entry['max propagation time'] = args.max_propagation_time

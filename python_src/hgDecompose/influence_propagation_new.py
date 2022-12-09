@@ -1,6 +1,7 @@
 import random
 from tqdm import tqdm
 
+
 def exp_9a(neighbor, core, num_vertex_per_core=100, top_k=5,  p=0.5, num_iterations=100, original_n=None, verbose=True):
 
     result = {}  # Entry is a core number. value is a list of percentages of the infected population for all vertices with the same core number
@@ -74,8 +75,6 @@ def propagate_for_all_vertices(neighbor, core, num_vertex_per_core=100, top_k=5,
     return result
 
 
-
-
 def propagate_for_all_vertices_for_kd(neighbor, kd_core, num_vertex_per_core=100, top_k=5,  p=0.5, num_iterations=10, original_n=None, verbose=True):
 
     result = {}  # Entry is a core number. value is a list of percentages of the infected population for all vertices with the same core number
@@ -146,12 +145,12 @@ def run_intervention_exp2(name, original_n, p=0.5, top_k=5, verbose=False):
     import pickle
     import numpy as np
     pkl_path = 'sirdata/'
-    path = pkl_path+name+'.pkl'
-    with open(os.path.join(path), 'rb') as handle:
-        data = pickle.load(handle)
-        print("loaded ", path)
     result = {}
     if(False):
+        path = pkl_path+name+'.pkl'
+        with open(os.path.join(path), 'rb') as handle:
+            data = pickle.load(handle)
+            print("loaded ", path)
         for k in tqdm(data):
             print('Core deletion#: ', k)
             result[k] = {}
@@ -193,27 +192,43 @@ def run_intervention_exp2(name, original_n, p=0.5, top_k=5, verbose=False):
         potential_seeds = None
         with open(filename, "rb") as handle:
             potential_seeds = pickle.load(handle)
-        # print(len(potential_seeds))
-        # print(filename)
 
-        for k in tqdm(data):
+        # # revise potential seeds
+        # assert 1 in data
+        # potential_seeds_new = []
+        # for v in potential_seeds:
+        #     if v in data[1]['neighbor']:
+        #         potential_seeds_new.append(v)
+        # # print(len(potential_seeds), len(potential_seeds_new))
+        # potential_seeds = potential_seeds_new
+        # # quit()
+
+        for k in tqdm(range(2)):
             print('Core deletion#: ', k)
             result[k] = {}
-            temp_core = data[k]['core']
-            neighbor = data[k]['neighbor']
+            neighbor = {}
+            splitted_name = name.split("_")
+            neighbor_data_filename = "sirdata_naheed_vai/" + splitted_name[1] + "_" + splitted_name[2] + \
+                "_" + splitted_name[0] + "_h" + \
+                str(k) + "_" + splitted_name[3] + ".csv"
+            neighbor = {}
+            with open(neighbor_data_filename) as file:
+                for line in file:
+                    vs = line.strip().split(",")
+                    assert int(vs[0]) not in neighbor
+                    neighbor[int(vs[0])] = list(map(int, vs[1:]))
+
             for v in potential_seeds:
                 assert v in neighbor, v
 
-            
             num_iterations = 100
             result_all_run = []
-            for _ in range(1):
+            for _ in range(10):
                 result_single_run = []
-                for v in tqdm(random.choices(potential_seeds, k=100)):
+                for v in tqdm(potential_seeds[:100]):
                     assert v in neighbor, v
-                #     result_single_run.append(bfs_bounded(
-                #         neighbor, starting_vertex=v, p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose)[0])
+                    result_single_run.append(bfs_bounded(
+                        neighbor, starting_vertex=v, p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose))
                 result_all_run.append(result_single_run)
-            result[k][0] = list(
-                np.array(result_all_run).mean(axis=0))
+            result[k][0] = result_all_run
     return result

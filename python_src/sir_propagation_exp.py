@@ -23,8 +23,9 @@ args = parser.parse_args()
 def construct_pickle():
 
     def get_core_neighbor_data(index=0):
-        core_data_filename = "sirdata_backup/core_" + \
-            args.algo + "_" + args.dataset + "_h" + str(index) + ".csv"
+        core_data_filename = "sirdata_naheed_vai/core_" + \
+            args.algo + "_" + args.dataset + "_h" + str(index) + "_" + \
+            str(args.num_delete) + ".csv"
 
         # get core information
         core_base = {}
@@ -34,8 +35,8 @@ def construct_pickle():
                 assert int(vs[0]) not in core_base
                 core_base[int(vs[0])] = int(vs[1])
 
-        neighbor_data_filename = "sirdata_backup/log_" + \
-            args.dataset + "_h" + str(index) + "_" + \
+        neighbor_data_filename = "sirdata_naheed_vai/" + \
+            args.algo + "_" + args.dataset + "_h" + str(index) + "_" + \
             str(args.num_delete) + ".csv"
 
         # get neighborhood information
@@ -47,7 +48,8 @@ def construct_pickle():
                 neighbor[int(vs[0])] = list(map(int, vs[1:]))
                 for u in neighbor[int(vs[0])]:
                     assert type(u) == int
-                assert int(vs[0]) in core_base, str(int(vs[0])) + " " + str(index)
+                assert int(vs[0]) in core_base, str(
+                    int(vs[0])) + " " + str(index)
 
         return core_base, neighbor
 
