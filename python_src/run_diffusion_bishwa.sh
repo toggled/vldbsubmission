@@ -85,7 +85,8 @@ dataset="enron"
 rm ../output/propagation_result_recursive_delinner_$dataset*
 for algo in graph_core naive_degree naive_nbr    
 do
-    python run.py -sir_exp3 1 -a $algo -d $dataset --num_delete -1
+    # python run.py -sir_exp3 1 -a $algo -d $dataset --num_delete -1
+    python sir_exp3.py -a $algo -d $dataset --num_delete -1
 done
 
 # python sir_propagation_exp.py --dataset dblp --algo graph_core --num_delete -1

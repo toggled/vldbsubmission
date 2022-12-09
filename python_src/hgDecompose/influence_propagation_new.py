@@ -223,9 +223,9 @@ def run_intervention_exp2(name, original_n, p=0.5, top_k=5, verbose=False):
 
             num_iterations = 100
             result_all_run = []
-            for _ in range(10):
+            for _ in range(3):
                 result_single_run = []
-                for v in tqdm(potential_seeds[:100]):
+                for v in tqdm(potential_seeds[:3000]):
                     assert v in neighbor, v
                     result_single_run.append(bfs_bounded(
                         neighbor, starting_vertex=v, p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose))
