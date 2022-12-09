@@ -12,8 +12,8 @@ parser.add_argument(
     "-p", "--prob", help="parameter for Probability", default=0.3, type=float)
 args = parser.parse_args()
 
-seed_size = 100
-num_rounds = 2
+seed_size = 2000
+num_rounds = 5
 max_propagation_time = 100
 
 def worker(arg_tuple):
@@ -24,7 +24,9 @@ def worker(arg_tuple):
         assert v in neighbor, v
         result_single_run.append(bfs_bounded(
             neighbor, starting_vertex=v, p=args.prob, num_iterations=max_propagation_time, verbose=False))
+        assert len(result_single_run[-1][2]) == max_propagation_time
     # print('I am number %d in process %d' % (procnum, getpid()))
+    # assert len(result_single_run) == seed_size
     return result_single_run
 
 
