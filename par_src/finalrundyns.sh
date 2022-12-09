@@ -17,7 +17,7 @@ for i in "${!dset[@]}"
     	bestThread=${bestThreadInit[i]}
 	for t in "${threads[@]}"
 	do
-		./optIlocalpdyn $data $t $lb $bestThreadInit
-		# echo $data.$t.$lb.$bestThread
+		#./optIlocalpdyn $data $t $lb $bestThread
+		echo $data.$t.$lb.$bestThread
 	done
     done
