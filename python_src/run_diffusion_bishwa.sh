@@ -81,7 +81,7 @@
 memlimit="3000000"
 ulimit -v $memlimit
 
-dataset="enron"
+dataset="dblp"
 rm ../output/propagation_result_recursive_delinner_$dataset*
 for algo in graph_core naive_degree naive_nbr    
 do
