@@ -81,8 +81,9 @@
 memlimit="3000000"
 ulimit -v $memlimit
 
-dataset="dblp"
+dataset="enron"
 rm ../output/propagation_result_recursive_delinner_$dataset*
+python potential_seeds.py --dataset $dataset --num_delete -1
 for algo in graph_core naive_degree naive_nbr    
 do
     # python run.py -sir_exp3 1 -a $algo -d $dataset --num_delete -1

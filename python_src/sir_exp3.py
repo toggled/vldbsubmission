@@ -12,7 +12,7 @@ parser.add_argument(
     "-p", "--prob", help="parameter for Probability", default=0.3, type=float)
 args = parser.parse_args()
 
-seed_size = 2000
+seed_size = 100
 num_rounds = 5
 max_propagation_time = 100
 
