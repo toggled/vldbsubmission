@@ -557,21 +557,21 @@ int main (int argc, char *argv[]) {
 	double init_time = omp_get_wtime() - start_init;
     //core-computation
 	double core_start = omp_get_wtime();
-	size_t steps = compute_k_core(N, working_threads, node_index_index, min_e_hindex, Elock, prefixsum_partition, llb, glb, nbrs_N, nbrs_F, inc_edges_N,inc_edges_F,hyperedges, node_index);
+	// size_t steps = compute_k_core(N, working_threads, node_index_index, min_e_hindex, Elock, prefixsum_partition, llb, glb, nbrs_N, nbrs_F, inc_edges_N,inc_edges_F,hyperedges, node_index);
 	double core_time = omp_get_wtime() - core_start;
-    printf("#Threads:%lu/Time:%f seconds/steps: %lu\n\n",working_threads, core_time,steps);
+    // printf("#Threads:%lu/Time:%f seconds/steps: %lu\n\n",working_threads, core_time,steps);
 	printf("init. Time (init DS + Array init + LB) w/ %lu Threads:  %lf\n",num_threads_init, init_time);
 	// printf("init DS: %lf\n",initctime);
 	// printf("Array init(hindex,active array): %lf\n",arrayofstructtime);
 	// printf("LB: %lf\n",lbtime);
-	write_core(N, init_nodes, node_index, node_index_index, "../output/parout/"+std::string(argv[1])+"_"+argv[2]+"_ompd.core");
+	// write_core(N, init_nodes, node_index, node_index_index, "../output/parout/"+std::string(argv[1])+"_"+argv[2]+"_ompd.core");
 	if (lbflag)	output["algo"] = "LocalP(B+CSR)2";
 	else	output["algo"] = "LocalP(nolb)";
     output["dataset"]=argv[1];
     output["num_threads"] = std::to_string(working_threads);
     output["execution time"]= std::to_string(core_time);
 	output["init_time"] = std::to_string(init_time);
-    output["total iteration"] = std::to_string(steps);
+    // output["total iteration"] = std::to_string(steps);
 	if (lbflag)	write_results(output,"../output/parout/inresults_dy.csv");
 	else 	write_results(output,"../output/parout/results_nolb_dy.csv");
 	
