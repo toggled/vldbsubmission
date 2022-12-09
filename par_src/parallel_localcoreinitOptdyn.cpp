@@ -346,24 +346,26 @@ int compute_k_core(size_t n, size_t working_threads, const intvec& node_index_in
 	size_t continue_itr = 1;
 	while (continue_itr) {
 		D(std::cout <<"Superstep: "<<supersteps<<"\n");
-		#pragma omp parallel num_threads(working_threads)
-		{
-			size_t tid = omp_get_thread_num();
-			size_t slice_start,slice_end;
-			if (tid==0)	{
-				slice_start = 0;
-				slice_end = prefixsum_partition[tid];
-			}
-			else{ 
-				slice_start = prefixsum_partition[tid-1];
-				slice_end = prefixsum_partition[tid];
-			}
-			D(std::cout<<"Thread: "<<tid<<": "<<slice_start<<" "<<slice_end<<"\n");
-			// #pragma omp for schedule(dynamic) // Comment  for not-dyn sched.
-			for (size_t z = slice_start; z<slice_end; z++) {
+		// #pragma omp parallel num_threads(working_threads)
+		// {
+		// 	size_t tid = omp_get_thread_num();
+		// 	size_t slice_start,slice_end;
+		// 	if (tid==0)	{
+		// 		slice_start = 0;
+		// 		slice_end = prefixsum_partition[tid];
+		// 	}
+		// 	else{ 
+		// 		slice_start = prefixsum_partition[tid-1];
+		// 		slice_end = prefixsum_partition[tid];
+		// 	}
+			// D(std::cout<<"Thread: "<<tid<<": "<<slice_start<<" "<<slice_end<<"\n");
+			#pragma omp parallel for schedule(dynamic) // Comment  for not-dyn sched.
+			for (size_t z = 0; z<n; z++) {// Comment  for not-dyn sched.
+			// for (size_t z = slice_start; z<slice_end; z++) {
 				/* Want to stride across assigned blocks.
 				 */
 				if (valid[z]) {
+					size_t tid = omp_get_thread_num();
 					if (0 == supersteps) {
 						std::fill(h_count[z].begin(), h_count[z].end(), 0);
 						// updates min-hindex[e] to min(current min-hindex[e],A[z].kcore) for every e incident on z
@@ -416,7 +418,7 @@ int compute_k_core(size_t n, size_t working_threads, const intvec& node_index_in
 						}
 					
 					}
-				}
+				// }
 			}
 		}
 		#pragma omp barrier
@@ -449,6 +451,7 @@ void write_core(size_t N, const intvec& init_nodes, intintMap& node_index, intve
         	ss << u << "," << kcore[node_index_index[node_index[u]]] << "\n";
 		}
     }
+	std::cout<<"core file: "<<file<<"\n";
     std::ofstream out(file.c_str());
     if(out.fail())
     {
@@ -561,16 +564,16 @@ int main (int argc, char *argv[]) {
 	// printf("init DS: %lf\n",initctime);
 	// printf("Array init(hindex,active array): %lf\n",arrayofstructtime);
 	// printf("LB: %lf\n",lbtime);
-	write_core(N, init_nodes, node_index, node_index_index, "../output/parout/"+std::string(argv[1])+"_"+argv[2]+"_omp.core");
+	write_core(N, init_nodes, node_index, node_index_index, "../output/parout/"+std::string(argv[1])+"_"+argv[2]+"_ompd.core");
 	if (lbflag)	output["algo"] = "LocalP(B+CSR)2";
 	else	output["algo"] = "LocalP(nolb)";
     output["dataset"]=argv[1];
     output["num_threads"] = std::to_string(working_threads);
     output["execution time"]= std::to_string(core_time);
 	output["init_time"] = std::to_string(init_time);
-    	output["total iteration"] = std::to_string(steps);
-	if (lbflag)	write_results(output,"../output/parout/bresults.csv");
-	else 	write_results(output,"../output/parout/results_nolb.csv");
+    output["total iteration"] = std::to_string(steps);
+	if (lbflag)	write_results(output,"../output/parout/inresults_dy.csv");
+	else 	write_results(output,"../output/parout/results_nolb_dy.csv");
 	
 	delete[] Elock;
 	delete[] Vlock;

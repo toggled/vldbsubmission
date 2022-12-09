@@ -2,7 +2,7 @@
 export OMP_WAIT_POLICY=active
 export OMP_DYNAMIC=true
 export OMP_PROC_BIND=true
-g++ -std=c++11 -fopenmp -o optIlocalp parallel_localcoreinitOpt.cpp    #ubuntu_cpp
+g++ -std=c++11 -fopenmp -o optIlocalpdyn parallel_localcoreinitOptdyn.cpp    #ubuntu_cpp
 # g++-11 -fopenmp -o hgmain parallel_localcore.c      #mac
 
 declare -a dset=("enron" "bin_2" "bin_5" "congress" "contact" "dblp" "pref" "aminer")
@@ -17,7 +17,7 @@ for i in "${!dset[@]}"
     	bestThread=${bestThreadInit[i]}
 	for t in "${threads[@]}"
 	do
-		./optIlocalp $data $t $lb $bestThread
-		#echo $data.$t.$lb.$bestThread
+		#./optIlocalpdyn $data $t $lb $bestThread
+		echo $data.$t.$lb.$bestThread
 	done
     done
