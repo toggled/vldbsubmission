@@ -159,11 +159,13 @@ int main(int argc, char *argv[])
             }
             
             std::cout << argv[2]<<" "<<argv[3]<<" "<<argv[4]<<" "<<argv[5]<<"\n";
-            if (argc>=6){
-                // std::cout<<"Writing before-delete nbr: \n";
-                if (atoi(argv[5])!=0)   h.writeneighborhood("../python_src/sirdata/log_"+h.dataset+".csv");
-            }
             if (alg == "Local-core-OPTIV" || alg == "naive_nbr"){    
+		alg = "naive_nbr";
+		if (argc>=6){
+                // std::cout<<"Writing before-delete nbr: \n";
+                if (atoi(argv[5])!=0)   h.writeneighborhood("../python_src/sirdata/"+alg+"_"+h.dataset+".csv");
+            	}
+
                 std::cout <<"Local-core-OPTIV (CSR + Modify core number at each step + bound + core correct) \n";
                 Algorithm a(h);
                 local_core_OPTIV(h.dataset, h.hyperedges, h.init_nodes, h.node_index, a, log);
@@ -182,7 +184,13 @@ int main(int argc, char *argv[])
                 // h1.printHypergraph();
             }
             if (alg == "deg"){    
+		alg = "naive_degree";
                 std::cout <<"naive_deg\n";
+		alg = "naive_degree";
+		if (argc>=6){
+			// std::cout<<"Writing before-delete nbr: \n";
+			if (atoi(argv[5])!=0)   h.writeneighborhood("../python_src/sirdata/"+alg+"_"+h.dataset+".csv");
+            	}
                 Algorithm a(h);
                 degreePeel(h.dataset, h.hyperedges, h.init_nodes, h.node_index, a, log);
                 // a.output["num_threads"] = std::to_string(num_threads);
@@ -204,6 +212,11 @@ int main(int argc, char *argv[])
             }
 
             if(alg == "clique"){
+		alg = "graph_core";
+		if (argc>=6){
+			// std::cout<<"Writing before-delete nbr: \n";
+			if (atoi(argv[5])!=0)   h.writeneighborhood("../python_src/sirdata/"+alg+"_"+h.dataset+".csv");
+            	}
                 getClique(h);
                 h.initialise();
                 // h.printHypergraph();
@@ -234,7 +247,7 @@ int main(int argc, char *argv[])
 
             if (argc>=6){
                 // std::cout<<"Writing before-delete nbr: \n";
-                if (atoi(argv[5])!=0)   h1.writeneighborhood("../python_src/sirdata/log_"+h1.dataset+".csv");
+                if (atoi(argv[5])!=0)   h1.writeneighborhood("../python_src/sirdata/"+alg+"_"+h1.dataset+".csv");
             }
         }
     }

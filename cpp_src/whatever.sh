@@ -1,9 +1,10 @@
 #!/bin/bash
-g++ -std=c++11 -g -o delmain delincore.cpp hypergraph.cpp  algorithms.cpp utils.h readhg.h
+#g++ -std=c++11 -g -o delmain delincore.cpp hypergraph.cpp  algorithms.cpp utils.h readhg.h
 mkdir -p "../python_src/sirdata"
 
 #declare -a dset=("enron" "dblp")
-declare -a dset=("pref" "aminer") 
+#declare -a dset=("pref" "aminer") 
+declare -a dset=("enron")
 declare -a algorithms=("Local-core-OPTIV" "deg" "clique")
 
 del=-1 # -1 for deleting entire innermost core, if del>0 deltes del #nodes to construct h1.
