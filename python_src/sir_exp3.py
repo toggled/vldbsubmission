@@ -24,7 +24,9 @@ def worker(arg_tuple):
         assert v in neighbor, v
         result_single_run.append(bfs_bounded(
             neighbor, starting_vertex=v, p=args.prob, num_iterations=max_propagation_time, verbose=False))
+        assert len(result_single_run[-1][2]) == max_propagation_time
     # print('I am number %d in process %d' % (procnum, getpid()))
+    # assert len(result_single_run) == seed_size
     return result_single_run
 
 

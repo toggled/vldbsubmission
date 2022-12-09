@@ -137,6 +137,13 @@ def bfs_bounded(neighbor, starting_vertex, p=0.3, num_iterations=10, original_n=
 
         results_each_time_step.append(num_infected)
 
+    # if time step results is incomplete, fill with last infected number
+    len_time_step_results = len(results_each_time_step)
+    if(len_time_step_results > 0 and len_time_step_results < num_iterations):
+        for _ in range(len_time_step_results, num_iterations):
+            results_each_time_step.append(results_each_time_step[-1])
+        # print(len_time_step_results - num_iterations, len_time_step_results, results_each_time_step)
+
     return num_infected, len(neighbor[starting_vertex]), results_each_time_step
 
 
