@@ -88,7 +88,7 @@
 # 9(c) experiment
 # =====================================================================
 
-memlimit="5000000"
+memlimit="3000000"
 ulimit -v $memlimit
 
 # dataset="enron"
@@ -104,17 +104,18 @@ ulimit -v $memlimit
 # =====================================================================
 # 9(a) experiment
 # =====================================================================
-# rm ../output/propagation_result_9a.csv
+rm ../output/propagation_result_9a.csv
 # for i in 1000 1500 2000 3000 4000 5000 6000
-# do
-#     for algo in graph_core naive_degree naive_nbr    
-#     do
-#         python run.py --sir_9a -a $algo -d dblp --seed_size $i --max_propagation_time 10
-#     done
-# done
+for i in 10 50 100 200 300 400 1000 1500 2000 3000
+do
+    for algo in graph_core naive_degree naive_nbr    
+    do
+        python run.py --sir_9a -a $algo -d enron --seed_size $i --max_propagation_time 10
+    done
+done
 
 
 # =============================================
 # Plots 9(b)
 # =============================================
-python plot_9b.py
+# python plot_9b.py

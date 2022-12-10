@@ -86,63 +86,74 @@ entry['timestep_results'] = None
 entry['intervention_results'] = None
 entry['max propagation time'] = None
 
-dic_neighborhood = {
-    "enron": "../data/neighborhood_files/log_enron_Nv.csv",
-    "dblp": "../data/neighborhood_files/log_dblp_Nv.csv",
-}
 
 
        
 if(args.sir_9a):
 
-    if(not os.path.isfile(fname)):
-        hgDecompose = HGDecompose()
-        if(args.algo == "naive_nbr"):
-            hgDecompose.naiveNBR(input_H, verbose=args.verbose)
-        elif(args.algo == "naive_degree"):
-            hgDecompose.naiveDeg(input_H, verbose=args.verbose)
-        elif(args.algo == "graph_core"):
-            G = H.get_clique_graph()
-            nx_G = nx.Graph()
-            # print("N: ",G.get_N())
-            # print("M: ",G.get_M())
-            # hgDecompose.naiveDeg(G, verbose=args.verbose)
-            for e in G.edge_iterator():
-                nx_G.add_edge(e[0], e[1])
-            hgDecompose.core = nx.core_number(nx_G)
-        else:
+    # if(not os.path.isfile(fname)):
+    #     hgDecompose = HGDecompose()
+    #     if(args.algo == "naive_nbr"):
+    #         hgDecompose.naiveNBR(input_H, verbose=args.verbose)
+    #     elif(args.algo == "naive_degree"):
+    #         hgDecompose.naiveDeg(input_H, verbose=args.verbose)
+    #     elif(args.algo == "graph_core"):
+    #         G = H.get_clique_graph()
+    #         nx_G = nx.Graph()
+    #         # print("N: ",G.get_N())
+    #         # print("M: ",G.get_M())
+    #         # hgDecompose.naiveDeg(G, verbose=args.verbose)
+    #         for e in G.edge_iterator():
+    #             nx_G.add_edge(e[0], e[1])
+    #         hgDecompose.core = nx.core_number(nx_G)
+    #     else:
 
-            raise RuntimeError(args.algo + " is not defined or implemented yet")
+    #         raise RuntimeError(args.algo + " is not defined or implemented yet")
 
-        core_base = hgDecompose.core
-        # print(core_base)
+    #     core_base = hgDecompose.core
+    #     # print(core_base)
 
-        # dump file
-        with open(fname, 'wb') as handle:
-            print('dump: ', fname)
-            pickle.dump(hgDecompose, handle, protocol=4)
+    #     # dump file
+    #     with open(fname, 'wb') as handle:
+    #         print('dump: ', fname)
+    #         pickle.dump(hgDecompose, handle, protocol=4)
 
-    else:
-        print("Retrieving saved file")
-        try:
-            with open(fname, 'rb') as handle:
-                hgDecompose = pickle.load(handle)
-                core_base = hgDecompose.core
-        except:
-            # for dblp dataset
-            with open(fname, 'rb') as handle:
-                core_base = pickle.load(handle)
+    # else:
+    #     print("Retrieving saved file")
+    #     try:
+    #         with open(fname, 'rb') as handle:
+    #             hgDecompose = pickle.load(handle)
+    #             core_base = hgDecompose.core
+    #     except:
+    #         # for dblp dataset
+    #         with open(fname, 'rb') as handle:
+    #             core_base = pickle.load(handle)
 
-        # revise core_base
-        core_base_new = {}
-        for v in core_base:
-            core_base_new[int(v)] = int(core_base[v])
-        core_base = core_base_new
+    #     # revise core_base
+    #     core_base_new = {}
+    #     for v in core_base:
+    #         core_base_new[int(v)] = int(core_base[v])
+    #     core_base = core_base_new
 
+    core_data_filename = "sirdata_naheed_vai/core_" + \
+            args.algo + "_" + args.dataset + "_h0_" + \
+            str(args.num_delete) + ".csv"
+
+    # get core information
+    core_base = {}
+    with open(core_data_filename) as file:
+        for line in file:
+            vs = line.strip().split(",")
+            assert int(vs[0]) not in core_base
+            core_base[int(vs[0])] = int(vs[1])
+
+    neighbor_data_filename = "sirdata_naheed_vai/" + args.algo + \
+            "_" + args.dataset + "_h0_" + str(args.num_delete) + ".csv"
+        
 
     # get neighborhood information
     neighbor = {}
-    with open(dic_neighborhood[args.dataset]) as file:
+    with open(neighbor_data_filename) as file:
         for line in file:
             vs = line.strip().split(",")
             assert vs[0] not in neighbor
