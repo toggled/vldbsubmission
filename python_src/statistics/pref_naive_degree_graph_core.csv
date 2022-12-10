@@ -1,0 +1,5 @@
+#nodes (naive_degree),core number (naive_degree),#nodes (graph_core),core number (graph_core),#common nodes,cumulative sum
+3,91965,574,5,3,3
+1,41,6987,4,1,4
+1,35,17110,3,0,4
+2,34,100658,2,0,4

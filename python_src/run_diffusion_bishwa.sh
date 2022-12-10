@@ -106,11 +106,12 @@ ulimit -v $memlimit
 # =====================================================================
 rm ../output/propagation_result_9a.csv
 # for i in 1000 1500 2000 3000 4000 5000 6000
-for i in 10 50 100 200 300 400 1000 1500 2000 3000
+# for i in 10 50 100 200 300 400 1000 1500 2000 3000
+for i in 100
 do
     for algo in graph_core naive_degree naive_nbr    
     do
-        python run.py --sir_9a -a $algo -d enron --seed_size $i --max_propagation_time 10
+        python run.py --sir_9a -a $algo -d enron --seed_size $i --max_propagation_time 100
     done
 done
 
@@ -119,3 +120,21 @@ done
 # Plots 9(b)
 # =============================================
 # python plot_9b.py
+
+
+
+# =============================================
+# Statistics
+# =============================================
+# mkdir -p statistics
+# touch statistics/neighbor.txt
+# for dataset in enron dblp pref
+# do 
+#     python statistics_neighbor.py --dataset $dataset >> statistics/neighbor.txt
+# done
+
+
+# for dataset in enron dblp pref
+# do 
+#     python statistics_core.py --dataset $dataset
+# done
