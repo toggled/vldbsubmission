@@ -137,7 +137,7 @@ void extract_nodes_to_delete(Hypergraph &h, intIntMap &core, int to_del, intvec 
     /* If to_del == -1 deletes the entire innermost core,
     other-wise delete to_del number of nodes from innercore
     */
-    srand(time(0));
+    // srand(time(0));
     std::cout << "deleting.\n";
     // size_t max_core = std::numeric_limits<size_t>::min();
     std::map<size_t, size_t, std::greater<int>> sorted_core;
@@ -149,8 +149,11 @@ void extract_nodes_to_delete(Hypergraph &h, intIntMap &core, int to_del, intvec 
         sorted_core[v] = c;
     }
     size_t lastcore = 0;
+    size_t firstcore = 0;
+    size_t count = 0;
     for (auto pr : sorted_core)
     {
+        if (count==0){   firstcore = pr.second; count++; }
         // if (pr.second == max_core)  nodesto_del.push_back(pr.first);
 
         if (to_del > 0)
@@ -167,7 +170,7 @@ void extract_nodes_to_delete(Hypergraph &h, intIntMap &core, int to_del, intvec 
             // }
         }
     }
-    std::cout << "#deleted: " << nodesto_del.size() << " last core: " << lastcore << "\n";
+    std::cout << "#deleted: " << nodesto_del.size() << " first,last core: " << firstcore<<","<<lastcore << "\n";
 }
 
 int main(int argc, char *argv[])
