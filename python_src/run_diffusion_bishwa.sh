@@ -72,24 +72,6 @@
 # python SirApplication3data.py --level 2 -a graph_core -d enron --num_delete -1
 # python run.py -sir_exp3 1 -a graph_core -d enron --num_delete -1
 
-
-
-# =====================================================================
-# 9(c) experiment
-# =====================================================================
-
-memlimit="3000000"
-ulimit -v $memlimit
-
-dataset="enron"
-rm ../output/propagation_result_recursive_delinner_$dataset*
-python potential_seeds.py --dataset $dataset --num_delete -1
-for algo in graph_core naive_degree naive_nbr    
-do
-    # python run.py -sir_exp3 1 -a $algo -d $dataset --num_delete -1
-    python sir_exp3.py -a $algo -d $dataset --num_delete -1
-done
-
 # python sir_propagation_exp.py --dataset dblp --algo graph_core --num_delete -1
 # python run.py -sir_exp3 1 -a graph_core -d dblp --num_delete -1
 # python sir_propagation_exp.py --dataset dblp --algo naive_degree --num_delete -1
@@ -98,6 +80,25 @@ done
 # python run.py -sir_exp3 1 -a naive_nbr -d dblp --num_delete -1
 
 
+
+
+
+
+# =====================================================================
+# 9(c) experiment
+# =====================================================================
+
+memlimit="5000000"
+ulimit -v $memlimit
+
+# dataset="enron"
+# rm ../output/propagation_result_recursive_delinner_$dataset*
+# python potential_seeds.py --dataset $dataset --num_delete -1
+# for algo in graph_core naive_degree naive_nbr    
+# do
+#     # python run.py -sir_exp3 1 -a $algo -d $dataset --num_delete -1
+#     python sir_exp3.py -a $algo -d $dataset --num_delete -1
+# done
 
 
 # =====================================================================
@@ -111,3 +112,9 @@ done
 #         python run.py --sir_9a -a $algo -d dblp --seed_size $i --max_propagation_time 10
 #     done
 # done
+
+
+# =============================================
+# Plots 9(b)
+# =============================================
+python plot_9b.py
