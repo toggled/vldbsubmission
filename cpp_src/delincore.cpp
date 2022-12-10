@@ -140,27 +140,29 @@ void extract_nodes_to_delete(Hypergraph &h, intIntMap &core, int to_del, intvec 
     // srand(time(0));
     std::cout << "deleting.\n";
     // size_t max_core = std::numeric_limits<size_t>::min();
-    std::map<size_t, size_t, std::greater<int>> sorted_core;
+    std::map<size_t, std::vector<size_t>, std::greater<int>> sorted_core;
 
     for (auto pr : core)
     {
         auto v = pr.first;
         size_t c = pr.second;
-        sorted_core[v] = c;
+        if(sorted_core.find(c)!= sorted_core.end())
+            sorted_core[c].push_back(v);
+        else
+            sorted_core[c] = std::vector<size_t>();
     }
     size_t lastcore = 0;
     size_t firstcore = 0;
     size_t count = 0;
     for (auto pr : sorted_core)
     {
-        if (count==0){   firstcore = pr.second; count++; }
+        if (count==0){   firstcore = pr.first; count++; }
         // if (pr.second == max_core)  nodesto_del.push_back(pr.first);
 
-        if (to_del > 0)
+        for (size_t i=0; i<sorted_core[pr.first] && to_del > 0; i++,to_del--)
         {
-            nodesto_del.push_back(pr.first);
-            to_del -= 1;
-            lastcore = pr.second;
+            nodesto_del.push_back(sorted_core[pr.first][i]);
+            lastcore = pr.first;
             // assert (nodesto_del.size()>= to_del);
             // std::random_device rd;
             // std::mt19937 g(rd());
