@@ -11,12 +11,14 @@
 
 typedef std::map<std::string, std::string> strstrMap;
 template <typename T>
-bool isSubsetOrEqual(std::set<T> const& a, std::set<T> const& b) {
-   for(auto const& av:a){
-      if(std::find(b.begin(),b.end(),av)==b.end())
-          return false;
-   }
-   return true;
+bool isSubsetOrEqual(std::set<T> const &a, std::set<T> const &b)
+{
+    for (auto const &av : a)
+    {
+        if (std::find(b.begin(), b.end(), av) == b.end())
+            return false;
+    }
+    return true;
 }
 // int check_condition(Hypergraph& h, intIntMap& core){
 //     /*
@@ -48,12 +50,12 @@ bool isSubsetOrEqual(std::set<T> const& a, std::set<T> const& b) {
 //                 subH.addEdge(count++,strvecE);
 //             }
 //         }
-//         intIntMap node_deg; 
+//         intIntMap node_deg;
 //         for(auto y: subH.hyperedges){
 //             for(auto u:y){
 //                 if (node_deg.find(u) == node_deg.end())
 //                     node_deg[u] = 1;
-//                 else 
+//                 else
 //                     node_deg[u] += 1;
 //             }
 //         }
@@ -77,163 +79,219 @@ bool isSubsetOrEqual(std::set<T> const& a, std::set<T> const& b) {
 //     return incorrect;
 // }
 
-void residualhypergraph(intvec nodestodel, Hypergraph& h0, Hypergraph& h1){
+void residualhypergraph(intvec nodestodel, Hypergraph &h0, Hypergraph &h1)
+{
     // For every edge e_id incident on v, remove e_id from every vertex u in edge[e_id] distinct from v
-    std::set<std::string> subnodes; 
-    for(auto u: nodestodel)    subnodes.insert(std::to_string(u));
+    std::set<std::string> subnodes;
+    for (auto u : nodestodel)
+        subnodes.insert(std::to_string(u));
     size_t count = 0;
-    for(auto y: h0.hyperedges){
+    for (auto y : h0.hyperedges)
+    {
         std::vector<std::string> strvecE;
         bool add = true;
-        for(auto u:y){
+        for (auto u : y)
+        {
             if (subnodes.find(std::to_string(u)) == subnodes.end())
                 strvecE.push_back(std::to_string(u));
-            else{
+            else
+            {
                 add = false;
                 break;
             }
         }
         if (add)
-            h1.addEdge(count++,strvecE);
+            h1.addEdge(count++, strvecE);
     }
     h1.initialise();
 }
 
-void extract_nodes_to_delete(Hypergraph& h, intIntMap &core, int to_del, intvec& nodesto_del){
+// void extract_nodes_to_delete(Hypergraph& h, intIntMap &core, int to_del, intvec& nodesto_del){
+//     /* If to_del == -1 deletes the entire innermost core,
+//     other-wise delete to_del number of nodes from innercore
+//     */
+//     srand(time(0));
+//     std::cout<<"deleting.\n";
+//     size_t max_core = std::numeric_limits<size_t>::min();
+//     for(auto pr: core){
+//         auto v = pr.first;
+//         size_t c = pr.second;
+//         max_core = std::max(c,max_core);
+//     }
+//     for(auto pr: core){
+//         if (pr.second == max_core)  nodesto_del.push_back(pr.first);
+//     }
+//     if (to_del > 0){
+//         assert (nodesto_del.size()>= to_del);
+//         std::random_device rd;
+//         std::mt19937 g(rd());
+//         std::shuffle(nodesto_del.begin(), nodesto_del.end(), g);
+//         if(nodesto_del.size()>=to_del){
+//             nodesto_del.resize(to_del);
+//         }
+//     }
+//     std::cout<<"#deleted: "<<nodesto_del.size()<<"\n";
+// }
+void extract_nodes_to_delete(Hypergraph &h, intIntMap &core, int to_del, intvec &nodesto_del)
+{
     /* If to_del == -1 deletes the entire innermost core,
     other-wise delete to_del number of nodes from innercore
     */
     srand(time(0));
-    std::cout<<"deleting.\n";
-    size_t max_core = std::numeric_limits<size_t>::min();
-    for(auto pr: core){
+    std::cout << "deleting.\n";
+    // size_t max_core = std::numeric_limits<size_t>::min();
+    std::map<size_t, size_t, std::greater<int>> sorted_core;
+
+    for (auto pr : core)
+    {
         auto v = pr.first;
         size_t c = pr.second;
-        max_core = std::max(c,max_core);
+        sorted_core[v] = c;
     }
-    for(auto pr: core){
-        if (pr.second == max_core)  nodesto_del.push_back(pr.first);
-    }
-    if (to_del > 0){
-        assert (nodesto_del.size()>= to_del);
-        std::random_device rd;
-        std::mt19937 g(rd());
-        std::shuffle(nodesto_del.begin(), nodesto_del.end(), g);
-        if(nodesto_del.size()>=to_del){
-            nodesto_del.resize(to_del);
+    size_t lastcore = 0;
+    for (auto pr : sorted_core)
+    {
+        // if (pr.second == max_core)  nodesto_del.push_back(pr.first);
+
+        if (to_del > 0)
+        {
+            nodesto_del.push_back(pr.first);
+            to_del -= 1;
+            lastcore = pr.second;
+            // assert (nodesto_del.size()>= to_del);
+            // std::random_device rd;
+            // std::mt19937 g(rd());
+            // std::shuffle(nodesto_del.begin(), nodesto_del.end(), g);
+            // if(nodesto_del.size()>=to_del){
+            //     nodesto_del.resize(to_del);
+            // }
         }
     }
-    std::cout<<"#deleted: "<<nodesto_del.size()<<"\n";
+    std::cout << "#deleted: " << nodesto_del.size() << " last core: " << lastcore << "\n";
 }
+
 int main(int argc, char *argv[])
 {
     if (argc >= 2)
     {
-        std::istringstream iss( argv[1] );
+        std::istringstream iss(argv[1]);
         int num_threads;
 
         if (iss >> num_threads)
         {
-            std::cout << num_threads<<"\n";
+            std::cout << num_threads << "\n";
             Hypergraph h;
             Hypergraph h1;
             std::string name = "";
-            if (argc>=3){
-                getHg(argv[2],h);
+            if (argc >= 3)
+            {
+                getHg(argv[2], h);
                 name = argv[2];
             }
             std::string init_type = "nbr"; // or "lub" (local upper bound)
             h.initialise();
             std::string alg;
-            if (argc>=4){
+            if (argc >= 4)
+            {
                 alg = argv[3];
             }
             int to_del;
             intvec nodesto_del;
-            if(argc>=5){
+            if (argc >= 5)
+            {
                 to_del = atoi(argv[4]);
-                h.dataset = name+"_h0"+"_"+std::to_string(to_del);
+                h.dataset = name + "_h0" + "_" + std::to_string(to_del);
             }
-            else{
+            else
+            {
                 to_del = -1; // -1 means delete the whole innermost core.
             }
-            
-            std::cout << argv[2]<<" "<<argv[3]<<" "<<argv[4]<<" "<<argv[5]<<"\n";
-            if (alg == "Local-core-OPTIV" || alg == "naive_nbr"){    
-		alg = "naive_nbr";
-		if (argc>=6){
-                // std::cout<<"Writing before-delete nbr: \n";
-                if (atoi(argv[5])!=0)   h.writeneighborhood("../python_src/sirdata/"+alg+"_"+h.dataset+".csv");
-            	}
 
-                std::cout <<"Local-core-OPTIV (CSR + Modify core number at each step + bound + core correct) \n";
+            std::cout << argv[2] << " " << argv[3] << " " << argv[4] << " " << argv[5] << "\n";
+            if (alg == "Local-core-OPTIV" || alg == "naive_nbr")
+            {
+                alg = "naive_nbr";
+                if (argc >= 6)
+                {
+                    // std::cout<<"Writing before-delete nbr: \n";
+                    if (atoi(argv[5]) != 0)
+                        h.writeneighborhood("../python_src/sirdata_naheed_vai/" + alg + "_" + h.dataset + ".csv");
+                }
+
+                std::cout << "Local-core-OPTIV (CSR + Modify core number at each step + bound + core correct) \n";
                 Algorithm a(h);
                 local_core_OPTIV(h.dataset, h.hyperedges, h.init_nodes, h.node_index, a, log);
-		a.output["algo"] = "naive_nbr";
-                a.writecore("../python_src/sirdata/");
-                extract_nodes_to_delete(h,a.core,to_del, nodesto_del);
-                h1.dataset = name + "_h1"+"_"+std::to_string(to_del);
+                a.output["algo"] = "naive_nbr";
+                a.writecore("../python_src/sirdata_naheed_vai/");
+                extract_nodes_to_delete(h, a.core, to_del, nodesto_del);
+                h1.dataset = name + "_h1" + "_" + std::to_string(to_del);
                 // std::cout<<"hypergraph before del\n";
                 // h.printHypergraph();
                 residualhypergraph(nodesto_del, h, h1);
                 Algorithm a1(h1);
                 local_core_OPTIV(h1.dataset, h1.hyperedges, h1.init_nodes, h1.node_index, a1, log);
-		a1.output["algo"] = "naive_nbr";
-                a1.writecore("../python_src/sirdata/");
+                a1.output["algo"] = "naive_nbr";
+                a1.writecore("../python_src/sirdata_naheed_vai/");
                 // std::cout<<"residual hypergraph: \n";
                 // h1.printHypergraph();
             }
-            if (alg == "deg"){    
-		alg = "naive_degree";
-                std::cout <<"naive_deg\n";
-		alg = "naive_degree";
-		if (argc>=6){
-			// std::cout<<"Writing before-delete nbr: \n";
-			if (atoi(argv[5])!=0)   h.writeneighborhood("../python_src/sirdata/"+alg+"_"+h.dataset+".csv");
-            	}
+            if (alg == "deg")
+            {
+                alg = "naive_degree";
+                // std::cout << "naive_deg\n";
+                // alg = "naive_degree";
+                if (argc >= 6)
+                {
+                    // std::cout<<"Writing before-delete nbr: \n";
+                    if (atoi(argv[5]) != 0)
+                        h.writeneighborhood("../python_src/sirdata_naheed_vai/" + alg + "_" + h.dataset + ".csv");
+                }
                 Algorithm a(h);
                 degreePeel(h.dataset, h.hyperedges, h.init_nodes, h.node_index, a, log);
                 // a.output["num_threads"] = std::to_string(num_threads);
                 // a.output["total iteration"] = std::to_string(0);
                 // std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
-		a.output["algo"] = "naive_degree";
-                a.writecore("../python_src/sirdata/");
-                extract_nodes_to_delete(h,a.core,to_del, nodesto_del);
-                h1.dataset = name + "_h1"+"_"+std::to_string(to_del);
+                a.output["algo"] = "naive_degree";
+                a.writecore("../python_src/sirdata_naheed_vai/");
+                extract_nodes_to_delete(h, a.core, to_del, nodesto_del);
+                h1.dataset = name + "_h1" + "_" + std::to_string(to_del);
                 // std::cout<<"hypergraph before del\n";
                 // h.printHypergraph();
                 residualhypergraph(nodesto_del, h, h1);
                 Algorithm a1(h1);
                 degreePeel(h1.dataset, h1.hyperedges, h1.init_nodes, h1.node_index, a1, log);
-		a1.output["algo"] = "naive_degree";
-                a1.writecore("../python_src/sirdata/");
+                a1.output["algo"] = "naive_degree";
+                a1.writecore("../python_src/sirdata_naheed_vai/");
                 // std::cout<<"residual hypergraph: \n";
                 // h1.printHypergraph();
             }
 
-            if(alg == "clique"){
-		alg = "graph_core";
-		if (argc>=6){
-			// std::cout<<"Writing before-delete nbr: \n";
-			if (atoi(argv[5])!=0)   h.writeneighborhood("../python_src/sirdata/"+alg+"_"+h.dataset+".csv");
-            	}
+            if (alg == "clique")
+            {
+                alg = "graph_core";
+                if (argc >= 6)
+                {
+                    // std::cout<<"Writing before-delete nbr: \n";
+                    if (atoi(argv[5]) != 0)
+                        h.writeneighborhood("../python_src/sirdata_naheed_vai/" + alg + "_" + h.dataset + ".csv");
+                }
                 getClique(h);
                 h.initialise();
                 // h.printHypergraph();
                 // auto ck_time = double(clock()-ck_start)/double(CLOCKS_PER_SEC);
                 Algorithm a(h);
                 local_core_clique(h.dataset, h.hyperedges, h.init_nodes, h.node_index, a, log);
-		a.output["algo"]="graph_core";
-                a.writecore("../python_src/sirdata/");
-                extract_nodes_to_delete(h,a.core,to_del,nodesto_del);
-                h1.dataset = name + "_h1"+"_"+std::to_string(to_del);
+                a.output["algo"] = "graph_core";
+                a.writecore("../python_src/sirdata_naheed_vai/");
+                extract_nodes_to_delete(h, a.core, to_del, nodesto_del);
+                h1.dataset = name + "_h1" + "_" + std::to_string(to_del);
                 // std::cout<<"hypergraph before del\n";
                 // h.printHypergraph();
                 residualhypergraph(nodesto_del, h, h1);
                 Algorithm a1(h1);
                 local_core_clique(h1.dataset, h1.hyperedges, h1.init_nodes, h1.node_index, a1, log);
-		a1.output["algo"] = "graph_core";
-                a1.writecore("../python_src/sirdata/");
+                a1.output["algo"] = "graph_core";
+                a1.writecore("../python_src/sirdata_naheed_vai/");
                 // std::cout<<"residual hypergraph: \n";
                 // h1.printHypergraph();
                 // check_condition( h, a.core);
@@ -245,9 +303,11 @@ int main(int argc, char *argv[])
                 // a.write_results();
             }
 
-            if (argc>=6){
+            if (argc >= 6)
+            {
                 // std::cout<<"Writing before-delete nbr: \n";
-                if (atoi(argv[5])!=0)   h1.writeneighborhood("../python_src/sirdata/"+alg+"_"+h1.dataset+".csv");
+                if (atoi(argv[5]) != 0)
+                    h1.writeneighborhood("../python_src/sirdata_naheed_vai/" + alg + "_" + h1.dataset + ".csv");
             }
         }
     }
