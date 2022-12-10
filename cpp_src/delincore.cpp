@@ -159,7 +159,7 @@ void extract_nodes_to_delete(Hypergraph &h, intIntMap &core, int to_del, intvec 
         if (count==0){   firstcore = pr.first; count++; }
         // if (pr.second == max_core)  nodesto_del.push_back(pr.first);
 
-        for (size_t i=0; i<sorted_core[pr.first] && to_del > 0; i++,to_del--)
+        for (size_t i=0; i< sorted_core[pr.first].size() && to_del > 0; i++,to_del--)
         {
             nodesto_del.push_back(sorted_core[pr.first][i]);
             lastcore = pr.first;
