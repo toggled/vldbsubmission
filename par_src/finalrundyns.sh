@@ -13,11 +13,12 @@ declare -a threads=("1" "2" "4" "8" "16" "32" "64" "128")
 lb=1 # Apply Load balancing
 for i in "${!dset[@]}"
     do
-	data=${dset[i]}
+		data=${dset[i]}
     	bestThread=${bestThreadInit[i]}
-	for t in "${threads[@]}"
-	do
-		#./optIlocalpdyn $data $t $lb $bestThread
-		echo $data.$t.$lb.$bestThread
+		for t in "${threads[@]}"
+		do
+			./optIlocalpdyn $data $t $lb $bestThread
+			# echo $data.$t.$lb.$bestThread
+		done 
 	done
-    done
+

@@ -359,8 +359,9 @@ int compute_k_core(size_t n, size_t working_threads, const intvec& node_index_in
 		// 		slice_end = prefixsum_partition[tid];
 		// 	}
 			// D(std::cout<<"Thread: "<<tid<<": "<<slice_start<<" "<<slice_end<<"\n");
-			#pragma omp parallel for schedule(dynamic) // Comment  for not-dyn sched.
-			for (size_t z = 0; z<n; z++) {// Comment  for not-dyn sched.
+			size_t z;
+			#pragma omp parallel for schedule(dynamic) num_threads(working_threads) // Comment  for not-dyn sched.
+			for (z = 0; z<n; z++) {// Comment  for not-dyn sched.
 			// for (size_t z = slice_start; z<slice_end; z++) {
 				/* Want to stride across assigned blocks.
 				 */
@@ -571,7 +572,7 @@ int main (int argc, char *argv[]) {
     output["num_threads"] = std::to_string(working_threads);
     output["execution time"]= std::to_string(core_time);
 	output["init_time"] = std::to_string(init_time);
-    output["total iteration"] = std::to_string(steps);
+    	output["total iteration"] = std::to_string(steps);
 	if (lbflag)	write_results(output,"../output/parout/inresults_dy.csv");
 	else 	write_results(output,"../output/parout/results_nolb_dy.csv");
 	
