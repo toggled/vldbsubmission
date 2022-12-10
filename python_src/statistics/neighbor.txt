@@ -1,0 +1,12 @@
+enron
+{'graph_core': 186.57758620689654,
+ 'naive_degree': 305.3157894736842,
+ 'naive_nbr': 86.16804979253112}
+dblp
+{'graph_core': 285.75087719298244,
+ 'naive_degree': 176.5,
+ 'naive_nbr': 285.75087719298244}
+pref
+{'graph_core': 428.493031358885,
+ 'naive_degree': 79600.0,
+ 'naive_nbr': 981.3684210526316}

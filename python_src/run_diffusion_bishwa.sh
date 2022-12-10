@@ -72,24 +72,6 @@
 # python SirApplication3data.py --level 2 -a graph_core -d enron --num_delete -1
 # python run.py -sir_exp3 1 -a graph_core -d enron --num_delete -1
 
-
-
-# =====================================================================
-# 9(c) experiment
-# =====================================================================
-
-memlimit="3000000"
-ulimit -v $memlimit
-
-dataset="enron"
-rm ../output/propagation_result_recursive_delinner_$dataset*
-python potential_seeds.py --dataset $dataset --num_delete -1
-for algo in graph_core naive_degree naive_nbr    
-do
-    # python run.py -sir_exp3 1 -a $algo -d $dataset --num_delete -1
-    python sir_exp3.py -a $algo -d $dataset --num_delete -1
-done
-
 # python sir_propagation_exp.py --dataset dblp --algo graph_core --num_delete -1
 # python run.py -sir_exp3 1 -a graph_core -d dblp --num_delete -1
 # python sir_propagation_exp.py --dataset dblp --algo naive_degree --num_delete -1
@@ -100,14 +82,59 @@ done
 
 
 
+
+
+# =====================================================================
+# 9(c) experiment
+# =====================================================================
+
+memlimit="3000000"
+ulimit -v $memlimit
+
+# dataset="enron"
+# rm ../output/propagation_result_recursive_delinner_$dataset*
+# python potential_seeds.py --dataset $dataset --num_delete -1
+# for algo in graph_core naive_degree naive_nbr    
+# do
+#     # python run.py -sir_exp3 1 -a $algo -d $dataset --num_delete -1
+#     python sir_exp3.py -a $algo -d $dataset --num_delete -1
+# done
+
+
 # =====================================================================
 # 9(a) experiment
 # =====================================================================
-# rm ../output/propagation_result_9a.csv
+rm ../output/propagation_result_9a.csv
 # for i in 1000 1500 2000 3000 4000 5000 6000
-# do
-#     for algo in graph_core naive_degree naive_nbr    
-#     do
-#         python run.py --sir_9a -a $algo -d dblp --seed_size $i --max_propagation_time 10
-#     done
+# for i in 10 50 100 200 300 400 1000 1500 2000 3000
+for i in 100
+do
+    for algo in graph_core naive_degree naive_nbr    
+    do
+        python run.py --sir_9a -a $algo -d enron --seed_size $i --max_propagation_time 100
+    done
+done
+
+
+# =============================================
+# Plots 9(b)
+# =============================================
+# python plot_9b.py
+
+
+
+# =============================================
+# Statistics
+# =============================================
+# mkdir -p statistics
+# touch statistics/neighbor.txt
+# for dataset in enron dblp pref
+# do 
+#     python statistics_neighbor.py --dataset $dataset >> statistics/neighbor.txt
+# done
+
+
+# for dataset in enron dblp pref
+# do 
+#     python statistics_core.py --dataset $dataset
 # done

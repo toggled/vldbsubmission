@@ -1,0 +1,11 @@
+#nodes (naive_nbr),core number (naive_nbr),#nodes (naive_degree),core number (naive_degree),#common nodes,cumulative sum
+482,24,19,11,19,19
+388,23,2,10,0,19
+225,22,18,9,0,19
+151,21,17,8,0,19
+162,20,60,7,4,23
+99,19,56,6,3,26
+162,18,117,5,1,27
+184,17,205,4,6,33
+146,16,323,3,12,45
+141,15,607,2,26,71

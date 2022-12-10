@@ -17,8 +17,10 @@ def exp_9a(neighbor, core, num_vertex_per_core=100, top_k=5,  p=0.5, num_iterati
 
     distinct_core_numbers.sort(reverse=True)
 
+    # print()
+
     # repeat
-    for i in range(3):
+    for i in range(5):
 
         # sort nodes according to core number
         sorted_nodes = []

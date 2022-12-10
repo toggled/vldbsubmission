@@ -51,3 +51,6 @@ existing/bpmain
 par_src/pcsr
 par_src/initoptlocalP
 cpp_src/delmain
+python_src/sirdata/*
+python_src/sirdata_backup/*
+python_src/sirdata_naheed_vai/*
