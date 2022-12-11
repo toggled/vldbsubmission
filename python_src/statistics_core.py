@@ -51,7 +51,7 @@ def get_neighbor(dataset):
 
 top_core_info = {}
 top_core_order = {}
-top = 10
+top = 30
 for algo in ['graph_core', 'naive_nbr', 'naive_degree']:
     core, distinct_core = get_core(
         "sirdata_naheed_vai/core_" + algo + "_" + dataset + "_h0_-1.csv")

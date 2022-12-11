@@ -88,8 +88,8 @@
 # 9(c) experiment
 # =====================================================================
 
-#memlimit="3000000"
-#ulimit -v $memlimit
+memlimit="3000000"
+ulimit -v $memlimit
 
 dataset="dblp"
 rm ../output/propagation_result_recursive_delinner_$dataset*

@@ -13,7 +13,7 @@ args = parser.parse_args()
 dataset = args.dataset
 
 result = {}
-
+result_sum ={}
 
 def get_core(filename):
     # get core information
@@ -47,19 +47,27 @@ def get_neighbor(dataset):
 
 
 neighbor = get_neighbor(dataset)
-
+from scipy import stats as st
 for algo in ['graph_core', 'naive_nbr', 'naive_degree']:
     core, distinct_core = get_core(
         "sirdata_naheed_vai/core_" + algo + "_" + dataset + "_h0_-1.csv")
 
+    print("innermost core number", algo, distinct_core[0], "innermost core length", len(core[distinct_core[0]]))
     neighbor_len = []
     for node in core[distinct_core[0]]:
         neighbor_len.append(len(neighbor[node]))
     assert len(neighbor_len) == len(core[distinct_core[0]])
 
+
     avg_neighbor_len = np.array(neighbor_len).mean()
+    # avg_neighbor_len = st.mode(neighbor_len)[0]
     result[algo] = avg_neighbor_len
+    result_sum[algo] = avg_neighbor_len * len(core[distinct_core[0]])
 
 from pprint import pprint
 print(dataset)
 pprint(result)
+
+print()
+
+pprint(result_sum)

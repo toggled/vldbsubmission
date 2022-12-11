@@ -6,14 +6,15 @@ from hgDecompose.influence_propagation_new import bfs_bounded
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--dataset", type=str, default="enron")
 parser.add_argument("-a", "--algo", type=str, default="naive_nbr")
+parser.add_argument("-ss", "--seed_size", type=int,
+                    default=100, help="seed size")
 parser.add_argument("-n", "--num_delete", type=int,
                     default=-1, help="how many vertices are deleted")
-parser.add_argument(
-    "-p", "--prob", help="parameter for Probability", default=0.3, type=float)
+parser.add_argument("-p", "--prob", help="parameter for Probability", default=0.3, type=float)
 args = parser.parse_args()
 
-seed_size = 100
-num_rounds = 5
+seed_size = args.seed_size
+num_rounds = 2
 max_propagation_time = 100
 
 def worker(arg_tuple):
@@ -82,16 +83,19 @@ if __name__ == '__main__':
     entry['p'] = float(args.prob)
     entry['algo'] = args.algo
     entry['exp'] = "sir_exp3"
+    entry['seed size'] = seed_size
     entry['result'] = None
     entry['timestep_results'] = None
     entry['intervention_results'] = None
     entry['max propagation time'] = None
-
-
-
     entry['intervention_results'] = result
     entry['num delete'] = args.num_delete
     result = pd.DataFrame()
     result = result.append(entry, ignore_index=True)
     result.to_csv('../output/propagation_result_recursive_delinner_'+args.dataset+"_"+args.algo+'3.csv', header=False,
                   index=False, mode='a')
+
+    if(True):
+        print("\n")
+        print(
+            ", ".join(["\'" + column + "\'" for column in result.columns.tolist()]))
