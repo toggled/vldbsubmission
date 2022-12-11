@@ -33,12 +33,13 @@ typedef std::vector<uintSet > uintsetvec;
 typedef std::unordered_map<size_t, uintSet> intuSetintMap;
 typedef std::map<std::string, std::string> strstrMap;
 typedef std::vector< intvec > intintvec;
-
+typedef std::pair<size_t,size_t> intpair;
 class Algorithm{
     Hypergraph hg;
     public:
     intIntMap core;
     intIntMap secondcore;
+    std::vector<std::vector<std::pair<size_t,size_t>>> score_m;
     double exec_time = 0;
     double core_exec_time = 0;
     double correction_time = 0;
