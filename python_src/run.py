@@ -134,7 +134,7 @@ if(args.sir_9a):
     #     for v in core_base:
     #         core_base_new[int(v)] = int(core_base[v])
     #     core_base = core_base_new
-
+    
     core_data_filename = "sirdata_naheed_vai/core_" + \
             args.algo + "_" + args.dataset + "_h0_" + \
             str(args.num_delete) + ".csv"
@@ -166,6 +166,7 @@ if(args.sir_9a):
                              num_iterations=args.max_propagation_time, p=float(args.prob), verbose=args.verbose)
     entry['max propagation time'] = args.max_propagation_time
     entry['seed size'] = args.seed_size
+    entry['num delete'] = args.num_delete
 
     result = pd.DataFrame()
     result = result.append(entry, ignore_index=True)
