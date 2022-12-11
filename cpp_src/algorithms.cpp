@@ -402,6 +402,7 @@ void EPeel( std::string dataset, intintvec e_id_to_edge, intvec init_nodes, intI
             bucket[len_neighbors_i] = uintSet();
         }
         bucket[len_neighbors_i].insert(i);
+        setlb[i] = true;
     }
         // Computing Local lower bound 
     for (size_t i=0; i<N; i++){
@@ -1551,14 +1552,13 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
     size_t N = init_nodes.size();
     size_t M = e_id_to_edge.size();
     intvec pcore(N); //
-    intvec score(N); //
     intvec llb(N,0); // key => node id (v), value => max(|em|-1) for all edge em incident on v 
     size_t glb = std::numeric_limits<size_t>::max();
     intintvec edges( M ,intvec{}); // i = edge_id, value = vector of vertices in e[edge_id]
     intvec min_e_hindex(M);
     uintsetvec inc_edges(N, uintSet{});
     uintsetvec nbrs(N, std::unordered_set<size_t>{});
-
+    std::vector<std::vector<intpair>> score_mult(N,std::vector<intpair>{});
     // compute initial neighbors and number of neighbors
     for(size_t eid= 0; eid<M; eid++){
         auto elem = e_id_to_edge[eid];
@@ -1665,10 +1665,12 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
     }
     // std::cout<<min_cv<<":"<<max_cv<<"\n";
 	for (size_t pk = min_cv; pk<= max_cv; pk++){
+        intvec score(N,-1); //
         if(log) std::cout<<"pcore="<<pk<<"\n";
 		// deg bucket init 
 		intuSetintMap degbucket;
 		size_t max_deg = 0;
+        std::vector<bool>stop(N,false);
 		for (size_t u = 0; u<N; u++){
             if(pcore[u]>=pk){
                 auto d = inc_edges[u].size();
@@ -1689,12 +1691,12 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
                 std::cout<<"\n";
             }
         }
-		bool stop = false;
+		// bool stop = false;
 		// size_t maximal_dk = 1;
-		for(size_t dk = 1; dk<= max_deg && !stop; dk++){
+		for(size_t dk = 1; dk<= max_deg; dk++){
             if(log) std::cout<<"dk = "<<dk<<"\n";
             if(degbucket.find(dk)==degbucket.end()) continue;
-			while (degbucket[dk].size()!=0 && !stop){
+			while (degbucket[dk].size()!=0){
 				// Pop v from degbucket[dk];
                 auto set_it = degbucket[dk].begin();  //# get first element in the bucket
                 auto v = *set_it;
@@ -1703,6 +1705,7 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
                     std::cout<<"pop: "<<v<<"/"<<init_nodes[v]<<"\n";
                 }
 				score[v] = dk; // assign secondary core-num to v
+                stop[v] = true;
                 intvec nbrs_v;
                 iterate_nbrs(v, nbrs_v, inc_edges, edges);
                 if(log){
@@ -1722,6 +1725,7 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
                 }
 				for(auto u: nbrs_v){
                     if(log) std::cout<<" -- "<<u<<"/"<<init_nodes[u]<<"\n"; 
+                    if(stop[u]) continue;
 					// if |N(u)| in residual hyp < primary core , stop 
 					if (get_number_of_nbrs(u, inc_edges, edges)< pk){
 						// stop  peeling v caused nbr u's |N(u)| in the current subhyp. < pk
@@ -1732,7 +1736,10 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
                                 std::cout<<init_nodes[i]<<": "<<inc_edges[i].size()<<"\n";
                             }
                         }
-						stop = true; 
+                        degbucket[inverse_bucket[u]].erase(u); // erase u from previous bucket index
+                        // if (degbucket.find(dk) == degbucket.end()) degbucket[dk] = uintSet();
+                        degbucket[dk].insert(u);
+
                         if (log) {std::cout<<"bucket: \n"; print_bucket(degbucket,init_nodes);}
                         if(log) std::cout<<"batch delete\n";
                         /* We peel remaining nodes with pcore[u] == pk one by one without 
@@ -1741,22 +1748,22 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
                         require constructing sub-hyp. from scratch which is again more expensive than just
                         peeling the remainder nodes.
                         */
-                        for(size_t ddk = dk; ddk<=max_deg; ddk++){
-                            if (log) std::cout<<"ddk: "<<ddk<<"\n";
-                            if(degbucket.find(ddk)!=degbucket.end()){
-                                while(degbucket[ddk].size()){
-                                    auto set_it = degbucket[ddk].begin();  //# get first element in the bucket
-                                    auto u = *set_it;
-                                    if (log) std::cout<<init_nodes[u]<<",";
-                                    degbucket[ddk].erase(set_it);
-                                    if(pcore[u]==pk)
-                                        removeV_transform(u,inc_edges, edges);
-                                    score[u] = dk;
-                                }
-                            }
-                            if(log) std::cout<<"\n";
-                        }
-                        break;
+                        // for(size_t ddk = dk; ddk<=max_deg; ddk++){
+                        //     if (log) std::cout<<"ddk: "<<ddk<<"\n";
+                        //     if(degbucket.find(ddk)!=degbucket.end()){
+                        //         while(degbucket[ddk].size()){
+                        //             auto set_it = degbucket[ddk].begin();  //# get first element in the bucket
+                        //             auto u = *set_it;
+                        //             if (log) std::cout<<init_nodes[u]<<",";
+                        //             degbucket[ddk].erase(set_it);
+                        //             if(pcore[u]==pk)
+                        //                 removeV_transform(u,inc_edges, edges);
+                        //             score[u] = dk;
+                        //         }
+                        //     }
+                        //     if(log) std::cout<<"\n";
+                        // }
+                        // break;
 					}
 					else{ // else, update index in degree bucket for u \in N(v) 
                         // only update bucket position of nodes in nbr pk-core.
@@ -1775,16 +1782,29 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
                 if (log) std::cout<<"done traversing nbrs\n";
 			}
 		}
+        for(size_t i=0; i<N; i++){
+            if(score[i]!=-1)
+                score_mult[i].push_back(std::make_pair(pcore[i],score[i]));
+        }
     }
     a.exec_time = double(clock() - start) / double(CLOCKS_PER_SEC);
     a.output["execution time"]= std::to_string(a.exec_time);
     a.output["total iteration"] = std::to_string(iterations);
     a.output["init_time"] = std::to_string(init_tm);
-    for(size_t i=0; i<N; i++){
+    // for(size_t i=0; i<N; i++){
+    //     auto node = init_nodes[i];
+    //     a.core[node] = pcore[i];
+    //     a.secondcore[node] = score[i];
+    //     // std::cout << i<< ": "<< node << "->"<< pcore[i] <<" , "<<score[i]<<"\n";
+    // }
+    for(size_t i = 0; i<N; i++){
         auto node = init_nodes[i];
-        a.core[node] = pcore[i];
-        a.secondcore[node] = score[i];
-        // std::cout << i<< ": "<< node << "->"<< pcore[i] <<" , "<<score[i]<<"\n";
+        std::cout<<node<<": ";
+        auto cores = score_mult[i].size();
+        for(size_t j = 0; j<cores; j++){
+            std::cout<<score_mult[i][j].first<<","<<score_mult[i][j].second<<"\t";
+        }
+        std::cout<<"\n";
     }
 }
 
