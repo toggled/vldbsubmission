@@ -572,8 +572,8 @@ int main(int argc, char *argv[])
                     std::cout<<"Execution time= "<< a.exec_time<<": init_tm= "<<a.output["init_time"]<<"\n";
                     a.write_results();
                     if(i==iterations){
-                        // a.writekdcore();
-                        check_conditionkd(h,a.kdcores);
+                        a.writekdcore();
+                        // check_conditionkd(h,a.kdcores);
                     }
                 }
             }
