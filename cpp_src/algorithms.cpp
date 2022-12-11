@@ -392,26 +392,27 @@ void EPeel( std::string dataset, intintvec e_id_to_edge, intvec init_nodes, intI
     intvec llb(N);
     glb = std::numeric_limits<size_t>::max();
     gub = std::numeric_limits<size_t>::min();
-    // # Computing global lower bounds & bucket initialization
+    // # Computing global lower bounds
     for (size_t i = 0; i<N; i++){
         auto len_neighbors_i = init_nbr[i].size();
         glb = std::min(glb,len_neighbors_i);
         gub = std::max(gub, len_neighbors_i);
-        inverse_bucket[i] = len_neighbors_i;
-        if (bucket.find(len_neighbors_i) == bucket.end()){
-            bucket[len_neighbors_i] = uintSet();
-        }
-        bucket[len_neighbors_i].insert(i);
-        setlb[i] = true;
     }
-        // Computing Local lower bound 
+        // Computing Local lower bound & bucket init
     for (size_t i=0; i<N; i++){
         auto _maxv = std::numeric_limits<size_t>::min();
         for (auto e_id : inc_dict[i]){
             size_t vec_sz = edges[e_id].size();
             _maxv = std::max(_maxv, vec_sz - 1);
         }
-        llb[i] = std::max(_maxv, glb);
+        auto lb = std::max(_maxv, glb);
+        llb[i] = lb;
+        inverse_bucket[i] = lb;
+        if (bucket.find(lb) == bucket.end()){
+            bucket[lb] = uintSet();
+        }
+        bucket[lb].insert(i);
+        setlb[i] = true;
     }
     for (size_t k = glb; k <= gub; k++){
         while (true){
