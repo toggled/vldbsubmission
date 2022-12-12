@@ -36,6 +36,13 @@ goodname_algo = {
 df2 = df.copy()
 group_list = ['dataset']
 for key, item in df2.groupby(group_list, as_index=False):
+    processed_filename = '../output/processed_propagation_result_9a_' + key + '_.csv'
+
+    if(os.path.isfile(processed_filename)):
+        continue
+
+    print("processing:", processed_filename)
+
     item['algo'] = item['algo'].replace(goodname_algo)
     result_df = pd.DataFrame()
     group_list2 = ['algo', 'max propagation time', 'exp', 'seed size']
@@ -48,10 +55,14 @@ for key, item in df2.groupby(group_list, as_index=False):
                                      'iteration', 'seed size', 'infected', 'neighbors', 'algo', 'max propagation time', 'exp']), ignore_index=False)
 
 
-    # print(result_df)
     result_df = result_df.groupby(['iteration', 'seed size', 'algo', 'max propagation time' ,'exp']).mean().reset_index()
-    # print(result_df)
+    result_df.to_csv(processed_filename, header=True, index=False, mode='a')
 
+
+for key, item in df2.groupby(group_list, as_index=False):
+    processed_filename = '../output/processed_propagation_result_9a_' + key + '_.csv'
+    result_df = pd.read_csv(processed_filename)
+    
     for y_var in ['infected', 'neighbors'][:1]:
 
         sns.barplot(x='seed size', y=y_var, hue='algo', data=result_df)
