@@ -107,8 +107,8 @@ for time_step in time_step_list:
     # assert len(df_plot['core number sorted'].unique()) == 1
     sns.barplot(y='infected difference', x='num delete',
                 hue='Decomposition' ,data=df_plot[df_plot['time_step'] == time_step])
-    plt.xlabel('Number of delete', fontsize=fontsize)
-    plt.ylabel("Decrease in \nAverage Spread", fontsize=fontsize)
+    plt.xlabel('#deleted nodes from inner core', fontsize=fontsize)
+    plt.ylabel("Decrease in avg.\nspread per seed", fontsize=fontsize)
     plt.xticks(fontsize=fontsize)
     plt.yticks(fontsize=fontsize)
     plt.grid(axis="y")

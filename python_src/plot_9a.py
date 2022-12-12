@@ -56,8 +56,9 @@ for key, item in df2.groupby(group_list, as_index=False):
 
         sns.barplot(x='seed size', y=y_var, hue='algo', data=result_df)
 
-        plt.xlabel('Seed size', fontsize=fontsize)
-        plt.ylabel(y_var, fontsize=fontsize)
+        plt.xlabel('#seed from inner core', fontsize=fontsize)
+        # plt.ylabel(y_var, fontsize=fontsize)
+        plt.ylabel("Avg. spread per seed", fontsize=fontsize)
         plt.xticks(fontsize=fontsize)
         plt.yticks(fontsize=fontsize)
         plt.legend(loc='best', fontsize=fontsize)
