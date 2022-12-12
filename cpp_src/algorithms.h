@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <unordered_set>
 #include <unordered_map>
+#include <tuple>
 #include "hypergraph.h"
 typedef  std::unordered_map<size_t, size_t> intIntMap;
 typedef  std::map<std::string, size_t> strIntMap;
@@ -34,12 +35,13 @@ typedef std::unordered_map<size_t, uintSet> intuSetintMap;
 typedef std::map<std::string, std::string> strstrMap;
 typedef std::vector< intvec > intintvec;
 typedef std::pair<size_t,size_t> intpair;
+typedef std::tuple<size_t,size_t,size_t> inttriplet;
+typedef std::vector<inttriplet> vinttriplet;
 class Algorithm{
     Hypergraph hg;
     public:
     intIntMap core;
-    intIntMap secondcore;
-    std::vector<std::vector<std::pair<size_t,size_t>>> score_m;
+    vinttriplet kdcores;
     double exec_time = 0;
     double core_exec_time = 0;
     double correction_time = 0;

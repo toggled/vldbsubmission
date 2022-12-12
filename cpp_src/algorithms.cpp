@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <unordered_set>
 #include <unordered_map>
+#include <tuple>
 #include "hypergraph.h"
 #include "algorithms.h"
 #include "utils.h"
@@ -42,10 +43,13 @@ void Algorithm::writekdcore(std::string folder){
     std::string file = folder + "core_"+output["algo"]+"_"+hg.dataset+".csv";
     std::cout<<"writing to: "<<file<<"\n";
     std::stringstream ss;
-    for(auto elem: core)
-    {
-        // std::cout<<elem.first<<": "<<elem.second<<","<<secondcore[elem.first]<<"\n";
-        ss << std::to_string(elem.first) << "," << std::to_string(elem.second)<<","<<std::to_string(secondcore[elem.first]) << "\n";
+    // for(auto elem: core)
+    // {
+    //     // std::cout<<elem.first<<": "<<elem.second<<","<<secondcore[elem.first]<<"\n";
+    //     ss << std::to_string(elem.first) << "," << std::to_string(elem.second)<<","<<std::to_string(secondcore[elem.first]) << "\n";
+    // }
+    for(auto [v,first,second]: kdcores){
+        ss << std::to_string(v) << "," << std::to_string(first)<<","<<std::to_string(second) << "\n";
     }
     std::ofstream out(file.c_str());
     if(out.fail())
@@ -1559,7 +1563,7 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
     intvec min_e_hindex(M);
     uintsetvec inc_edges(N, uintSet{});
     uintsetvec nbrs(N, std::unordered_set<size_t>{});
-    std::vector<std::vector<intpair>> score_mult(N,std::vector<intpair>{});
+    // std::vector<std::vector<intpair>> score_mult(N,std::vector<intpair>{});
     // compute initial neighbors and number of neighbors
     for(size_t eid= 0; eid<M; eid++){
         auto elem = e_id_to_edge[eid];
@@ -1650,7 +1654,6 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
     }
     // Peeling iteration to find secondary core.
     // intuSetintMap nbrbucket;
-    intvec inverse_bucket(N);
 	// initialize every nodes initial bucket to the primary core-number.
 	size_t min_cv = N+1;
     size_t max_cv = 0;
@@ -1666,12 +1669,43 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
     }
     // std::cout<<min_cv<<":"<<max_cv<<"\n";
 	for (size_t pk = min_cv; pk<= max_cv; pk++){
-        intvec score(N,-1); //
+        // intvec score(N,-1); //
         if(log) std::cout<<"pcore="<<pk<<"\n";
 		// deg bucket init 
+        intvec inverse_bucket(N);
 		intuSetintMap degbucket;
 		size_t max_deg = 0;
-        std::vector<bool>stop(N,false);
+        // std::vector<bool>stop(N,false);
+        inc_edges = uintsetvec(N, uintSet{});
+        edges = intintvec(M, intvec{});
+        nbrs = uintsetvec(N, std::unordered_set<size_t>{});
+    //         intintvec edges( M ,intvec{}); // i = edge_id, value = vector of vertices in e[edge_id]
+    // intvec min_e_hindex(M);
+    // uintsetvec inc_edges(N, uintSet{});
+        for(size_t eid= 0; eid<M; eid++){
+            auto elem = e_id_to_edge[eid];
+            bool flag = false;
+            for(auto v_id: elem){
+                auto j = node_index[v_id];
+                if (pcore[j]<pk){
+                    flag = true;
+                    break;
+                }
+            }
+            if (!flag){
+                for(auto v_id: elem){
+                    auto j = node_index[v_id];
+                    inc_edges[j].insert(eid);
+                    edges[eid].push_back(j);
+                    auto _tmp = &nbrs[j];
+                    for (auto u: elem){
+                        if (u!=v_id){
+                            _tmp->insert(node_index[u]);
+                        }
+                    }
+                }
+            }
+        }
 		for (size_t u = 0; u<N; u++){
             if(pcore[u]>=pk){
                 auto d = inc_edges[u].size();
@@ -1705,8 +1739,9 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
                 if (log){
                     std::cout<<"pop: "<<v<<"/"<<init_nodes[v]<<"\n";
                 }
-				score[v] = dk; // assign secondary core-num to v
-                stop[v] = true;
+				// score[v] = dk; // assign secondary core-num to v
+                a.kdcores.push_back(std::make_tuple(init_nodes[v],pk,dk));
+                // stop[v] = true;
                 intvec nbrs_v;
                 iterate_nbrs(v, nbrs_v, inc_edges, edges);
                 if(log){
@@ -1726,7 +1761,7 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
                 }
 				for(auto u: nbrs_v){
                     if(log) std::cout<<" -- "<<u<<"/"<<init_nodes[u]<<"\n"; 
-                    if(stop[u]) continue;
+                    // if(stop[u]) continue;
 					// if |N(u)| in residual hyp < primary core , stop 
 					if (get_number_of_nbrs(u, inc_edges, edges)< pk){
 						// stop  peeling v caused nbr u's |N(u)| in the current subhyp. < pk
@@ -1783,10 +1818,10 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
                 if (log) std::cout<<"done traversing nbrs\n";
 			}
 		}
-        for(size_t i=0; i<N; i++){
-            if(score[i]!=-1)
-                score_mult[i].push_back(std::make_pair(pcore[i],score[i]));
-        }
+        // for(size_t i=0; i<N; i++){
+        //     if(score[i]!=-1)
+        //         score_mult[i].push_back(std::make_pair(pcore[i],score[i]));
+        // }
     }
     a.exec_time = double(clock() - start) / double(CLOCKS_PER_SEC);
     a.output["execution time"]= std::to_string(a.exec_time);
@@ -1798,15 +1833,18 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
     //     a.secondcore[node] = score[i];
     //     // std::cout << i<< ": "<< node << "->"<< pcore[i] <<" , "<<score[i]<<"\n";
     // }
-    for(size_t i = 0; i<N; i++){
-        auto node = init_nodes[i];
-        std::cout<<node<<": ";
-        auto cores = score_mult[i].size();
-        for(size_t j = 0; j<cores; j++){
-            std::cout<<score_mult[i][j].first<<","<<score_mult[i][j].second<<"\t";
-        }
-        std::cout<<"\n";
-    }
+    // for(size_t i = 0; i<N; i++){
+    //     auto node = init_nodes[i];
+    //     std::cout<<node<<",";
+    //     auto cores = score_mult[i].size();
+    //     for(size_t j = 0; j<cores; j++){
+    //         std::cout<<score_mult[i][j].first<<","<<score_mult[i][j].second<<"\n";
+    //     }
+    //     std::cout<<"\n";
+    // }
+    // for(auto [v,k,d]: a.kdcores){
+    //     std::cout<<v<<","<<k<<","<<d<<"\n";
+    // }
 }
 
 // ------------------------------------------------------- Local-core dist2 Bipartite graph -------------------------
