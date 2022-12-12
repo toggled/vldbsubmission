@@ -36,7 +36,7 @@ goodname_algo = {
 df2 = df.copy()
 group_list = ['dataset']
 for key, item in df2.groupby(group_list, as_index=False):
-    processed_filename = '../output/processed_propagation_result_9a_' + key + '_.csv'
+    processed_filename = '../output/processed_propagation_result_9a_' + key + '.csv'
 
     if(os.path.isfile(processed_filename)):
         continue
