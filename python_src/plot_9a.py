@@ -13,7 +13,7 @@ fontsize = 18
 labelsize = 14
 
 df = pd.read_csv(output_folder + "propagation_result_9a.csv", header=None)
-df.columns = ['algo', 'dataset', 'exp', 'intervention_results', 'max propagation time', 'p', 'result', 'seed size', 'timestep_results']
+df.columns = ['algo', 'dataset', 'exp', 'intervention_results', 'max propagation time', 'num delete', 'p', 'result', 'seed size', 'timestep_results']
 df['seed size'] = df['seed size'].astype(int)
 df['max propagation time'] = df['max propagation time'].astype(int)
 print(df.shape)
@@ -63,12 +63,10 @@ for key, item in df2.groupby(group_list, as_index=False):
         plt.legend(loc='best', fontsize=fontsize)
         plt.title(key, fontsize=fontsize)
         plt.tight_layout()
-        filename = key
+        filename = key + "_" + y_var + ".pdf"
+        print(filename)
         if(save):
-            plt.savefig("../fig/" + filename + "_" + y_var + ".pdf")
-            # plt.show()
-        else:
-            print("../fig/" + filename + "_infected.pdf")
+            plt.savefig("../fig/" + filename)
             # plt.show()
         plt.clf()
 

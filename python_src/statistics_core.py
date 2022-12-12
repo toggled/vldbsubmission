@@ -66,7 +66,7 @@ print()
 print("="*50)
 print(dataset)
 print("="*50)
-for algo1, algo2 in [('naive_nbr', 'graph_core'), ('naive_nbr', 'naive_degree'), ('naive_degree', 'graph_core')]:
+for algo1, algo2 in [('naive_nbr', 'graph_core'), ('naive_nbr', 'naive_degree'), ('naive_degree', 'graph_core')][:1]:
     result = []
     for i in range(min(len(top_core_info[algo1]), len(top_core_info[algo2]))):
 
@@ -81,13 +81,15 @@ for algo1, algo2 in [('naive_nbr', 'graph_core'), ('naive_nbr', 'naive_degree'),
     result = pd.DataFrame(result, columns=['#nodes (' + algo1 + ")", 'core number (' + algo1 + ")",
                                            '#nodes (' + algo2 + ")", 'core number (' + algo2 + ")", "#common nodes"])
     result['cumulative sum'] = result['#common nodes'].cumsum()
+
+    result['cumulative sum inner core'] = result['#nodes (naive_nbr)'].cumsum()
     print()
     print("Comparison between: ", algo1, "and", algo2)
     print()
     print(result)
     print()
-    result.to_csv('statistics/' + dataset + '_' + algo1 + "_" + algo2 + '.csv', header=True,
-                  index=False)
+    # result.to_csv('statistics/' + dataset + '_' + algo1 + "_" + algo2 + '.csv', header=True,
+    #               index=False)
 
 print("\n"*4)
 

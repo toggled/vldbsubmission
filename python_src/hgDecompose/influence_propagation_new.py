@@ -1,50 +1,13 @@
 import random
 from tqdm import tqdm
 
-
-# def exp_9a(neighbor, core, num_vertex_per_core=100, top_k=5,  p=0.5, num_iterations=100, original_n=None, verbose=True):
-
-#     result = {}  # Entry is a core number. value is a list of percentages of the infected population for all vertices with the same core number
-
-#     core_to_vertex_map = {}
-#     distinct_core_numbers = []
-#     for v in core:
-#         if(core[v] not in core_to_vertex_map):
-#             core_to_vertex_map[core[v]] = [v]
-#             distinct_core_numbers.append(core[v])
-#         else:
-#             core_to_vertex_map[core[v]].append(v)
-
-#     distinct_core_numbers.sort(reverse=True)
-
-#     # print()
-#     # repeat
-#     for i in range(10):
-
-#         # sort nodes according to core number
-#         sorted_nodes = []
-#         for c in distinct_core_numbers:
-#             # apply shuffling
-#             shuffled_nodes = core_to_vertex_map[c].copy()
-#             # random.shuffle(shuffled_nodes)
-#             sorted_nodes += shuffled_nodes
-
-#         # propagate
-#         for v in tqdm(sorted_nodes[:num_vertex_per_core]):
-#             if(i not in result):
-#                 result[i] = [bfs_bounded(
-#                     neighbor, starting_vertex=v, p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose)]
-#             else:
-#                 result[i].append(bfs_bounded(
-#                     neighbor, starting_vertex=v, p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose))
-
-#     return result
+num_rounds = 5
 
 
 
 def exp_9a(neighbor, core, num_vertex_per_core=100, top_k=5,  p=0.5, num_iterations=100, original_n=None, verbose=True):
 
-    result = {}  # Entry is a core number. value is a list of percentages of the infected population for all vertices with the same core number
+    result = {} 
 
     core_to_vertex_map = {}
     distinct_core_numbers = []
@@ -60,14 +23,14 @@ def exp_9a(neighbor, core, num_vertex_per_core=100, top_k=5,  p=0.5, num_iterati
     # print()
 
     # repeat
-    for i in range(10):
+    for i in range(num_rounds):
 
         # sort nodes according to core number
         sorted_nodes = []
         for c in distinct_core_numbers:
             # apply shuffling
             shuffled_nodes = core_to_vertex_map[c].copy()
-            # random.shuffle(shuffled_nodes)
+            random.shuffle(shuffled_nodes)
             sorted_nodes += shuffled_nodes
 
         # propagate
@@ -79,6 +42,45 @@ def exp_9a(neighbor, core, num_vertex_per_core=100, top_k=5,  p=0.5, num_iterati
                 result[i].append(bfs_bounded(
                     neighbor, starting_vertex=v, p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose))
 
+    return result
+
+
+def exp_kd(algo_name, neighbor, kd_core, num_vertex_per_core=100, top_k=5,  p=0.5, num_iterations=100, original_n=None, verbose=True):
+
+    result = {}  
+
+    # sort the following
+    distinct_core_numbers = list(kd_core.keys())
+    # print(distinct_core_numbers)
+    # print()
+    if(algo_name == "kd"):
+        distinct_core_numbers.sort(key=lambda x: (x[0], x[1]), reverse=True)
+        # print(distinct_core_numbers)
+    elif(algo_name == "dk"):
+        distinct_core_numbers.sort(key=lambda x: (x[1], x[0]), reverse=True)
+        # print(distinct_core_numbers)
+    # quit()
+    # print(distinct_core_numbers)
+
+    # repeat
+    for i in range(num_rounds):
+
+        # sort nodes according to core number
+        sorted_nodes = []
+        for c in distinct_core_numbers:
+            # apply shuffling
+            shuffled_nodes = kd_core[c].copy()
+            random.shuffle(shuffled_nodes)
+            sorted_nodes += shuffled_nodes
+
+        # propagate
+        for v in tqdm(sorted_nodes[:num_vertex_per_core]):
+            if(i not in result):
+                result[i] = [bfs_bounded(
+                    neighbor, starting_vertex=v, p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose)]
+            else:
+                result[i].append(bfs_bounded(
+                    neighbor, starting_vertex=v, p=p, num_iterations=num_iterations, original_n=original_n, verbose=verbose))
     return result
 
 
