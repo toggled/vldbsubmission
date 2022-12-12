@@ -1,0 +1,27 @@
+,ComplexID,ComplexName,Disease comment
+25,61,Mi2/NuRD complex,"Dermatomyositis, cancer (PMID:9790534)"
+32,71,MRN complex (MRE11-RAD50-NBN complex),Rad50-MRE11-p95 protein complex is involved in Nijmegen breakage syndrome.
+73,162,COG complex,"Deficiencies in COG1, COG7, COG8 cause a novel group of Cogenital Disorders of Glycosylation II (PMID:17904886)."
+85,201,HUIC complex,BRCA1 is involved in breast cancer.
+86,202,BRCA1-RAD50-MRE11-NBS1 complex,BRCA1 is involved in breast cancer.
+112,238,SWI-SNF chromatin remodeling-related-BRCA1 complex,BRCA1 gene is involved in breast and ovarian cancers.
+513,1142,SMN complex,Spinal muscular atrophy (SMA)
+539,1177,Polycomb repressive complex 4,"PRC complexes are overexpressed in breast, colon, and prostate cancers."
+1004,2776,RAD50-BRCA1 complex,BRCA1 is involved in breast cancer.
+1024,2814,BRCA1-HDAC1-HDAC2 complex,BRCA1 is involved in breast cancer.
+1029,2819,BRCA1-CtIP-CtBP complex,BRCA1 is involved in breast cancer.
+1034,2824,BRCA1-RAD51 complex,BRCA1 is involved in breast cancer.
+1087,2918,Ku antigen-YY1-alphaMyHC promoter complex,Human heart failure
+1192,3118,SMN1-SIP1-SNRP complex,Spinal muscular atrophy (SMA)
+1256,3284,"SMN complex (GEMIN2, GEMIN3, GEMIN4, GEMIN5, SMN)",Spinal muscular atrophy
+1257,3296,"SMN complex (GEMIN5,4,3), SMN-independent intermediate","Reduced levels of SMN cause the motor neuron degenerative disease, spinal muscular atrophy."
+1259,3298,"SMN complex (GEMIN2,5, SMN)","Reduced levels of SMN cause the motor neuron degenerative disease, spinal muscular atrophy."
+1321,5117,"RBL2 complex (DNMT1, E2F4, E2F5, HDAC1, SUV39H1, RBL2)",breast cancer
+1322,5118,"RBL2 complex (E2F4, E2F5, HDAC1, SUV39H1, P300, RBL2)",breast cancer
+1780,6336,CTNNB1-DNMT1 complex,Colorectal cancer (PMID:25753001).
+1988,6644,CCDC22-COMMD1-CUL2 complex,CCDC22 is a factor recently implicated in X-linked intellectual disability (XLID). COMMD1 deficiency results in defective copper homeostasis (PMID:25355947).
+2181,6946,BARD1\u2013BRCA1\u2013RAD51 complex,"One mutation (K140N) in BARD1, found in two patients with colorectal adenocarcinoma, attenuated the affinity of BRCA1\u2013BARD1 for RAD51 and also compromised the ability of the tumour suppressor complex to enhance D-loop formation and synaptic complex assembly."
+2323,7131,COMMD1-CCDC22-CCDC93-C16orf62 complex,COMMD1 deficiency results in defective copper homeostasis.
+2324,7132,CCDC22-CCDC93-C16orf62 complex,"Depletion of CCC complex components leads to lack of copper-dependent movement of the copper transporter ATP7A from endosomes, resulting in intracellular copper accumulation and modest alterations in copper homeostasis in humans with CCDC22 mutations."
+2326,7134,COMMD1-CCDC93-C16orf62 complex,COMMD1 deficiency results in defective copper homeostasis.
+2413,7249,ERS1-MDM2 complex,OMIM:114480 Breast cancer (PMID: 26909605).

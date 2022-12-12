@@ -1,0 +1,17 @@
+,ComplexID,ComplexName,Disease comment
+9,23,BLOC-1 (biogenesis of lysosome-related organelles complex 1),"PLDN, MUTED, CNO and DTNBP1 are involved in Hermansky-Pudlak syndrome (HPS), a genetic disorder characterized by hypopigmentation and platelet storage pool deficiency."
+32,71,MRN complex (MRE11-RAD50-NBN complex),Rad50-MRE11-p95 protein complex is involved in Nijmegen breakage syndrome.
+86,202,BRCA1-RAD50-MRE11-NBS1 complex,BRCA1 is involved in breast cancer.
+112,238,SWI-SNF chromatin remodeling-related-BRCA1 complex,BRCA1 gene is involved in breast and ovarian cancers.
+196,433,BASC complex (BRCA1-associated genome surveillance complex),BRCA1 is involved in breast cancer.
+197,434,BASC (Ab 80) complex (BRCA1-associated genome surveillance complex),BRCA1 is involved in breast cancer.
+198,435,BASC (Ab 81) complex (BRCA1-associated genome surveillance complex),BRCA1 is involved in breast cancer.
+199,436,BASC (Ab C-20) complex (BRCA1-associated genome surveillance complex),BRCA1 is involved in breast cancer.
+1004,2776,RAD50-BRCA1 complex,BRCA1 is involved in breast cancer.
+1024,2814,BRCA1-HDAC1-HDAC2 complex,BRCA1 is involved in breast cancer.
+1983,6639,"CCC-Wash (WASH1, FAM21C) complex","Depletion of CCC complex components leads to lack of copper-dependent movement of the copper transporter ATP7A from endosomes, resulting in intracellular copper accumulation and modest alterations in copper homeostasis in humans with CCDC22 mutations."
+1989,6645,CCC complex,"Depletion of CCC complex components leads to lack of copper-dependent movement of the copper transporter ATP7A from endosomes, resulting in intracellular copper accumulation and modest alterations in copper homeostasis in humans with CCDC22 mutations."
+2323,7131,COMMD1-CCDC22-CCDC93-C16orf62 complex,COMMD1 deficiency results in defective copper homeostasis.
+2324,7132,CCDC22-CCDC93-C16orf62 complex,"Depletion of CCC complex components leads to lack of copper-dependent movement of the copper transporter ATP7A from endosomes, resulting in intracellular copper accumulation and modest alterations in copper homeostasis in humans with CCDC22 mutations."
+2325,7133,CCDC93-COMMD1-COMMD6 complex,COMMD1 deficiency results in defective copper homeostasis.
+2326,7134,COMMD1-CCDC93-C16orf62 complex,COMMD1 deficiency results in defective copper homeostasis.

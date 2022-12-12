@@ -1775,7 +1775,7 @@ void kdCorehybrid(std::string dataset, intintvec e_id_to_edge, intvec init_nodes
                         degbucket[inverse_bucket[u]].erase(u); // erase u from previous bucket index
                         // if (degbucket.find(dk) == degbucket.end()) degbucket[dk] = uintSet();
                         degbucket[dk].insert(u);
-
+                        inverse_bucket[u] = dk;
                         if (log) {std::cout<<"bucket: \n"; print_bucket(degbucket,init_nodes);}
                         if(log) std::cout<<"batch delete\n";
                         /* We peel remaining nodes with pcore[u] == pk one by one without 
