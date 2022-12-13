@@ -60,7 +60,7 @@ for key, item in df2.groupby(group_list, as_index=False):
 
 
 for key, item in df2.groupby(group_list, as_index=False):
-    processed_filename = '../output/processed_propagation_result_9a_' + key + '_.csv'
+    processed_filename = '../output/processed_propagation_result_9a_' + key + '.csv'
     result_df = pd.read_csv(processed_filename)
     
     for y_var in ['infected', 'neighbors'][:1]:
