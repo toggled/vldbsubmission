@@ -7,6 +7,7 @@ import os
 from ast import literal_eval
 import shutil
 import argparse
+import itertools
 import matplotlib.ticker as ticker
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--dataset", type=str, default="dblp")
@@ -82,25 +83,43 @@ for y_var in ['infected', 'neighbors'][:1]:
 
     if(dataset == "dblp"):
         result_df = result_df[result_df['seed size'] >= 300]
+    
+    sns.set_style("dark", {'axes.grid' : True})
+    plt.style.use('grayscale')
+
+    hatch_dict = {
+        'Nbr': "O",
+        '(k, d)': '.',
+        'Clique': 'x',
+        'Degree': '*'
+    }
+
+    include_algos = ['Clique', 'Degree', 'Nbr', '(k, d)']
+    
     fig, ax = plt.subplots(figsize=(8, 4))
-    sns.barplot(x='seed size', y=y_var, hue='algo', palette='colorblind', hue_order=[
-                'Clique', 'Degree', 'Nbr', '(k, d)'], data=result_df)
+    bar = sns.barplot(x='seed size', y=y_var, hue='algo', hue_order=include_algos, data=result_df, color='k')
     plt.xlabel('#seed from inner core', fontsize=fontsize-2)
-    # plt.ylabel(y_var, fontsize=fontsize)
     plt.ylabel("Avg. spread\nper seed", fontsize=fontsize-2)
-    ax.yaxis.set_major_formatter(ticker.EngFormatter())
-    # ax.xaxis.set_major_formatter(ticker.EngFormatter())
+
+    ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: '{:,.0f}'.format(x/1000) + 'K'))
+    # ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: '{:,.0f}'.format(x/1000) + 'K'))
     plt.xticks(fontsize=fontsize-2)
     plt.yticks(fontsize=fontsize-2)
-    plt.grid(axis='y')
     plt.legend(loc='upper center', bbox_to_anchor=(
         0.5, 1.3), ncol=4, fancybox=False, shadow=True, fontsize=labelsize-2, columnspacing=0.8)
-    # plt.title(key, fontsize=fontsize)
+
+    h = itertools.cycle([hatch_dict[i] for i in include_algos])
+    for i,thisbar in enumerate(bar.patches):
+        if i%len(include_algos)==0:
+            hatch = next(h)
+        thisbar.set_hatch(hatch)
+
+
     plt.tight_layout()
     filename = dataset + "_" + y_var + ".pdf"
     print(filename)
     if(save):
-        plt.savefig("../fig/" + filename)
+        # plt.savefig("../fig/" + filename)
         plt.show()
     plt.clf()
 

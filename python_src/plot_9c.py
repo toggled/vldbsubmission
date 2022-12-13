@@ -7,6 +7,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.ticker as ticker
 import argparse
+import itertools
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--dataset", type=str, default="dblp")
 args = parser.parse_args()
@@ -120,19 +121,39 @@ for time_step in time_step_list:
         'kd': '(k, d)',
         "dk": '(d, k)'
     }
+
+    hatch_dict = {
+        'Nbr': "O",
+        '(k, d)': '.',
+        'Clique': 'x',
+        'Degree': '*'
+    }
+    include_algos = ['Clique', 'Degree', 'Nbr']
+
+    df_plot['num delete'] = df_plot.apply(lambda x: 1000 if x['num delete'] == -1 else x['num_delete'], axis=1)
     df_plot['Decomposition'] = df_plot['Decomposition'].replace(final_legend_dic)
 
 
     # assert len(df_plot['core number sorted'].unique()) == 1
+    sns.set_style("dark", {'axes.grid' : True})
+    plt.style.use('grayscale')
     fig, ax = plt.subplots(figsize=(8, 4))
-    sns.barplot(y='infected difference', x='num delete',
-                hue='Decomposition', hue_order=['Clique', 'Degree', 'Nbr'], data=df_plot[df_plot['time_step'] == time_step])
+    bar = sns.barplot(y='infected difference', x='num delete',
+                hue='Decomposition', hue_order=include_algos, data=df_plot[df_plot['time_step'] == time_step], color='k')
     plt.xlabel('#deleted nodes from inner core', fontsize=fontsize - 2)
     plt.ylabel("Decrease in avg.\nspread per seed", fontsize=fontsize - 2)
-    ax.xaxis.set_major_formatter(ticker.EngFormatter())
+    ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: '{:,.0f}'.format(x/1000) + 'K'))
+    # ax.xaxis.set_major_formatter(ticker.EngFormatter())
     plt.xticks(fontsize=fontsize - 2)
     plt.yticks(fontsize=fontsize - 2)
-    plt.grid(axis="y")
+    # plt.grid(axis="y")
+
+    h = itertools.cycle([hatch_dict[i] for i in include_algos])
+    for i,thisbar in enumerate(bar.patches):
+        if i%len(include_algos)==0:
+            hatch = next(h)
+        thisbar.set_hatch(hatch)
+
     # plt.legend(loc='best', fontsize=fontsize-4)
     plt.legend(loc='upper center', bbox_to_anchor=(
         0.5, 1.3), ncol=4, fancybox=False, shadow=True, fontsize=labelsize-2, columnspacing=0.8)
