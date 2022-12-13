@@ -148,7 +148,7 @@ for time_step in time_step_list:
     ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: '{:,.0f}'.format(x+1) + 'K'))
     #ax.xaxis.set_major_formatter(ticker.EngFormatter())
     plt.xticks(fontsize=fontsize - 2)
-    plt.yticks(fontsize=fontsize - 2)
+    plt.yticks([0, 200, 400, 600, 800], fontsize=fontsize - 2)
     # plt.grid(axis="y")
 
     # h = itertools.cycle([hatch_dict[i] for i in include_algos])
