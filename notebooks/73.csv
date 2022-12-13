@@ -1,0 +1,25 @@
+,ComplexID,ComplexName,Disease comment
+19,54,SIN3 complex,None
+25,61,Mi2/NuRD complex,"Dermatomyositis, cancer (PMID:9790534)"
+73,162,COG complex,"Deficiencies in COG1, COG7, COG8 cause a novel group of Cogenital Disorders of Glycosylation II (PMID:17904886)."
+134,283,Sin3 complex,None
+252,596,SIN3-HDAC-SAP30-ARID4 complex,None
+301,710,Brg1-associated complex I,None
+317,738,SIN3-ING1b complex I,None
+318,739,SIN3-ING1b complex II,None
+357,803,BRG1-SIN3A-HDAC containing SWI/SNF remodeling complex I,None
+360,807,BRG1-associated complex,None
+402,888,MTA2 complex,None
+525,1159,p33ING1b-HDAC1 complex,None
+638,1495,PID complex,None
+1051,2852,Brg1-based SWI/SNF complex,None
+1151,3048,mSin3A complex,None
+1153,3053,mSin3A-HDAC1-HDAC2 complex,None
+1162,3063,Brg1-associated complex II,None
+1260,3525,Tetrameric COG subcomplex,None
+1261,3529,COG5-COG6-COG7 subcomplex,None
+1262,3530,Binary COG subcomplex,None
+1263,3532,COG1-COG8 subcomplex,None
+1264,3544,COG2-COG3-COG4 subcomplex,None
+1265,3551,COG1-COG8-COG2-COG3-COG4 subcomplex,None
+1266,3552,COG1-COG8-COG5-COG6-COG7 subcomplex,None

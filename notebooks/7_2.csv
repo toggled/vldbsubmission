@@ -1,0 +1,34 @@
+,ComplexID,ComplexName,Disease comment
+6,12,BLOC-2 (biogenesis of lysosome-related organelles complex 2),"HPS1-7 are involved in Hermansky-Pudlak syndrome (HPS), which  comprises at least seven different autosomal recessive disorders (referred to as HPS-1 through -7) that share the clinical manifestations of oculocutaneous albinism combined with platelet storage pool deficiency and do not present with the severe immunodeficiency and giant intracellular granules characteristic of Chediak-Higashi syndrome."
+9,23,BLOC-1 (biogenesis of lysosome-related organelles complex 1),"PLDN, MUTED, CNO and DTNBP1 are involved in Hermansky-Pudlak syndrome (HPS), a genetic disorder characterized by hypopigmentation and platelet storage pool deficiency."
+32,71,MRN complex (MRE11-RAD50-NBN complex),Rad50-MRE11-p95 protein complex is involved in Nijmegen breakage syndrome.
+41,91,"FA complex (Fanconi anemia complex), cytoplasmic",FA complex is involved in Fanconi anemia (FA) disease.
+86,202,BRCA1-RAD50-MRE11-NBS1 complex,BRCA1 is involved in breast cancer.
+116,244,BRAFT complex,BRAFT complex is involved in Fanconi Anemia (FA) and Bloom Syndrome (BS).
+117,245,FA core complex (Fanconi anemia core complex),FA complex is involved in Fanconi anemia (FA) disease.
+118,246,BLM complex III,BLM complex III is involved in Bloom syndrome (BS).
+196,433,BASC complex (BRCA1-associated genome surveillance complex),BRCA1 is involved in breast cancer.
+197,434,BASC (Ab 80) complex (BRCA1-associated genome surveillance complex),BRCA1 is involved in breast cancer.
+198,435,BASC (Ab 81) complex (BRCA1-associated genome surveillance complex),BRCA1 is involved in breast cancer.
+199,436,BASC (Ab C-20) complex (BRCA1-associated genome surveillance complex),BRCA1 is involved in breast cancer.
+513,1142,SMN complex,Spinal muscular atrophy (SMA)
+663,1623,FA core complex 1 (Fanconi anemia core complex 1),FA complex is involved in Fanconi anemia (FA) disease.
+667,1656,p27-cyclinE-CDK2 complex,"Overexpression of p27 in certain cancer cells prevents DNA replication and tumor formation in nude mice, whereas the loss of p27 has been reported in many human cancers and predicts a poor prognosis in breast, prostate, colon, gastric, lung, and esophageal cancers."
+784,2223,BLM-TOP3A complex,BLM is involved in Bloom syndrome (BS).
+1004,2776,RAD50-BRCA1 complex,BRCA1 is involved in breast cancer.
+1023,2813,BRCA1-SMAD3 complex,BRCA1 is involved in breast cancer.
+1035,2825,BRCA1-RNA polymerase II complex,BRCA1 is involved in breast cancer.
+1133,3015,"p27-cyclinE-Cdk2 - Ubiquitin E3 ligase (SKP1A, SKP2, CUL1, CKS1B, RBX1) complex","Overexpression of p27 in certain cancer cells prevents DNA replication and tumor formation in nude mice, whereas the loss of p27 has been reported in many human cancers and predicts a poor prognosis in breast, prostate, colon, gastric, lung, and esophageal cancers. In several types of cancers, there is a strong correlation between the loss of p27 and induction of Skp2, a subunit of the SCFSkp2/Cks1 (Skp1, Cul1, Roc1, Skp2, Cks1 complex) ubiquitin E3 ligase that targets p27 for ubiquitination and degradation."
+1143,3036,"Ubiquitin E3 ligase (SKP1A, SKP2, CUL1, CKS1B, RBX1)","Overexpression of p27 in certain cancer cells prevents DNA replication and tumor formation in nude mice, whereas the loss of p27 has been reported in many human cancers and predicts a poor prognosis in breast, prostate, colon, gastric, lung, and esophageal cancers. In several types of cancers, there is a strong correlation between the loss of p27 and induction of Skp2, a subunit of the SCFSkp2/Cks1 (Skp1, Cul1, Roc1, Skp2, Cks1 complex) ubiquitin E3 ligase that targets p27 for ubiquitination and degradation."
+1192,3118,SMN1-SIP1-SNRP complex,Spinal muscular atrophy (SMA)
+1703,6215,GATOR1 complex,"GATOR1 components are present in low single-digit percentages of glioblastomas and ovarian cancers,"
+1705,6217,GATOR complex,Inactivating mutations in GATOR1 components were found in glioblastomas and ovarian cancers.
+1983,6639,"CCC-Wash (WASH1, FAM21C) complex","Depletion of CCC complex components leads to lack of copper-dependent movement of the copper transporter ATP7A from endosomes, resulting in intracellular copper accumulation and modest alterations in copper homeostasis in humans with CCDC22 mutations."
+1988,6644,CCDC22-COMMD1-CUL2 complex,CCDC22 is a factor recently implicated in X-linked intellectual disability (XLID). COMMD1 deficiency results in defective copper homeostasis (PMID:25355947).
+1989,6645,CCC complex,"Depletion of CCC complex components leads to lack of copper-dependent movement of the copper transporter ATP7A from endosomes, resulting in intracellular copper accumulation and modest alterations in copper homeostasis in humans with CCDC22 mutations."
+1999,6658,CCDC22-COMMD8-CUL1 complex,CCDC22 is a factor recently implicated in X-linked intellectual disability (XLID).
+2000,6659,"Ubiquitin E3 ligase (CCDC22, COMMD8, CUL3)",CCDC22 is a factor recently implicated in X-linked intellectual disability (XLID).
+2323,7131,COMMD1-CCDC22-CCDC93-C16orf62 complex,COMMD1 deficiency results in defective copper homeostasis.
+2324,7132,CCDC22-CCDC93-C16orf62 complex,"Depletion of CCC complex components leads to lack of copper-dependent movement of the copper transporter ATP7A from endosomes, resulting in intracellular copper accumulation and modest alterations in copper homeostasis in humans with CCDC22 mutations."
+2325,7133,CCDC93-COMMD1-COMMD6 complex,COMMD1 deficiency results in defective copper homeostasis.
+2326,7134,COMMD1-CCDC93-C16orf62 complex,COMMD1 deficiency results in defective copper homeostasis.
