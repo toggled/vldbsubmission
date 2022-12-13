@@ -1062,6 +1062,7 @@ void local_core_OPTIII( std::string dataset, intintvec &e_id_to_edge, intvec& in
         sz_inc_edge += elem.size();
         for(auto v_id: elem){
             auto j = node_index[v_id];
+            llb[j] = std::max(elem.size()-1,llb[j]);
             inc_edges[j].push_back(eid);
             edges[eid].push_back(j);
             auto _tmp = &nbrs[j];
@@ -1267,6 +1268,7 @@ void local_core_OPTIV( std::string dataset, intintvec &e_id_to_edge, intvec& ini
         sz_inc_edge += elem.size();
         for(auto v_id: elem){
             auto j = node_index[v_id];
+            llb[j] = std::max(elem.size()-1,llb[j]);
             inc_edges[j].push_back(eid);
             edges[eid].push_back(j);
             auto _tmp = &nbrs[j];
