@@ -133,6 +133,9 @@ for time_step in time_step_list:
     # df_plot['num delete'] = df_plot.apply(lambda x: 1000 if x['num delete'] == -1 else x['num_delete'], axis=1)
     df_plot['Decomposition'] = df_plot['Decomposition'].replace(final_legend_dic)
 
+    #print(df_plot['num delete'].dtype)
+    df_plot['num delete'] = df_plot['num delete'].astype(int)
+    #print(df_plot['num delete'].dtype)
 
     # assert len(df_plot['core number sorted'].unique()) == 1
     sns.set_style("dark", {'axes.grid' : True})
@@ -142,8 +145,8 @@ for time_step in time_step_list:
                 hue='Decomposition', hue_order=include_algos, data=df_plot[df_plot['time_step'] == time_step], color='k')
     plt.xlabel('#deleted nodes from inner core', fontsize=fontsize - 2)
     plt.ylabel("Decrease in avg.\nspread per seed", fontsize=fontsize - 2)
-    ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: '{:,.0f}'.format(x/1000) + 'K'))
-    # ax.xaxis.set_major_formatter(ticker.EngFormatter())
+    ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: '{:,.0f}'.format(x+1) + 'K'))
+    #ax.xaxis.set_major_formatter(ticker.EngFormatter())
     plt.xticks(fontsize=fontsize - 2)
     plt.yticks(fontsize=fontsize - 2)
     # plt.grid(axis="y")
