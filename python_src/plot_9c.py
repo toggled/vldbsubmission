@@ -130,7 +130,7 @@ for time_step in time_step_list:
     }
     include_algos = ['Clique', 'Degree', 'Nbr']
 
-    df_plot['num delete'] = df_plot.apply(lambda x: 1000 if x['num delete'] == -1 else x['num_delete'], axis=1)
+    # df_plot['num delete'] = df_plot.apply(lambda x: 1000 if x['num delete'] == -1 else x['num_delete'], axis=1)
     df_plot['Decomposition'] = df_plot['Decomposition'].replace(final_legend_dic)
 
 
@@ -148,11 +148,11 @@ for time_step in time_step_list:
     plt.yticks(fontsize=fontsize - 2)
     # plt.grid(axis="y")
 
-    h = itertools.cycle([hatch_dict[i] for i in include_algos])
-    for i,thisbar in enumerate(bar.patches):
-        if i%len(include_algos)==0:
-            hatch = next(h)
-        thisbar.set_hatch(hatch)
+    # h = itertools.cycle([hatch_dict[i] for i in include_algos])
+    # for i,thisbar in enumerate(bar.patches):
+    #     if i%len(include_algos)==0:
+    #         hatch = next(h)
+    #     thisbar.set_hatch(hatch)
 
     # plt.legend(loc='best', fontsize=fontsize-4)
     plt.legend(loc='upper center', bbox_to_anchor=(

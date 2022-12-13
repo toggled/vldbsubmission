@@ -100,26 +100,25 @@ for y_var in ['infected', 'neighbors'][:1]:
     bar = sns.barplot(x='seed size', y=y_var, hue='algo', hue_order=include_algos, data=result_df, color='k')
     plt.xlabel('#seed from inner core', fontsize=fontsize-2)
     plt.ylabel("Avg. spread\nper seed", fontsize=fontsize-2)
-
     ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: '{:,.0f}'.format(x/1000) + 'K'))
     # ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: '{:,.0f}'.format(x/1000) + 'K'))
     plt.xticks(fontsize=fontsize-2)
-    plt.yticks(fontsize=fontsize-2)
+    plt.yticks([0, 2000, 4000, 6000, 8000], fontsize=fontsize-2)
     plt.legend(loc='upper center', bbox_to_anchor=(
         0.5, 1.3), ncol=4, fancybox=False, shadow=True, fontsize=labelsize-2, columnspacing=0.8)
 
-    h = itertools.cycle([hatch_dict[i] for i in include_algos])
-    for i,thisbar in enumerate(bar.patches):
-        if i%len(include_algos)==0:
-            hatch = next(h)
-        thisbar.set_hatch(hatch)
+    # h = itertools.cycle([hatch_dict[i] for i in include_algos])
+    # for i,thisbar in enumerate(bar.patches):
+    #     if i%len(include_algos)==0:
+    #         hatch = next(h)
+    #     thisbar.set_hatch(hatch)
 
 
     plt.tight_layout()
     filename = dataset + "_" + y_var + ".pdf"
     print(filename)
     if(save):
-        # plt.savefig("../fig/" + filename)
+        plt.savefig("../fig/" + filename)
         plt.show()
     plt.clf()
 
