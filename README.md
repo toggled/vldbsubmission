@@ -16,7 +16,7 @@ Each line is a hyperedge consisting of comma separated node ids.
   - python_src/propationPlots.ipynb: Notebook for Diffusion Application plots.
   - densest_subhypergraph.ipynb: Effectiveness analysis & plots for volume densests and degree densest subhypergraphs.
   - casestudyI.ipynb: Notebook for case study I (CORUM Protein complex)
-  - casestudyII.ipynb: Notebook for case study II (Kenneth lay ego hypergraph)
+  - meetupCase.ipynb: Notebook for case study II (Meetup hypergraph)
 
 ## source codes
 - cpp_src/: 
@@ -40,9 +40,6 @@ output/: Output folder that contains algorithm outputs.
 - Application I (Diffusion):
   - `cd python_src`
   - `bash run_diffusion.sh`
-- Application II (Densest subhypergraph extraction)
-  - `cd cpp_src`
-  - `bash denseSrun.sh`
 
 ## C++ compiler requirements:
 - C++11
