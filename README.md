@@ -1,6 +1,6 @@
 # This repository contains the code and data used in the experiments of our paper titled: **Neighborhood-based Hypergraph core decomposition**
 ## Datasets
-Our datasets can be downloaded from https://drive.google.com/file/d/1--B6vLUL1DF4BI6UH3d0UyXyZQJOu6Nb/view?usp=sharing 
+Our datasets can be downloaded from https://drive.google.com/file/d/12cvz-XtfQUbmj-gqlT9z4DKGMuhqLGjs/view?usp=sharing
 - data/dataset/real : real-world datasets
 - data/dataset/synthetic : synthetically generated datasets
 - data/dataset/protein: CORUM Protein complex hypergraph
@@ -55,7 +55,7 @@ output/: Output folder that contains algorithm outputs.
   - seaborn (`pip install seaborn`)
   - matplotlib (`pip install matplotlib`)
 
-## Reproducing the plots:
+<!-- ## Reproducing the plots:
   - Install python dependencies
   - Download `output.zip` file from https://drive.google.com/file/d/1-1oZc-ajChoZkRu9C-4Vbw6VFGqB-YtO/view?usp=sharing and extract in the repository folder.
-  - Run the notebooks plots.ipynb, python_src/propationPlots.ipynb, densest_subhypergraph.ipynb, casestudyI.ipynb and casestudyII.ipynb
+  - Run the notebooks plots.ipynb, python_src/propationPlots.ipynb, densest_subhypergraph.ipynb, casestudyI.ipynb and casestudyII.ipynb -->
