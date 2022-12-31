@@ -20,7 +20,7 @@ Each line is a hyperedge consisting of comma separated node ids.
 
 ## source codes
 - cpp_src/: 
-  - C++ implementation of the E-Peel, Peel, Local-core, Local-core with the optimizations, (k,d)-core (`algorithms.cpp`)
+  - C++ implementation of the E-Peel, Peel, Local-core, Local-core with the optimizations, (k,d)-core, 3 baselines (clique-graph, dist-2 bipartite graph & degree-based algorithms) (`algorithms.cpp`)
 - casestudycpp/:
   - C++ implementation of Densest subhypergraph extraction (`densest_subhypergraph.cpp`)
 - par_src/: 
