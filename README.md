@@ -4,7 +4,8 @@ Our datasets can be downloaded from https://drive.google.com/file/d/1--B6vLUL1DF
 - data/dataset/real : real-world datasets
 - data/dataset/synthetic : synthetically generated datasets
 - data/dataset/protein: CORUM Protein complex hypergraph
-- data/dataset/kenneth_lay: Ego hypergraph of Kenneth lay (Enron's founder & CEO)
+- data/dataset/meetup: Nashville meetup dataset 
+<!-- - data/dataset/kenneth_lay: Ego hypergraph of Kenneth lay (Enron's founder & CEO) -->
 
 ### Format of a hypergraph file (.hyp)
 Each line is a hyperedge consisting of comma separated node ids. 
@@ -19,10 +20,11 @@ Each line is a hyperedge consisting of comma separated node ids.
 
 ## source codes
 - cpp_src/: 
-  - C++ implementation of the E-Peel, Peel, Local-core, Local-core with the optimizations (`algorithms.cpp`)
+  - C++ implementation of the E-Peel, Peel, Local-core, Local-core with the optimizations, (k,d)-core (`algorithms.cpp`)
+- casestudycpp/:
   - C++ implementation of Densest subhypergraph extraction (`densest_subhypergraph.cpp`)
 - par_src/: 
-  - OpenMP implementation of Parallel local-core (`parallel_localcore.cpp`)
+  - OpenMP implementation of Parallel local-core (`parallel_localcoreinitOpt2.cpp`)
 - python_src/: Python code to run Application I (Diffusion).
 
 ## Output
