@@ -40,7 +40,6 @@ output/: Output folder that contains algorithm outputs.
 - Application I (Diffusion):
   - `cd python_src`
   - `bash run_diffusion.sh`
-  - Run notebook `propagationPlots.ipynb`
 - Application II (Densest subhypergraph extraction)
   - `cd cpp_src`
   - `bash denseSrun.sh`
