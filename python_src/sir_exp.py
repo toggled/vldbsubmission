@@ -29,7 +29,7 @@ os.system("mkdir -p tests/tmp")
 os.system("mkdir -p ../output/")
 
 
-num_rounds = 2
+num_rounds = 64
 
 
 def worker(arg_tuple):

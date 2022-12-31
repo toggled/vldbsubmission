@@ -14,7 +14,7 @@ parser.add_argument("-p", "--prob", help="parameter for Probability", default=0.
 args = parser.parse_args()
 
 seed_size = args.seed_size
-num_rounds = 2
+num_rounds = 128
 max_propagation_time = 100
 
 def worker(arg_tuple):

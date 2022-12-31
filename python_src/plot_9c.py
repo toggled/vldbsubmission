@@ -128,7 +128,7 @@ for time_step in time_step_list:
         'Clique': 'x',
         'Degree': '*'
     }
-    include_algos = ['Clique', 'Degree', 'Nbr']
+    include_algos = ['Clique', 'Degree', 'Nbr','(k, d)']
 
     # df_plot['num delete'] = df_plot.apply(lambda x: 1000 if x['num delete'] == -1 else x['num_delete'], axis=1)
     df_plot['Decomposition'] = df_plot['Decomposition'].replace(final_legend_dic)
@@ -143,12 +143,13 @@ for time_step in time_step_list:
     fig, ax = plt.subplots(figsize=(8, 4))
     bar = sns.barplot(y='infected difference', x='num delete',
                 hue='Decomposition', hue_order=include_algos, data=df_plot[df_plot['time_step'] == time_step], color='k')
-    plt.xlabel('#deleted nodes from inner core', fontsize=fontsize - 2)
+    plt.xlabel('#deleted nodes from inner cores', fontsize=fontsize - 2)
     plt.ylabel("Decrease in avg.\nspread per seed", fontsize=fontsize - 2)
     ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: '{:,.0f}'.format(x+1) + 'K'))
     #ax.xaxis.set_major_formatter(ticker.EngFormatter())
     plt.xticks(fontsize=fontsize - 2)
     plt.yticks([0, 200, 400, 600, 800], fontsize=fontsize - 2)
+    plt.yscale('log')
     # plt.grid(axis="y")
 
     # h = itertools.cycle([hatch_dict[i] for i in include_algos])
@@ -159,6 +160,12 @@ for time_step in time_step_list:
 
     # plt.legend(loc='best', fontsize=fontsize-4)
     plt.legend(loc='upper center', bbox_to_anchor=(
+        0.5, 1.3), ncol=4, fancybox=False, shadow=True, fontsize=labelsize-2, columnspacing=0.8)
+    x,y = ax.get_legend_handles_labels()
+    x= x[:-1]
+    y= y[:-1]
+    ax.get_legend().remove()
+    plt.legend(*(x,y),loc='upper center', bbox_to_anchor=(
         0.5, 1.3), ncol=4, fancybox=False, shadow=True, fontsize=labelsize-2, columnspacing=0.8)
     # plt.title(dataset + ", #delete: " + str(num_delete) +", time:" + str(time_step), fontsize=fontsize - 4)
     # plt.title(dataset + ", " + "time: " + str(time_step), fontsize=fontsize - 4)

@@ -98,7 +98,7 @@ for y_var in ['infected', 'neighbors'][:1]:
     
     fig, ax = plt.subplots(figsize=(8, 4))
     bar = sns.barplot(x='seed size', y=y_var, hue='algo', hue_order=include_algos, data=result_df, color='k')
-    plt.xlabel('#seed from inner core', fontsize=fontsize-2)
+    plt.xlabel('#seeds from inner cores', fontsize=fontsize-2)
     plt.ylabel("Avg. spread\nper seed", fontsize=fontsize-2)
     ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: '{:,.0f}'.format(x/1000) + 'K'))
     # ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: '{:,.0f}'.format(x/1000) + 'K'))
