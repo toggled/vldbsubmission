@@ -52,7 +52,7 @@ strstrMap dataset_to_filename = {
             {"bin_2" , "../data/datasets/synthetic/binomial_5_500_4_0.200000_sample_2_iter_1.txt"},
             {"bin_5" , "../data/datasets/synthetic/binomial_5_500_3_0.200000_sample_5_iter_1.txt"},
             {"pref", "../data/datasets/synthetic/pref_1000000_3_1.hyp"},
-	    {"pref3U_50mil_21_1_500","/data/datasets/synthetic/pref3U_50mil_21_1_500_he.txt",
+	    {"pref3U_50mil_21_1_500","../data/datasets/synthetic/pref3U_50mil_21_1_500_he.txt"},
 			{"default" , "../data/datasets/synthetic/default.hyp"}
         };
 intvec id;
