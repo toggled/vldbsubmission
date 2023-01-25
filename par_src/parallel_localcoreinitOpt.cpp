@@ -570,7 +570,7 @@ int main (int argc, char *argv[]) {
 	output["init_time"] = std::to_string(init_time);
     	output["total iteration"] = std::to_string(steps);
 	if (lbflag)	write_results(output,"../output/parout/bresults.csv");
-	else 	write_results(output,"../output/parout/results_nolb.csv");
+	else 	write_results(output,"../output/parout/bresults_nolb.csv");
 	
 	delete[] Elock;
 	delete[] Vlock;
