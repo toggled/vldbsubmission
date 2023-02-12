@@ -87,8 +87,8 @@ result_df = pd.read_csv(processed_filename)
 result_df['algo'] = result_df['algo'].replace(final_legend_dic)
 for y_var in ['infected', 'neighbors'][:1]:
 
-    if(dataset == "dblp"):
-        result_df = result_df[result_df['seed size'] >= 300]
+    # if(dataset == "dblp"):
+    #     result_df = result_df[result_df['seed size'] >= 300]
     
     sns.set_style("dark", {'axes.grid' : True})
     plt.style.use('grayscale')
@@ -103,7 +103,7 @@ for y_var in ['infected', 'neighbors'][:1]:
     include_algos = ['Clique', 'Degree', 'Nbr', '(k, d)']
     
     fig, ax = plt.subplots(figsize=(20, 4))
-    bar = sns.barplot(x='core number', y=y_var, hue='algo', hue_order=include_algos, data=result_df, color='k')
+    bar = sns.barplot(x='core number', y=y_var, hue='algo', hue_order=include_algos, data=result_df[result_df['core number'] <= 13], color='k')
     plt.xlabel('Core-number of seed nodes', fontsize=fontsize-2)
     plt.ylabel("#avg infected nodes", fontsize=fontsize-2)
     ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: '{:,.0f}'.format(x/1000) + 'K'))
