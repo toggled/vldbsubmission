@@ -92,16 +92,24 @@ memlimit="3000000"
 ulimit -v $memlimit
 
 dataset="enron"
-rm ../output/propagation_result_recursive_delinner_$dataset*
-for num_delete in -1
-do 
-	python potential_seeds.py --dataset $dataset --num_delete $num_delete
-	for algo in graph_core naive_degree naive_nbr    
-	do
-		# python run.py -sir_exp3 1 -a $algo -d $dataset --num_delete $num_delete
-		python sir_exp3.py -a $algo -d $dataset --num_delete $num_delete
-	done
+# rm ../output/propagation_result_recursive_delinner_$dataset*
+# for num_delete in -1
+# do 
+# 	python potential_seeds.py --dataset $dataset --num_delete $num_delete
+# 	for algo in graph_core naive_degree naive_nbr    
+# 	do
+# 		# python run.py -sir_exp3 1 -a $algo -d $dataset --num_delete $num_delete
+# 		python sir_exp3.py -a $algo -d $dataset --num_delete $num_delete
+# 	done
+# done
+
+
+rm ../output/propagation_result_prev_9a.csv
+for algo in graph_core naive_degree naive_nbr    
+do
+	python sir_prev_9a.py --sir_prev_9a -a $algo -d $dataset
 done
+python sir_prev_9a.py --sir_prev_kd -d $dataset 
 
 
 # =====================================================================

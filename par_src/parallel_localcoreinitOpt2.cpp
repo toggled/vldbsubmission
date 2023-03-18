@@ -52,6 +52,7 @@ strstrMap dataset_to_filename = {
             {"bin_2" , "../data/datasets/synthetic/binomial_5_500_4_0.200000_sample_2_iter_1.txt"},
             {"bin_5" , "../data/datasets/synthetic/binomial_5_500_3_0.200000_sample_5_iter_1.txt"},
             {"pref", "../data/datasets/synthetic/pref_1000000_3_1.hyp"},
+	    {"pref3U_50mil_21_1_500","../data/datasets/synthetic/pref3U_50mil_21_1_500_he.txt"},
 			{"default" , "../data/datasets/synthetic/default.hyp"}
         };
 intvec id;
@@ -571,7 +572,7 @@ int main (int argc, char *argv[]) {
 	output["init_time"] = std::to_string(init_time);
     	output["total iteration"] = std::to_string(steps);
 	if (lbflag)	write_results(output,"../output/parout/bresults.csv");
-	else 	write_results(output,"../output/parout/results_nolb.csv");
+	else 	write_results(output,"../output/parout/bresults_nolb.csv");
 	
 	delete[] Elock;
 	delete[] Vlock;
