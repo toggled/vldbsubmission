@@ -3,7 +3,7 @@ This repository is the implementation of a PVLDB 2023 paper: "Neighborhood-based
 
 ![](intro.PNG)
 
-Please cite our <b>extended arXiv version</b> as:
+Please cite our <b>[extended arXiv version](https://arxiv.org/abs/2301.06426)</b> as:
 ```
 @article{arafat2023neighborhoodbased,
       title={Neighborhood-based Hypergraph Core Decomposition}, 
