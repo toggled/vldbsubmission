@@ -1,5 +1,6 @@
 # Neighborhood-based Hypergraph core decomposition
 This repository is the implementation of a PVLDB 2023 paper: "Neighborhood-based Hypergraph core decomposition". 
+
 ![](intro.PNG)
 
 Please cite our <b>extended arXiv version</b> as:
