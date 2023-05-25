@@ -235,7 +235,7 @@ class Hypergraph:
 
     def edge_iterator(self):
         """ returns: iterator """
-        for e_id in self.e_indices.keys():
+        for e_id in sorted(list(self.e_indices.keys())):
             yield self.get_edge_byindex(e_id)
 
     def edge_eid_iterator(self):

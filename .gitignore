@@ -54,3 +54,15 @@ cpp_src/delmain
 python_src/sirdata/*
 python_src/sirdata_backup/*
 python_src/sirdata_naheed_vai/*
+camera_ready/
+paper/
+outputold/
+notebooks/*.svg 
+notebooks/*.pdf
+notebooks/*.png
+notebooks/*.txt
+notebooks/tmp
+notebooks/__pycache__
+notebooks/.ipynb_checkpoints
+notebooks/*.csv
+notebooks_backup.zip

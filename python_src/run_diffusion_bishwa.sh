@@ -104,12 +104,12 @@ dataset="enron"
 # done
 
 
-rm ../output/propagation_result_prev_9a.csv
-for algo in graph_core naive_degree naive_nbr    
-do
-	python sir_prev_9a.py --sir_prev_9a -a $algo -d $dataset
-done
-python sir_prev_9a.py --sir_prev_kd -d $dataset 
+# rm ../output/propagation_result_prev_9a.csv
+# for algo in graph_core naive_degree naive_nbr    
+# do
+# 	python sir_prev_9a.py --sir_prev_9a -a $algo -d $dataset
+# done
+# python sir_prev_9a.py --sir_prev_kd -d $dataset 
 
 
 # =====================================================================
@@ -134,7 +134,7 @@ python sir_prev_9a.py --sir_prev_kd -d $dataset
 #    python sir_exp.py --sir_dk -d $dataset --seed_size $i --max_propagation_time 100
 
 # done
-# python plot_9a.py
+python plot_9a.py
 
 # =============================================
 # Plots 9(b)
