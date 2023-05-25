@@ -1,4 +1,19 @@
-# This repository contains the code and data used in the experiments of our paper titled: **Neighborhood-based Hypergraph core decomposition**
+# Neighborhood-based Hypergraph core decomposition
+This repository is the implementation of a PVLDB 2023 paper: "Neighborhood-based Hypergraph core decomposition". 
+![](intro.png)
+
+Please cite our <b>extended arXiv version</b> as:
+```
+@article{arafat2023neighborhoodbased,
+      title={Neighborhood-based Hypergraph Core Decomposition}, 
+      author={Naheed Anjum Arafat and Arijit Khan and Arpit Kumar Rai and Bishwamittra Ghosh},
+      year={2023},
+      eprint={2301.06426},
+      archivePrefix={arXiv},
+      primaryClass={cs.SI},
+      url={https://arxiv.org/abs/2301.06426}
+}
+```
 ## Datasets
 Our datasets can be downloaded from https://drive.google.com/file/d/12cvz-XtfQUbmj-gqlT9z4DKGMuhqLGjs/view?usp=sharing
 - data/dataset/real : real-world datasets
@@ -12,8 +27,8 @@ Each line is a hyperedge consisting of comma separated node ids.
 
 ## Notebooks for plots and case-studies
 - notebooks/:
-  - plots.ipynb: Notebook for plots in the paper
-  - python_src/propationPlots.ipynb: Notebook for Diffusion Application plots.
+  - PlotGeneration.ipynb: Notebook for plots in the paper
+  - python_src/prev_9a.ipynb: Notebook for Diffusion Application plots.
   - densest_subhypergraph.ipynb: Effectiveness analysis & plots for volume densests and degree densest subhypergraphs.
   - casestudyI.ipynb: Notebook for case study I (CORUM Protein complex)
   - meetupCase.ipynb: Notebook for case study II (Meetup hypergraph)
