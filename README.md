@@ -17,7 +17,7 @@ Please cite our <b>[extended arXiv version](https://arxiv.org/abs/2301.06426)</b
 ```
 ## Datasets
 Our datasets can be downloaded from https://drive.google.com/file/d/12cvz-XtfQUbmj-gqlT9z4DKGMuhqLGjs/view?usp=sharing
-- data/dataset/real : real-world datasets
+- data/dataset/real : real-world datasets (UPDATE 6/10/2023: The earlier version of Aminer dataset had repeated nodes in some hyperedges. A clean version of Aminer has been uploaded) 
 - data/dataset/synthetic : synthetically generated datasets
 - data/dataset/protein: CORUM Protein complex hypergraph
 - data/dataset/meetup: Nashville meetup dataset 
